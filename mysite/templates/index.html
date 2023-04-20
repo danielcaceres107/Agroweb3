@@ -14,7 +14,7 @@
     <script defer src="{% static '/js/stock.js' %}"></script>
     <script defer src="{% static '/js/modal.js' %}"></script>
     <script defer src="{% static '/js/index.js' %}"></script>
-    <script defer type="module" src="map.js"></script>
+    <script defer type="module" src="{% static 'js/map.js' %}"></script>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
 </head>
 <body>
@@ -22,9 +22,9 @@
         <div class="inner">
 			<nav class="nav-masthead">
 				<h1 class="menu">
-                    <a class="nav-link active" href="index.html">Home</a>
-				    <a class="nav-link" href="../login/login.html">Login</a>
-                    <a class="nav-link" href="../registro/registro.html">Registrarse</a>
+                    <a class="nav-link active" href="/">Home</a>
+				    <a class="nav-link" href="/login">Login</a>
+                    <a class="nav-link" href="/registro">Registrarse</a>
                 </h1>
                 <button id="boton-carrito" class="masthead-brand"><i class="fas fa-shopping-cart"></i><span id="contadorCarrito">0</span></button>
 			</nav>		    
@@ -34,15 +34,14 @@
     <div class="mapa">
         <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d54920.88576533774!2d-73.96600591200283!3d4.540488305659224!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1ses!2sco!4v1681273682417!5m2!1ses!2sco" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" id="google_map"></iframe>
     </div>
-    <div id="map"></div>
 
     <script
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCAIuQhVMvvo7gzO0tfINYI2CaZVnCUsY4&callback=initMap&v=weekly"
       defer
     ></script>
     <div class="divfull">
-        <main id="contenedor-productos">
-        </main>
+        <!--<main id="contenedor-productos">
+        </main>-->
     <div class="modal-contenedor">
         <div class="modal-carrito">
             <h3>Carrito</h3>

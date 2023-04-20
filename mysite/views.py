@@ -8,3 +8,6 @@ def index(request):
 
 def login(request):
     return HttpResponse(render(request, 'login.html'))
+
+def registro(request):
+    return HttpResponse(render(request, 'registro.html'))
