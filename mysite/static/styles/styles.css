@@ -6,6 +6,13 @@ header{
   display: flex;
   flex-direction: column;
 }
+.mapholder{
+  height: 500px;
+  width: 100%;
+}
+#map{
+  height: 100%;
+}
 img{
   vertical-align:middle;
   border-style:none;

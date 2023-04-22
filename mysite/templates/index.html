@@ -30,25 +30,23 @@
 			</nav>		    
     </div>
     </header>
-
-    <div class="mapa">
-        <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d54920.88576533774!2d-73.96600591200283!3d4.540488305659224!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1ses!2sco!4v1681273682417!5m2!1ses!2sco" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" id="google_map"></iframe>
+    
+    <div class="mapholder">
+        <div id="map"></div>
+        <script src="https://maps.googleapis.com/maps/api/js?key={{key}}&callback=initMap&v=weekly"defer></script>
+        </div>
     </div>
 
-    <script
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCAIuQhVMvvo7gzO0tfINYI2CaZVnCUsY4&callback=initMap&v=weekly"
-      defer
-    ></script>
     <div class="divfull">
-        <!--<main id="contenedor-productos">
-        </main>-->
+        <main id="contenedor-productos">
+        </main>
     <div class="modal-contenedor">
         <div class="modal-carrito">
             <h3>Carrito</h3>
             <button id="carritoCerrar"><i class="fas fa-times-circle"></i></button>
             <div id="carrito-contenedor">
                 <div class="productoEnCarrito">
-                    <p>Buzo 1</p>
+                    <p>Producto 1</p>
                     <p>Precio: $1200</p>
                     <button class="boton-eliminar"><i class="fas fa-trash-alt"></i></button>
                 </div>
@@ -58,6 +56,6 @@
         </div>
     </div>
 </div>
-<p>website created by {{username}}</p>
+<p>website created by </p>
 </body>
 </html>

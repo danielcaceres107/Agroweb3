@@ -34,7 +34,7 @@ stockProductos.forEach((producto) => {
     const div = document.createElement('div')
     div.classList.add('producto')
     div.innerHTML = `
-    <img src='${producto.img}' alt= "{$ static 'js/stock.js/${producto.nombre}' %}">
+    <img src='${producto.img}' alt= "{$ static 'img/${producto.nombre}' %}">
     <h3>${producto.nombre}</h3>
     <p>${producto.desc}</p>
     <p class="precioProducto">Precio:$ ${producto.precio}</p>

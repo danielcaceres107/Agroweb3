@@ -1,4 +1,4 @@
-var rutapapa = "img/papa.jpg"
+var rutapapa = "static/img/papa.jpg"
 var rutatomate = "{% static 'img/tomate.jpg' %}"
 var imagen = new Image();
 imagen.src = rutapapa;
