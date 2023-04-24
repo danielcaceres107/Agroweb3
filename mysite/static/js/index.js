@@ -1,4 +1,3 @@
-<script src="{% static 'js/stock.js' %}"></script>
 
 const contenedorProductos = document.getElementById('contenedor-productos')
 
@@ -34,14 +33,13 @@ stockProductos.forEach((producto) => {
     const div = document.createElement('div')
     div.classList.add('producto')
     div.innerHTML = `
-    <img src='${producto.img}' alt= "{$ static 'img/${producto.nombre}' %}">
+    <img src='${producto.img}' alt= "${producto.nombre}">
     <h3>${producto.nombre}</h3>
     <p>${producto.desc}</p>
     <p class="precioProducto">Precio:$ ${producto.precio}</p>
     <button id="agregar${producto.id}" class="boton-agregar">Agregar <i class="fas fa-shopping-cart"></i></button>
 
     `
-    console.log(producto.nombre)
     contenedorProductos.appendChild(div)
 
     //2 - SEGUNDO PASO, LUEGO DE QUE INSERTEMOS EL HTML EN EL DOM:

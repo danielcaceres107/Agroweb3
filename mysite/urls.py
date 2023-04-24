@@ -17,10 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from . import views
+from .views import VendedorView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name="index"),
-    path('login/', views.login),
-    path('registro/', views.registro)
+    path('login/', views.login, name="login"),
+    path('registro/', views.registro, name="registro"),
+    path('mydata/',views.mydata, name="mydata"),
+    path('vendedores/', VendedorView.as_view(), name='vendedores_list')
 ]

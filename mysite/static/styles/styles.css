@@ -1,5 +1,6 @@
 html, body {
     margin: 0;
+    padding: 0;
     height: 100%;
 }
 header{
@@ -90,11 +91,6 @@ img{
 a,a:focus,a:hover{
   color:rgb(173, 156, 61);
 }
-/*! CSS Used fontfaces */
-@font-face{
-  font-family:Roboto;
-  src:url(chrome-extension://mcgbeeipkmelnpldkobichboakdfaeon/css/Roboto-Regular.ttf);
-}
 .masthead-brand{
   display: flex;
   margin-bottom: 0;
@@ -147,7 +143,7 @@ body{
   font-family: 'Roboto', sans-serif;
   width: 100%;
   background-color: beige;
-  background-image: url('../../img/manoscalidad2.png');
+  background-image: url('../../static/img/manoscalidad2.png');
   background-size: 2200px, 1080px;
   background-position-x: center;
   background-repeat: no-repeat;

@@ -1,6 +1,15 @@
 from django.db import models
-from django_google_maps import fields as map_fields
 
-class Rental(models.Model):
-    address = map_fields.AddressField(max_length=200)
-    geolocation = map_fields.GeoLocationField(max_length=100)
+#create your models here
+class DimVendedores(models.Model):
+    nombreVendedor = models.CharField(max_length=200, unique=True)
+    nombreTienda = models.CharField(max_length=200,blank=True, null=True)
+    password = models.CharField(max_length=200,blank=True, null=True)
+    telefono = models.CharField(max_length=200,blank=True, null=True)
+    latitude = models.CharField(max_length=200,blank=True, null=True)
+    longitude = models.CharField(max_length=200,blank=True, null=True)
+    correo = models.CharField(max_length=200,blank=True, null=True)
+
+
+    def __str__(self):
+        return self.nombreVendedor
