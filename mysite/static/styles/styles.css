@@ -319,3 +319,14 @@ a:link, a:visited, a:active {
 h1{
   font-size: 45px;
 }
+   #info-panel {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 300px;
+        background-color: rgb(255, 255, 255);
+        border-left: 1px solid gray;
+        padding: 20px;
+        overflow-y: scroll;
+      }
