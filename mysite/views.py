@@ -12,12 +12,14 @@ from django.db import IntegrityError
 
 
 def index(request):
+    return HttpResponse(render(request, 'index.html'))
+
+def mapa(request):
     key = settings.GOOGLE_MAPS_API_KEY
     context = {
         'key': key,
     }
-    username = 'Daniel Caceres'
-    return render(request, 'index.html', context)
+    return render(request, 'mapa.html', context)
 
 
 def ingreso(request):
@@ -59,7 +61,7 @@ def signout(request):
     logout(request)
     return redirect('index')
 
-
+@login_required
 def mydata(request):
     result_list = list(DimVendedores.objects
                        .exclude(latitude__isnull=True)

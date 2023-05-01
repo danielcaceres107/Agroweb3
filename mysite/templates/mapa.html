@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block content %}
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            url: "{% url 'mydata' %}",
+            method: 'GET',
+            success: function (data) {
+                console.log(data);
+                initMap(data);
+            }
+        });
+    });
+
+    function initMap(data) {
+        // Oculta el panel lateral al inicio
+        document.getElementById("info-panel").style.display = "none";
+
+        const map = new google.maps.Map(document.getElementById("map"), {
+            center: { lat: 4.564055528477374, lng: -73.99200191926067 },
+            zoom: 13
+        });
+        //crear marcador BD django
+        const markers = data?.map((i) => {
+            //crear 
+            const marker = new google.maps.Marker({
+                position: { lat: parseFloat(i.latitude), lng: parseFloat(i.longitude) },
+                map: map,
+                icon: '../../static/img/puesto.png'
+            })
+            // Agrega un evento de clic al marcador para mostrar el panel lateral
+            marker.addListener('click', function () {
+                // Muestra el panel lateral
+                document.getElementById("info-panel").style.display = "block";
+                // Muestra la información del marcador en el panel
+                document.getElementById("info-panel").innerHTML =
+                    '<button id="close-panel-btn">&times;</button>' +
+                    '<div id="info-header">' +
+                    '<h3>' + i.nombreTienda + '</h3>' +
+                    '</div>' +
+                    '<div id="mapholder">' +
+                    '<p><strong>Teléfono:</strong> ' + i.telefono + '</p>' +
+                    '<p><strong>Horario:</strong> ' + i.horario + '</p>' +
+                    '<p><strong>Vendedor:</strong> ' + i.nombreVendedor + '</p>' +
+                    '</div>';
+
+                // Agrega un evento de clic al botón de cerrar panel
+                document.getElementById("close-panel-btn").addEventListener("click", function () {
+                    // Oculta el panel lateral
+                    document.getElementById("info-panel").style.display = "none";
+                });
+            });
+            console.log('end marker')
+        });
+        // NOTE: This uses cross-domain XHR, and may not work on older browsers.
+        //map.data.loadGeoJson("{% url 'mydata' %}");
+        // Obtener la ubicacion del usuario
+        navigator.geolocation.getCurrentPosition(function (position) {
+            var userLocation = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            };
+            //agregar marcador
+            var marker = new google.maps.Marker({
+                position: userLocation,
+                map: map,
+                title: 'tu ubicacion',
+                icon: '../../static/img/usuario.png'
+            });
+        });
+    }
+    window.initMap = initMap;
+</script>
+<div class="mapholder">
+    <!-- Agrega un contenedor para el mapa y el panel -->
+    <div style="position: relative; height: 100vh;">
+        <!-- Agrega un elemento para el mapa -->
+        <div id="map" style="height: 100%;"></div>
+        <!-- Agrega el panel lateral de información -->
+        <div id="info-panel"></div>
+    </div>
+    <div id="map"></div>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{key}}&callback=initMap&v=weekly" defer></script>
+</div>
+</div>
+{% endblock %}

@@ -1,143 +1,154 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agroweb</title>
-    <script src="https://kit.fontawesome.com/df59baf6b8.js" crossorigin="anonymous"></script>
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static '/styles/styles.css' %}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="crossorigin="anonymous"></script>
-    <script defer src="{% static '/js/stock.js' %}"></script>
-    <script defer src="{% static '/js/modal.js' %}"></script>
-    <script defer src="{% static '/js/index.js' %}"></script>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
-</head>
-<body>
-    <script>
-        $(document).ready(function(){
-            $.ajax({
-            url: "{% url 'mydata' %}",
-            method: 'GET',
-            success: function (data) {
-                console.log(data);
-                initMap(data);
-                }
-            });
-        });
+{% extends 'base.html' %}
+{% block content %}
+<section class="info">
 
-        function initMap(data) {
-            // Oculta el panel lateral al inicio
-            document.getElementById("info-panel").style.display = "none";
-            
-            const map = new google.maps.Map(document.getElementById("map"), {
-                center: { lat: 4.564055528477374, lng: -73.99200191926067},
-                zoom: 13
-            });
-            //crear marcador BD django
-            const markers = data?.map((i) => {
-                console.log(i);
-                const marker = new google.maps.Marker({
-                        position: { lat: parseFloat(i.latitude), lng: parseFloat(i.longitude)},
-                        map: map,
-                        icon: '../../static/img/puesto.png'
-                    })
-                    // Agrega un evento de clic al marcador para mostrar el panel lateral
-                    marker.addListener('click', function() {
-                        // Muestra el panel lateral
-                        document.getElementById("info-panel").style.display = "block";
-                        // Muestra la información del marcador en el panel
-                        document.getElementById("info-panel").innerHTML =
-                            '<button id="close-panel-btn">&times;</button>' + 
-                            '<div id="info-header">' + 
-                            '<h3>' + i.nombreTienda + '</h3>' +                      
-                            '</div>' +
-                            '<div id="mapholder">' +
-                            '<p><strong>Teléfono:</strong> ' + i.telefono + '</p>' +
-                            '<p><strong>Horario:</strong> ' + i.horario + '</p>' +
-                            '<p><strong>Vendedor:</strong> ' +  i.nombreVendedor+ '</p>' +
-                            '</div>';
-                        
-                        // Agrega un evento de clic al botón de cerrar panel
-                        document.getElementById("close-panel-btn").addEventListener("click", function() {
-                            // Oculta el panel lateral
-                            document.getElementById("info-panel").style.display = "none";
-                        });
-                    });
-                });
-                // NOTE: This uses cross-domain XHR, and may not work on older browsers.
-                //map.data.loadGeoJson("{% url 'mydata' %}");
+    <img src="../../static/img/bghojas2.png" class="info-img" alt="">
 
-                // Obtener la ubicacion del usuario
-                navigator.geolocation.getCurrentPosition(function(position) {
-                var userLocation = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
+    <div class="info-content container">
 
-                //agregar marcador
-                var marker = new google.maps.Marker({
-                    position:userLocation,
-                    map:map,
-                    title: 'tu ubicacion',
-                    icon: '../../static/img/usuario.png'
-                });
-            });
-        }
-        window.initMap = initMap;
-    </script>
-    <header>
-        <div class="inner">
-			<nav class="nav-masthead">
-				<h1 class="menu">
-                    <a class="nav-link active" href="/">Home</a>             
-                    <a class="nav-link" href="/registro">Registrarse</a>
-                    {% if user.is_authenticated %}
-                    <a class="nav-link" href="/logout">Logout</a>
-                    {% else %}
-                    <a class="nav-link" href="/login">Login</a>
-                    {% endif %}
-                </h1>
-                <button id="boton-carrito" class="masthead-brand"><i class="fas fa-shopping-cart"></i><span id="contadorCarrito">0</span></button>
-			</nav>		    
-    </div>
-    </header>
-    <div class="mapholder">
-          <!-- Agrega un contenedor para el mapa y el panel -->
-     <div style="position: relative; height: 100vh;">
-        <!-- Agrega un elemento para el mapa -->
-        <div id="map" style="height: 100%;"></div>
-        <!-- Agrega el panel lateral de información -->
-        <div id="info-panel"></div>
-      </div>
-        <div id="map"></div>
-        <script src="https://maps.googleapis.com/maps/api/js?key={{key}}&callback=initMap&v=weekly"defer></script>
-        </div>
-    </div>
+        <h2>El campo al alcance de tu mano</h2>
+        <p style="text-align: justify;" class="txt-p">
+            La aplicación web AgroWeb es una herramienta digital que permite a los productores y
+            consumidores de productos agrícolas, localizar y contactar de forma directa y segura a los oferentes
+            y demandantes de estos bienes en toda la via choachi. Cada usuario puede crear el perfil del punto,
+            subir las fotos de sus productos, indicar el precio, la variedad, la cantidad y la ubicación de los
+            mismos.
+            AgroWeb es una plataforma gratuita, fácil de usar y accesible desde cualquier dispositivo con conexión a
+            internet.
+        </p>
 
-    <div class="divfull">
-        <!-- <main id="contenedor-productos">
-        </main> -->
-    <div class="modal-contenedor">
-        <div class="modal-carrito">
-            <h3>Carrito</h3>
-            <button id="carritoCerrar"><i class="fas fa-times-circle"></i></button>
-            <div id="carrito-contenedor">
-                <div class="productoEnCarrito">
-                    <p>Producto 1</p>
-                    <p>Precio: $1200</p>
-                    <button class="boton-eliminar"><i class="fas fa-trash-alt"></i></button>
-                </div>
+        <div class="info-group">
+
+            <div class="info-1">
+                <img src="../../static/img/proyecto.png" alt="">
+                <h3>Geolocalización</h3>
+                <p>
+                    Encuentra las mejores opciones cerca de tí
+                </p>
             </div>
-            <p class="precioProducto">Precio total: $<span id="precioTotal">0</span></p>
-            <button id="vaciar-carrito" class="boton-agregar">Vaciar carrito</button>
+
+            <div class="info-1">
+                <img src="../../static/img/Road.png" alt="">
+                <h3>Via Choachi</h3>
+                <p>
+                    Encuentra distintos tipos de alimentos en la vía
+            </div>
+
+            <div class="info-1">
+                <img src="../../static/img/lacteos.png" alt="">
+                <h3>La mejor calidad</h3>
+                <p>
+                    Productos de la mas alta calidad sin intermediarios
+                </p>
+            </div>
+
         </div>
+        <a href="#" class="btn-1">Información</a>
     </div>
 
-</div>
-</body>
-</html>
+</section>
+
+<main class="services">
+
+    <div class="services-content container">
+        <h2>¿Tienes un negocio en la vía Choachi? Has parte de nuestra plataforma</h2>
+
+        <div class="services-group">
+
+            <div class="services-1">
+                <img src="../../static/img/i1.png" alt="">
+                <h3>Inscribete</h3>
+            </div>
+
+            <div class="services-1">
+                <img src="../../static/img/i2.png" alt="">
+                <h3>Referencia tu negocio</h3>
+            </div>
+
+            <div class="services-1">
+                <img src="../../static/img/i3.png" alt="">
+                <h3>Recibe mas personas</h3>
+            </div>
+
+            <div class="services-1">
+                <img src="../../static/img/ventas.png" alt="">
+                <h3>Mejora tus ganancias</h3>
+            </div>
+
+        </div>
+
+        <p>
+            No lo pienses mas, esta es una oportunidad unica
+        </p>
+        <a href="#" class="btn-1">Información</a>
+    </div>
+
+</main>
+
+<section class="general">
+
+    <div class="general-1">
+        <h2>Inclusión</h2>
+        <p>
+            dsadadsdasasdasdasdasdsadasdasdasdsadasd
+        </p>
+        <a href="#" class="btn-1">Información</a>
+    </div>
+    <div class="general-2"></div>
+
+</section>
+
+<section class="general">
+
+    <div class="general-3"></div>
+
+    <div class="general-1">
+        <h2>Compatibilidad</h2>
+        <p>
+            dsadadsdasasdasdasdasdsadasdasdasdsadasd
+        </p>
+        <a href="#" class="btn-1">Información</a>
+    </div>
+
+</section>
+
+<!-- <section class="blog container">
+    <h2>Blog</h2>
+    <p>dasddasdsadsadsdasdsadsaddasdsadasdad</p>
+
+    <div class="blog-content">
+        <div class="blog-1">
+            <img src="images/blog1.jpg" alt="">
+            <h3>Blog 1</h3>
+            <p>
+                dasdasdasdsadadsadsadsadsadsadasdsadasdads
+            </p>
+        </div>
+        
+        <div class="blog-1">
+            <img src="images/blog2.jpg" alt="">
+            <h3>Blog 2</h3>
+            <p>
+                dasdasdasdsadadsadsadsadsadsadasdsadasdads
+            </p>
+        </div>
+
+    </div>
+
+    <a href="#" class="btn-1">Información</a>
+
+</section> -->
+
+<footer class="footer">
+
+    <div class="footer-content container">
+
+        <div class="link">
+
+            <img src="../../static/img/Logouni2.png">
+            <h3>Daniel Caceres & Sebastian Sanchez &copy; </h3>
+
+        </div>
+
+</footer>
+{% endblock %}
