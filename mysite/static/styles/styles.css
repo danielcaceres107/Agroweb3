@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
 
+/*INDEX*/ 
 *{
     margin: 0;
     padding: 0;
@@ -82,9 +83,12 @@ body{
     font-size: 75px;
     line-height: 80px;
     color: #f9fafc;
+    font-family: 'Poppins';
     text-transform: uppercase;
     margin-bottom: 35px;
 }
+
+h1 {}
 
 .header-content p{
     font-size: 16px;
@@ -414,19 +418,6 @@ p{
         flex-direction: column;
         text-align: center;
     }
-
-    #info-panel {
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        width: 300px;
-        background-color: rgb(255, 255, 255);
-        border-left: 1px solid gray;
-        padding: 20px;
-        overflow-y: scroll;
-      }
-
 
     
 } 

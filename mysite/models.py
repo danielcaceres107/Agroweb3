@@ -18,3 +18,10 @@ class DimVendedores(models.Model):
 
     def __str__(self):
         return self.nombreVendedor
+    
+class DimProducts(models.Model):
+    nombreProd = models.CharField(max_length=200)
+    precioProd = models.DecimalField(max_digits=10, decimal_places=0)
+    descripcionProd = models.TextField(max_length=500)
+    imagenProd = models.ImageField(upload_to='img/', null=True, blank=True)
+    # Otros campos que necesites

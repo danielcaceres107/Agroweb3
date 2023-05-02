@@ -30,6 +30,7 @@
             })
             // Agrega un evento de clic al marcador para mostrar el panel lateral
             marker.addListener('click', function () {
+                const productImageUrl = "{{ producto.imagenProd.url }}";
                 // Muestra el panel lateral
                 document.getElementById("info-panel").style.display = "block";
                 // Muestra la información del marcador en el panel
@@ -42,33 +43,76 @@
                     '<p><strong>Teléfono:</strong> ' + i.telefono + '</p>' +
                     '<p><strong>Horario:</strong> ' + i.horario + '</p>' +
                     '<p><strong>Vendedor:</strong> ' + i.nombreVendedor + '</p>' +
-                    '</div>';
+                    '<div id="cart-items">' +
+                    '<h4>Productos en la cesta:</h4>' +
+                    '</div>' +
+                    '<div>' + productImageUrl + '</div>'
+                    '<button id="add-to-cart-btn">Agregar producto</button>';
 
                 // Agrega un evento de clic al botón de cerrar panel
                 document.getElementById("close-panel-btn").addEventListener("click", function () {
                     // Oculta el panel lateral
                     document.getElementById("info-panel").style.display = "none";
                 });
-            });
-            console.log('end marker')
-        });
-        // NOTE: This uses cross-domain XHR, and may not work on older browsers.
-        //map.data.loadGeoJson("{% url 'mydata' %}");
-        // Obtener la ubicacion del usuario
-        navigator.geolocation.getCurrentPosition(function (position) {
-            var userLocation = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude
-            };
-            //agregar marcador
-            var marker = new google.maps.Marker({
-                position: userLocation,
-                map: map,
-                title: 'tu ubicacion',
-                icon: '../../static/img/usuario.png'
+
+                // Implementación del sistema de horarios
+                const openingHours = i.horario.split('-');
+                const openingTime = new Date().setHours(Number.parseInt(openingHours[0].split(':')[0]), Number.parseInt(openingHours[0].split(':')[1]), 0);
+                const closingTime = new Date().setHours(Number.parseInt(openingHours[1].split(':')[0]), Number.parseInt(openingHours[1].split(':')[1]), 0);
+
+                if (new Date().getTime() >= openingTime && new Date().getTime() <= closingTime) {
+                    // La tienda está abierta
+                    document.getElementById("mapholder").innerHTML +=
+                        '<p><strong>Estado:</strong> Abierto</p>';
+                } else {
+                    // La tienda aún no abre
+                    document.getElementById("mapholder").innerHTML +=
+                        '<p><strong>Estado:</strong> Cerrado</p>' +
+                        '<p><strong>Horario:</strong> ' + i.horario + '</p>';
+                }
+
+                // Agregar producto a la cesta
+                const addToCartBtn = document.createElement('button');
+                addToCartBtn.innerText = 'Agregar a la cesta';
+                document.getElementById("mapholder").appendChild(addToCartBtn);
+
+                addToCartBtn.addEventListener('click', function () {
+                    const productId = i.id;  // Reemplazar con el ID de tu producto
+                    fetch('/mydata/')
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'ok') {
+                                const productName = i.nombreProducto;
+                                const productPrice = i.precioProducto;
+
+                                const cart = JSON.parse(localStorage.getItem('cart')) || [];
+                                cart.push({ name: productName, price: productPrice });
+                                localStorage.setItem('cart', JSON.stringify(cart));
+
+                                const cartItemHTML = '<p>' + productName + ': $' + productPrice + '</p>';
+                                document.getElementById('cart-items').innerHTML += cartItemHTML;
+                            } else {
+                                alert('Error al agregar el producto al carrito');
+                            }
+                        });
+                });
+
+                // Obtener la cesta del almacenamiento local y mostrarla en el panel lateral
+                const cart = JSON.parse(localStorage.getItem('cart')) || [];
+                if (cart.length > 0) {
+                    const cartItems = cart.map((item) => {
+                        return '<p>' + item.name + ': $' + item.price + '</p>';
+                    });
+                    const cartHTML = '<div id="cart">' +
+                        '<h3>Cesta</h3>' +
+                        cartItems.join('') +
+                        '</div>';
+                    document.getElementById("info-panel").innerHTML += cartHTML;
+                }
             });
         });
     }
+
     window.initMap = initMap;
 </script>
 <div class="mapholder">
@@ -77,10 +121,11 @@
         <!-- Agrega un elemento para el mapa -->
         <div id="map" style="height: 100%;"></div>
         <!-- Agrega el panel lateral de información -->
-        <div id="info-panel"></div>
+        <div id="info-panel">
+            <img id="imagenProd" src="" alt="">
+        </div>
     </div>
     <div id="map"></div>
     <script src="https://maps.googleapis.com/maps/api/js?key={{key}}&callback=initMap&v=weekly" defer></script>
-</div>
 </div>
 {% endblock %}
