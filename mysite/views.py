@@ -2,12 +2,13 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from django.views import View
 from agroweb import settings
-from .models import DimVendedores
+from .models import DimVendedores, DimProducts
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
+from django.views.decorators.http import require_POST
 # Create your views here.
 
 
@@ -78,3 +79,35 @@ def mydata(request):
                                ))
 
     return JsonResponse(result_list, safe=False)
+
+@require_POST
+@login_required
+def add_to_cart(request, product_id):
+    product = DimProducts.objects.get(id=product_id)
+    cart = request.session.get('cart', {})
+    if str(product_id) in cart:
+        cart[str(product_id)]['quantity'] += 1
+    else:
+        cart[str(product_id)] = {
+            'name': product.nombreProd,
+            'price': str(product.precioProd),
+            'quantity': 1,
+        }
+    request.session['cart'] = cart
+    return redirect('cart')
+
+@require_POST
+@login_required
+def add_to_cart(request, product_id):
+    product = DimProducts.objects.get(id=product_id)
+    cart = request.session.get('cart', {})
+    if str(product_id) in cart:
+        cart[str(product_id)]['quantity'] += 1
+    else:
+        cart[str(product_id)] = {
+            'name': product.nombreProd,
+            'price': str(product.precioProd),
+            'quantity': 1,
+        }
+    request.session['cart'] = cart
+    return redirect('cart')
