@@ -9,6 +9,8 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.views.decorators.http import require_POST
+from django.core import serializers
+import json
 # Create your views here.
 
 
@@ -64,21 +66,50 @@ def signout(request):
 
 @login_required
 def mydata(request):
-    result_list = list(DimVendedores.objects
-                       .exclude(latitude__isnull=True)
-                       .exclude(longitude__isnull=True)
-                       .exclude(latitude__exact='')
-                       .exclude(longitude__exact='')
-                       .values('id',
-                               'nombreVendedor',
-                               'latitude',
-                               'longitude',
-                               'nombreTienda',
-                               'telefono',
-                               'horario',
-                               ))
+    # Obtener todos los vendedores
+    vendedores = DimVendedores.objects.prefetch_related('productos_venta')
 
-    return JsonResponse(result_list, safe=False)
+    # Crear una lista de diccionarios para almacenar la información de cada vendedor y sus productos
+    data = []
+
+    # Iterar sobre los vendedores y crear un diccionario con su información y la de sus productos
+    for vendedor in vendedores:
+        vendedor_data = {
+            'model': 'miapp.dimvendedores',
+            'pk': vendedor.id,
+            'fields': {
+                'nombreVendedor': vendedor.nombreVendedor,
+                'latitude': vendedor.latitude,
+                'longitude': vendedor.longitude,
+                'nombreTienda': vendedor.nombreTienda,
+                'telefono': vendedor.telefono,
+                'horario': vendedor.horario,
+            }
+        }
+        # Obtener los productos de cada vendedor y agregarlos al diccionario
+        productos = []
+        for producto in vendedor.productos_venta.all():
+            productos.append({
+                'model': 'miapp.dimproductos',
+                'pk': producto.id,
+                'fields': {
+                    'nombreProd': producto.nombreProd,
+                    'precio': producto.precioProd,
+                    'descripcion': producto.descripcionProd,
+                }
+            })
+        vendedor_data['productos'] = productos
+        data.append(vendedor_data)
+
+    # Crear un diccionario que contenga los datos de los vendedores y sus productos
+    result_dict = {
+        'vendedores': data
+    }
+
+    # Convertir el diccionario en un objeto JSON
+    result_json = json.dumps(result_dict)
+
+    return HttpResponse(result_json, content_type='application/json')
 
 @require_POST
 @login_required

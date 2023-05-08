@@ -24,4 +24,8 @@ class DimProducts(models.Model):
     precioProd = models.DecimalField(max_digits=10, decimal_places=0)
     descripcionProd = models.TextField(max_length=500)
     imagenProd = models.ImageField(upload_to='img/', null=True, blank=True)
+    vendedores = models.ManyToManyField(DimVendedores, related_name='productos_venta')
     # Otros campos que necesites
+
+    def __str__(self):
+        return self.nombreProd

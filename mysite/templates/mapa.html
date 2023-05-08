@@ -1,5 +1,11 @@
 {% extends 'base.html' %}
 {% block content %}
+
+{% if user.is_authenticated %}
+<div></div>
+{% else %}
+<div><a>Logeate para ver todos los puestos y productos</a></div>
+{% endif %}
 <script>
     $(document).ready(function () {
         $.ajax({
@@ -16,6 +22,7 @@
         // Oculta el panel lateral al inicio
         document.getElementById("info-panel").style.display = "none";
 
+        // genera el mapa localizado en la via choachi
         const map = new google.maps.Map(document.getElementById("map"), {
             center: { lat: 4.564055528477374, lng: -73.99200191926067 },
             zoom: 13
@@ -28,6 +35,7 @@
                 map: map,
                 icon: '../../static/img/puesto.png'
             })
+
             // Agrega un evento de clic al marcador para mostrar el panel lateral
             marker.addListener('click', function () {
                 const productImageUrl = "{{ producto.imagenProd.url }}";
@@ -44,9 +52,13 @@
                     '<p><strong>Horario:</strong> ' + i.horario + '</p>' +
                     '<p><strong>Vendedor:</strong> ' + i.nombreVendedor + '</p>' +
                     '<div id="cart-items">' +
-                    '<h4>Productos en la cesta:</h4>' +
-                    '</div>' +
-                    '<div>' + productImageUrl + '</div>'
+                    '<h4>Productos:</h4>' +
+                    '<ul>';
+                    var infoPanelHTML;
+                    for (const prod of i.productos_venta__nombreProd) {
+                        infoPanelHTML += '<li>' + prod + '</li>';
+                    }
+                    infoPanelHTML += '</ul></div>' +
                     '<button id="add-to-cart-btn">Agregar producto</button>';
 
                 // Agrega un evento de clic al botón de cerrar panel
