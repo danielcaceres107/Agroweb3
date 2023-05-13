@@ -11,11 +11,17 @@ from django.db import IntegrityError
 from django.views.decorators.http import require_POST
 from django.core import serializers
 import json
+from .forms import RegistroForm
+from decimal import Decimal
+from django.core.serializers.json import DjangoJSONEncoder
+
 # Create your views here.
 
 
 def index(request):
     return HttpResponse(render(request, 'index.html'))
+
+
 
 def mapa(request):
     key = settings.GOOGLE_MAPS_API_KEY
@@ -40,7 +46,7 @@ def ingreso(request):
 def registro(request):
     if request.method == 'GET':
         return render(request, 'registro.html', {
-            'register': UserCreationForm
+            'register': RegistroForm() # utiliza la instancia del formulario personalizado
         })
     else:
         if request.POST['password1'] == request.POST['password2']:
@@ -51,10 +57,10 @@ def registro(request):
                 print('usuario creado satisfactoriamente')
                 return redirect('index')
             except IntegrityError:
-                return render(request, 'registro.html', {"register": UserCreationForm, "error": "Username already exists."})
+                return render(request, 'registro.html', {"register": RegistroForm(), "error": "Username already exists."})
         else:
             return render(request, 'registro.html', {
-            'register': UserCreationForm,
+            'register': RegistroForm(),
             "error": 'Contraseñas no coinciden'
             })
 
@@ -94,7 +100,7 @@ def mydata(request):
                 'pk': producto.id,
                 'fields': {
                     'nombreProd': producto.nombreProd,
-                    'precio': producto.precioProd,
+                    'precio': str(producto.precioProd),  # Convertir el decimal a una cadena de caracteres
                     'descripcion': producto.descripcionProd,
                 }
             })
@@ -107,25 +113,16 @@ def mydata(request):
     }
 
     # Convertir el diccionario en un objeto JSON
-    result_json = json.dumps(result_dict)
+    result_json = json.dumps(result_dict, cls=DjangoJSONEncoder, default=decimal_default)
 
     return HttpResponse(result_json, content_type='application/json')
 
-@require_POST
-@login_required
-def add_to_cart(request, product_id):
-    product = DimProducts.objects.get(id=product_id)
-    cart = request.session.get('cart', {})
-    if str(product_id) in cart:
-        cart[str(product_id)]['quantity'] += 1
-    else:
-        cart[str(product_id)] = {
-            'name': product.nombreProd,
-            'price': str(product.precioProd),
-            'quantity': 1,
-        }
-    request.session['cart'] = cart
-    return redirect('cart')
+
+# Función para convertir los objetos Decimal en una representación serializable
+def decimal_default(obj):
+    if isinstance(obj, Decimal):
+        return str(obj)
+    raise TypeError("Object of type '%s' is not JSON serializable" % type(obj)._name_)
 
 @require_POST
 @login_required
@@ -142,3 +139,5 @@ def add_to_cart(request, product_id):
         }
     request.session['cart'] = cart
     return redirect('cart')
+
+

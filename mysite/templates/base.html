@@ -20,24 +20,101 @@
             position: absolute;
             top: 0;
             right: 0px;
-            width: 20em;
-            height: 66em;
-            background-color: white;
+            width: 16em;
+            height: 46.5em;
+            background-color: #F4F4F4;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
             transition: right 0.3s ease-in-out;
             overflow-y: scroll;
             z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2em;
+            text-align: center;
         }
 
-        #info-panel.show {
-            right: 0;
+        #info-panel button {
+            top: 1em;
+            right: 1em;
+            font-size: 1.5em;
+            background-color: #ebad8d;
+            border: solid;
+            cursor: pointer;
+        }
+
+        #info-panel button #close-panel-button{
+            top: 1em;
+            right: 1em;
+            font-size: 1.5em;
+            background-color: #ebad8d;
+            border: solid;
+            cursor: pointer;
+        }
+
+        #info-panel h3 {
+            margin: 0 0 1em;
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #333333;
+        }
+
+        #info-panel h4 {
+            margin: 0 0 1em;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333333;
+        }
+
+        #info-panel p {
+            margin: 1em 0;
+            font-size: 1.2em;
+            line-height: 1.5;
+            color: #666666;
+        }
+
+        #info-panel ul {
+            margin: 1em 0;
+            padding: 0;
+            list-style: none;
+            font-size: 1.2em;
+        }
+
+        #info-panel li {
+            margin: 0.5em 0;
+            color: #666666;
+        }
+
+        #add-to-cart-btn {
+            margin-top: 2em;
+            padding: 1em 2em;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease-in-out;
+        }
+
+        #add-to-cart-btn:hover {
+            background-color: #3E8E41;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        #cart {
+            margin-top: 2em;
+            border-top: 1px solid #ccc;
+            padding-top: 1em;
+            color: #666666;
         }
     </style>
 
     <header class="header">
 
         <div class="menu container">
-            <a href="#" class="logo">logo</a>
+            <a href="#" class="logo"><img src="../../static/img/logo3.png"></a>
             <input type="checkbox" id="menu">
             <label for="menu">
                 <img src="../../static/img/menu.png" alt="" class="menu-icono">
@@ -51,9 +128,23 @@
                     <li><a class="nav-link" href="/registro">Registro</a></li>
                     {% if user.is_authenticated %}
                     <li><a class="nav-link" href="/logout">Logout</a></li>
+                    <style>
+                        #botonxd {
+                            display: none;
+                        }
+
+                        #cosa-texto {
+                            color: white;
+                            font-size: 35px;
+                        }
+                    </style>
                     {% else %}
-                    <li><a class="nav-link" href="/login">Login</a></li>
-                    {% endif %}
+
+                    <body>
+                        <li><a class="nav-link" href="/login">Login</a></li>
+
+                        {%endif%}
+
                 </ul>
             </nav>
 
@@ -62,10 +153,25 @@
         <div class="header-content container">
 
             <h1>AgroWeb</h1>
-            <p>LA MEJOR APLICACIÓN PARA LA COMPRA Y VENTA DE PRODUCTOS AGRICOLAS, DIRECTAMENTE CON EL PRODUCTOR Y SIN
-                INTERMEDIARIOS</p>
 
-            <a href="#" class="btn-1">Información</a>
+            {% if user.is_authenticated %}
+            <h2 id="cosa-texto">Bienvenido <span style="color: #ebad8d">{{ user.username }}</span></h2>
+            {% else %}
+            <p id="textazzzo">LA MEJOR APLICACIÓN PARA LA COMPRA Y VENTA DE PRODUCTOS AGRICOLAS, DIRECTAMENTE CON EL
+                PRODUCTOR Y SIN
+                INTERMEDIARIOS</p>
+            {%endif%}
+
+            <a href="/registro" class="btn-1" id="botonxd">Registrate ya</a>
+            <!-- {% if user.is_authenticated %}
+                
+                {% else %}
+                <li><a class="nav-link" href="/login">Login</a></li>
+                <a href="/registro" class="btn-1" style="display: none;">Registrate ya</a>
+                {% endif %} -->
+
+
+
         </div>
     </header>
 

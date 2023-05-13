@@ -4,16 +4,36 @@
 {% if user.is_authenticated %}
 <div></div>
 {% else %}
-<div><a>Logeate para ver todos los puestos y productos</a></div>
+<!-- <div id="info-panel" <style> #info-panel{display: none}</style>></div>  -->
+<div id="msg-login">
+    <style>
+        #msg-login {
+            padding: 50px;
+            font-size: 10px;
+        }
+    </style>
+    <center>
+        <h1>Estas viendo el mapa de la vía Choachi, para visualizar los vendedores y sus productos <a
+                href="/login"></a>inicia sesión en nuestra plataforma</h1>
+
+    </center>
+</div>
+<!-- <script>
+
+    document.getElementById("info-panel").style.display = "none";
+
+    </script> -->
 {% endif %}
+
 <script>
     $(document).ready(function () {
         $.ajax({
             url: "{% url 'mydata' %}",
             method: 'GET',
             success: function (data) {
+                console.log("first data")
                 console.log(data);
-                initMap(data);
+                initMap(data.vendedores);
             }
         });
     });
@@ -27,39 +47,43 @@
             center: { lat: 4.564055528477374, lng: -73.99200191926067 },
             zoom: 13
         });
-        //crear marcador BD django
-        const markers = data?.map((i) => {
+
+        const markers = data?.map((vendedor) => {
             //crear 
             const marker = new google.maps.Marker({
-                position: { lat: parseFloat(i.latitude), lng: parseFloat(i.longitude) },
+                position: { lat: parseFloat(vendedor.fields.latitude), lng: parseFloat(vendedor.fields.longitude) },
                 map: map,
                 icon: '../../static/img/puesto.png'
             })
 
+            var panelProducts = '<div>' +
+                        '<h4>Productos:</h4>' +
+                        '<ul>';
+
+                    vendedor.productos.map(producto => {
+                        panelProducts += '<li>' + producto.fields.nombreProd + '</li>'
+                             + '<li> <strong> Precio </strong>: $' +producto.fields.precio + ' COP </li>'
+                             + '<li> <strong> Descripción </strong>: ' +producto.fields.descripcion + '</li>'
+                    });
+
+                    panelProducts += '</ul></div>' ;
+                       
+
             // Agrega un evento de clic al marcador para mostrar el panel lateral
             marker.addListener('click', function () {
-                const productImageUrl = "{{ producto.imagenProd.url }}";
                 // Muestra el panel lateral
                 document.getElementById("info-panel").style.display = "block";
                 // Muestra la información del marcador en el panel
                 document.getElementById("info-panel").innerHTML =
                     '<button id="close-panel-btn">&times;</button>' +
                     '<div id="info-header">' +
-                    '<h3>' + i.nombreTienda + '</h3>' +
+                    '<h3>' + vendedor.fields.nombreTienda + '</h3>' +
                     '</div>' +
                     '<div id="mapholder">' +
-                    '<p><strong>Teléfono:</strong> ' + i.telefono + '</p>' +
-                    '<p><strong>Horario:</strong> ' + i.horario + '</p>' +
-                    '<p><strong>Vendedor:</strong> ' + i.nombreVendedor + '</p>' +
-                    '<div id="cart-items">' +
-                    '<h4>Productos:</h4>' +
-                    '<ul>';
-                    var infoPanelHTML;
-                    for (const prod of i.productos_venta__nombreProd) {
-                        infoPanelHTML += '<li>' + prod + '</li>';
-                    }
-                    infoPanelHTML += '</ul></div>' +
-                    '<button id="add-to-cart-btn">Agregar producto</button>';
+                    '<p><strong>Teléfono:</strong> ' + vendedor.fields.telefono + '</p>' +
+                    '<p><strong>Horario:</strong> ' + vendedor.fields.horario + '</p>' +
+                    '<p><strong>Vendedor:</strong> ' + vendedor.fields.nombreVendedor + '</p>' +
+                    '<div id="contenedor-productos">'+ panelProducts +'</div>';
 
                 // Agrega un evento de clic al botón de cerrar panel
                 document.getElementById("close-panel-btn").addEventListener("click", function () {
@@ -68,66 +92,29 @@
                 });
 
                 // Implementación del sistema de horarios
-                const openingHours = i.horario.split('-');
+                const openingHours = vendedor.fields.horario.split('-');
                 const openingTime = new Date().setHours(Number.parseInt(openingHours[0].split(':')[0]), Number.parseInt(openingHours[0].split(':')[1]), 0);
                 const closingTime = new Date().setHours(Number.parseInt(openingHours[1].split(':')[0]), Number.parseInt(openingHours[1].split(':')[1]), 0);
 
                 if (new Date().getTime() >= openingTime && new Date().getTime() <= closingTime) {
                     // La tienda está abierta
                     document.getElementById("mapholder").innerHTML +=
-                        '<p><strong>Estado:</strong> Abierto</p>';
+                        '<p><strong>Estado:</strong> Abierto</p>'  +
+                    '<button id="add-to-cart-btn">Agregar producto</button>';
                 } else {
                     // La tienda aún no abre
                     document.getElementById("mapholder").innerHTML +=
                         '<p><strong>Estado:</strong> Cerrado</p>' +
-                        '<p><strong>Horario:</strong> ' + i.horario + '</p>';
-                }
-
-                // Agregar producto a la cesta
-                const addToCartBtn = document.createElement('button');
-                addToCartBtn.innerText = 'Agregar a la cesta';
-                document.getElementById("mapholder").appendChild(addToCartBtn);
-
-                addToCartBtn.addEventListener('click', function () {
-                    const productId = i.id;  // Reemplazar con el ID de tu producto
-                    fetch('/mydata/')
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status === 'ok') {
-                                const productName = i.nombreProducto;
-                                const productPrice = i.precioProducto;
-
-                                const cart = JSON.parse(localStorage.getItem('cart')) || [];
-                                cart.push({ name: productName, price: productPrice });
-                                localStorage.setItem('cart', JSON.stringify(cart));
-
-                                const cartItemHTML = '<p>' + productName + ': $' + productPrice + '</p>';
-                                document.getElementById('cart-items').innerHTML += cartItemHTML;
-                            } else {
-                                alert('Error al agregar el producto al carrito');
-                            }
-                        });
-                });
-
-                // Obtener la cesta del almacenamiento local y mostrarla en el panel lateral
-                const cart = JSON.parse(localStorage.getItem('cart')) || [];
-                if (cart.length > 0) {
-                    const cartItems = cart.map((item) => {
-                        return '<p>' + item.name + ': $' + item.price + '</p>';
-                    });
-                    const cartHTML = '<div id="cart">' +
-                        '<h3>Cesta</h3>' +
-                        cartItems.join('') +
-                        '</div>';
-                    document.getElementById("info-panel").innerHTML += cartHTML;
+                        '<button id="add-to-cart-btn">Agregar producto</button>';
                 }
             });
         });
     }
 
-    window.initMap = initMap;
+    window.initMap=initMap;
 </script>
 <div class="mapholder">
+     
     <!-- Agrega un contenedor para el mapa y el panel -->
     <div style="position: relative; height: 100vh;">
         <!-- Agrega un elemento para el mapa -->
@@ -135,9 +122,14 @@
         <!-- Agrega el panel lateral de información -->
         <div id="info-panel">
             <img id="imagenProd" src="" alt="">
+            <h5>Medios de pago:</h5>
+            <a href="https://www.nequi.com"><img src="img\zanahoria.jpg"></a>
         </div>
     </div>
-    <div id="map"></div>
+    <!-- <div id="map"></div> -->
+
+        
+
     <script src="https://maps.googleapis.com/maps/api/js?key={{key}}&callback=initMap&v=weekly" defer></script>
 </div>
 {% endblock %}
