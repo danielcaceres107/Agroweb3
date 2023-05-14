@@ -102,6 +102,7 @@ def mydata(request):
                     'nombreProd': producto.nombreProd,
                     'precio': str(producto.precioProd),  # Convertir el decimal a una cadena de caracteres
                     'descripcion': producto.descripcionProd,
+                    'imagenProdUrl': request.build_absolute_uri('/static' + producto.imagenProd.url)
                 }
             })
         vendedor_data['productos'] = productos

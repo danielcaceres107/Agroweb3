@@ -57,17 +57,20 @@
             })
 
             var panelProducts = '<div>' +
-                        '<h4>Productos:</h4>' +
-                        '<ul>';
+                '<h4>Productos:</h4>' +
+                '<ul>';
 
-                    vendedor.productos.map(producto => {
-                        panelProducts += '<li>' + producto.fields.nombreProd + '</li>'
-                             + '<li> <strong> Precio </strong>: $' +producto.fields.precio + ' COP </li>'
-                             + '<li> <strong> Descripción </strong>: ' +producto.fields.descripcion + '</li>'
-                    });
+            vendedor.productos.map(producto => {
+                console.log(producto.fields.imagenProdUrl)
+                panelProducts += '<li>' + producto.fields.nombreProd + '</li>'
+                    + '<li> <img src= "' + producto.fields.imagenProdUrl + '" alt = "' + producto.fields.nombreProd + '" width="120" height="160"> </li>' +
+                    + '<li> <strong> Precio :</strong> ' + producto.fields.precio + ' COP </li>'
+                    + '<li> <strong> Descripción :</strong> ' + producto.fields.descripcion + '</li>'
+                    + '<li>' + '<button id="add-to-cart-btn">Agregar producto</button>' + '</li>'
+            });
 
-                    panelProducts += '</ul></div>' ;
-                       
+            panelProducts += '</ul></div>';
+
 
             // Agrega un evento de clic al marcador para mostrar el panel lateral
             marker.addListener('click', function () {
@@ -83,7 +86,7 @@
                     '<p><strong>Teléfono:</strong> ' + vendedor.fields.telefono + '</p>' +
                     '<p><strong>Horario:</strong> ' + vendedor.fields.horario + '</p>' +
                     '<p><strong>Vendedor:</strong> ' + vendedor.fields.nombreVendedor + '</p>' +
-                    '<div id="contenedor-productos">'+ panelProducts +'</div>';
+                    '<div id="contenedor-productos">' + panelProducts + '</div>';
 
                 // Agrega un evento de clic al botón de cerrar panel
                 document.getElementById("close-panel-btn").addEventListener("click", function () {
@@ -99,22 +102,20 @@
                 if (new Date().getTime() >= openingTime && new Date().getTime() <= closingTime) {
                     // La tienda está abierta
                     document.getElementById("mapholder").innerHTML +=
-                        '<p><strong>Estado:</strong> Abierto</p>'  +
-                    '<button id="add-to-cart-btn">Agregar producto</button>';
+                        '<p><strong>Estado:</strong> Abierto</p>'
                 } else {
                     // La tienda aún no abre
                     document.getElementById("mapholder").innerHTML +=
-                        '<p><strong>Estado:</strong> Cerrado</p>' +
-                        '<button id="add-to-cart-btn">Agregar producto</button>';
+                        '<p style="color:red;"><strong>Estado:</strong> Cerrado</p>'
                 }
             });
         });
     }
 
-    window.initMap=initMap;
+    window.initMap = initMap;
 </script>
 <div class="mapholder">
-     
+
     <!-- Agrega un contenedor para el mapa y el panel -->
     <div style="position: relative; height: 100vh;">
         <!-- Agrega un elemento para el mapa -->
@@ -128,7 +129,7 @@
     </div>
     <!-- <div id="map"></div> -->
 
-        
+
 
     <script src="https://maps.googleapis.com/maps/api/js?key={{key}}&callback=initMap&v=weekly" defer></script>
 </div>
