@@ -62,11 +62,11 @@
 
             vendedor.productos.map(producto => {
                 console.log(producto.fields.imagenProdUrl)
-                panelProducts += '<li>' + producto.fields.nombreProd + '</li>'
+                panelProducts += '<li><h3>' + producto.fields.nombreProd + '</h3></li>'
                     + '<li> <img src= "' + producto.fields.imagenProdUrl + '" alt = "' + producto.fields.nombreProd + '" width="120" height="160"> </li>' +
-                    + '<li> <strong> Precio :</strong> ' + producto.fields.precio + ' COP </li>'
-                    + '<li> <strong> Descripción :</strong> ' + producto.fields.descripcion + '</li>'
-                    + '<li>' + '<button id="add-to-cart-btn">Agregar producto</button>' + '</li>'
+                    + '<li> <strong> Precio : $</strong> ' + producto.fields.precio + ' COP </li>'
+                    + '<li> <strong> <h4> Descripción: </h4> </strong> <p style="text-align: justify">' + producto.fields.descripcion + '</p> </li>'
+                    + '<li>' + '<button id="add-to-cart-btn">Agregar producto</button>' + '</li> <br> <hr>'
             });
 
             panelProducts += '</ul></div>';
@@ -78,15 +78,19 @@
                 document.getElementById("info-panel").style.display = "block";
                 // Muestra la información del marcador en el panel
                 document.getElementById("info-panel").innerHTML =
-                    '<button id="close-panel-btn">&times;</button>' +
+                    '<button id="close-panel-btn" font-size="large">&times;</button>' +
                     '<div id="info-header">' +
                     '<h3>' + vendedor.fields.nombreTienda + '</h3>' +
-                    '</div>' +
+                    '</div>' + 
+                    '<div id="estado-tienda"> ' + '</div> <hr>' +
                     '<div id="mapholder">' +
                     '<p><strong>Teléfono:</strong> ' + vendedor.fields.telefono + '</p>' +
                     '<p><strong>Horario:</strong> ' + vendedor.fields.horario + '</p>' +
-                    '<p><strong>Vendedor:</strong> ' + vendedor.fields.nombreVendedor + '</p>' +
-                    '<div id="contenedor-productos">' + panelProducts + '</div>';
+                    '<p><strong>Vendedor:</strong> ' + vendedor.fields.nombreVendedor + '</p> <hr>' +
+                    '<div id="contenedor-productos">' + panelProducts + '</div>' +
+                    '<h5>Medios de pago:</h5>' +
+                    '<div id="pagos"> <a href="https://www.nequi.com.co" target="_blank"><img src="/static/img/nequi-logo.png" width="70px"/></a>' + 
+                    '<a href="#" alt="Comunicarse directamente con el vendedor"><img src="/static/img/efectivo.png" width="70px height="70px"/></a> </div>';
 
                 // Agrega un evento de clic al botón de cerrar panel
                 document.getElementById("close-panel-btn").addEventListener("click", function () {
@@ -101,12 +105,12 @@
 
                 if (new Date().getTime() >= openingTime && new Date().getTime() <= closingTime) {
                     // La tienda está abierta
-                    document.getElementById("mapholder").innerHTML +=
-                        '<p><strong>Estado:</strong> Abierto</p>'
+                    document.getElementById("estado-tienda").innerHTML +=
+                        '<p style="color:green" font-size="30px"><strong> Abierto</strong></p>'
                 } else {
                     // La tienda aún no abre
-                    document.getElementById("mapholder").innerHTML +=
-                        '<p style="color:red;"><strong>Estado:</strong> Cerrado</p>'
+                    document.getElementById("estado-tienda").innerHTML +=
+                        '<p style="color:red;" font-size="30px"> <strong> Cerrado</strong></p>'
                 }
             });
         });
@@ -114,6 +118,7 @@
 
     window.initMap = initMap;
 </script>
+
 <div class="mapholder">
 
     <!-- Agrega un contenedor para el mapa y el panel -->
@@ -123,8 +128,6 @@
         <!-- Agrega el panel lateral de información -->
         <div id="info-panel">
             <img id="imagenProd" src="" alt="">
-            <h5>Medios de pago:</h5>
-            <a href="https://www.nequi.com"><img src="img\zanahoria.jpg"></a>
         </div>
     </div>
     <!-- <div id="map"></div> -->
