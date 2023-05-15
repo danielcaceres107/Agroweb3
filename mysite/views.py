@@ -14,14 +14,12 @@ import json
 from .forms import RegistroForm
 from decimal import Decimal
 from django.core.serializers.json import DjangoJSONEncoder
+from django.contrib.auth.models import Group
 
 # Create your views here.
 
-
 def index(request):
     return HttpResponse(render(request, 'index.html'))
-
-
 
 def mapa(request):
     key = settings.GOOGLE_MAPS_API_KEY
@@ -29,7 +27,6 @@ def mapa(request):
         'key': key,
     }
     return render(request, 'mapa.html', context)
-
 
 def ingreso(request):
     if request.method == 'GET':
@@ -42,7 +39,6 @@ def ingreso(request):
         else:
             return render(request, 'login.html', {"form": AuthenticationForm, "error": "Username or password is incorrect."})
 
-
 def registro(request):
     if request.method == 'GET':
         return render(request, 'registro.html', {
@@ -53,6 +49,15 @@ def registro(request):
             try:
                 user = User.objects.create_user(username=request.POST['username'], password=request.POST['password1'])
                 user.save()
+
+                # Agregar usuario al grupo correspondiente según su rol
+                if request.POST['rol'] == 'vendedor':
+                    group = Group.objects.get(name='vendedor')
+                    user.groups.add(group)
+                elif request.POST['rol'] == 'comprador':
+                    group = Group.objects.get(name='comprador')
+                    user.groups.add(group)
+
                 login(request, user)
                 print('usuario creado satisfactoriamente')
                 return redirect('index')
@@ -64,7 +69,6 @@ def registro(request):
             "error": 'Contraseñas no coinciden'
             })
 
-
 @login_required
 def signout(request):
     logout(request)
@@ -72,8 +76,10 @@ def signout(request):
 
 @login_required
 def mydata(request):
-    # Obtener todos los vendedores
-    vendedores = DimVendedores.objects.prefetch_related('productos_venta')
+    if request.user.is_superuser:
+        vendedores = DimVendedores.objects.all()
+    else:
+        vendedores = DimVendedores.objects.filter(user=request.user)
 
     # Crear una lista de diccionarios para almacenar la información de cada vendedor y sus productos
     data = []
@@ -124,21 +130,3 @@ def decimal_default(obj):
     if isinstance(obj, Decimal):
         return str(obj)
     raise TypeError("Object of type '%s' is not JSON serializable" % type(obj)._name_)
-
-@require_POST
-@login_required
-def add_to_cart(request, product_id):
-    product = DimProducts.objects.get(id=product_id)
-    cart = request.session.get('cart', {})
-    if str(product_id) in cart:
-        cart[str(product_id)]['quantity'] += 1
-    else:
-        cart[str(product_id)] = {
-            'name': product.nombreProd,
-            'price': str(product.precioProd),
-            'quantity': 1,
-        }
-    request.session['cart'] = cart
-    return redirect('cart')
-
-
