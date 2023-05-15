@@ -171,16 +171,13 @@
         <div class="header-content container">
 
             <h1>AgroWeb</h1>
-
             {% if user.is_authenticated %}
-            <h2 id="cosa-texto">Bienvenido <span style="color: #ebad8d">{{ user.username }}</span></h2>
+            <h2 id="cosa-texto">Bienvenido <span style="color: #ebad8d">{{ user.username }}</span>, eres un {{  user.group }}</h2>
             {% else %}
             <p id="textazzzo">LA MEJOR APLICACIÓN PARA LA COMPRA Y VENTA DE PRODUCTOS AGRICOLAS, DIRECTAMENTE CON EL
                 PRODUCTOR Y SIN
                 INTERMEDIARIOS</p>
             {%endif%}
-
-            <a href="/registro" class="btn-1" id="botonxd">Registrate ya</a>
             <!-- {% if user.is_authenticated %}
                 
                 {% else %}
