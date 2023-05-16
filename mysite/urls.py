@@ -26,4 +26,6 @@ urlpatterns = [
     path('mapa/', views.mapa, name="mapa"),
     path('mydata/',views.mydata, name="mydata"),
     path('logout/', views.signout, name='logout'),
+    path('registroCliente/', views.registroCliente, name= 'registroCliente'),
+    path('registroVendedor/', views.registroVendedor, name= 'registroVendedor')
 ]

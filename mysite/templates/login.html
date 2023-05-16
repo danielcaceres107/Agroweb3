@@ -81,12 +81,6 @@
 <form method="POST" class="login-form">
     {% csrf_token %}
     {{ form.as_p }}
-    <label for="id_rol">Rol:</label>
-    <select name="rol" id="id_rol">
-      <option value="comprador">Comprador</option>
-      <option value="vendedor">Vendedor</option>
-      <option value="superusuario">Superusuario</option>
-    </select>
     <strong><button type="submit" style="background-color: #ebad8d">Iniciar sesión</button></strong>
   </form>
   <p>{{ error }}</p>

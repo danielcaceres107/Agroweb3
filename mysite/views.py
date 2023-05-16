@@ -11,7 +11,7 @@ from django.db import IntegrityError
 from django.views.decorators.http import require_POST
 from django.core import serializers
 import json
-from .forms import RegistroForm
+from .forms import RegistroVendedorForm
 from decimal import Decimal
 from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.models import Group
@@ -42,7 +42,7 @@ def ingreso(request):
 def registro(request):
     if request.method == 'GET':
         return render(request, 'registro.html', {
-            'register': RegistroForm() # utiliza la instancia del formulario personalizado
+            'register': RegistroVendedorForm() # utiliza la instancia del formulario personalizado
         })
     else:
         if request.POST['password1'] == request.POST['password2']:
@@ -62,10 +62,10 @@ def registro(request):
                 print('usuario creado satisfactoriamente')
                 return redirect('index')
             except IntegrityError:
-                return render(request, 'registro.html', {"register": RegistroForm(), "error": "Username already exists."})
+                return render(request, 'registro.html', {"register": RegistroVendedorForm(), "error": "Username already exists."})
         else:
             return render(request, 'registro.html', {
-            'register': RegistroForm(),
+            'register': RegistroVendedorForm(),
             "error": 'Contraseñas no coinciden'
             })
 
@@ -76,10 +76,8 @@ def signout(request):
 
 @login_required
 def mydata(request):
-    if request.user.is_superuser:
-        vendedores = DimVendedores.objects.all()
-    else:
-        vendedores = DimVendedores.objects.filter(user=request.user)
+    
+    vendedores = DimVendedores.objects.all()
 
     # Crear una lista de diccionarios para almacenar la información de cada vendedor y sus productos
     data = []
@@ -100,7 +98,7 @@ def mydata(request):
         }
         # Obtener los productos de cada vendedor y agregarlos al diccionario
         productos = []
-        for producto in vendedor.productos_venta.all():
+        for producto in vendedor.productos.all():
             productos.append({
                 'model': 'miapp.dimproductos',
                 'pk': producto.id,
@@ -128,5 +126,57 @@ def mydata(request):
 # Función para convertir los objetos Decimal en una representación serializable
 def decimal_default(obj):
     if isinstance(obj, Decimal):
-        return str(obj)
+        return float(obj)
     raise TypeError("Object of type '%s' is not JSON serializable" % type(obj)._name_)
+
+def registroVendedor(request):
+    if request.method == 'GET':
+        return render(request, 'registroVendedor.html', {
+            'register': RegistroVendedorForm() # utiliza la instancia del formulario personalizado
+        })
+    else:
+        if request.POST['password1'] == request.POST['password2']:
+            try:
+                user = User.objects.create_user(username=request.POST['username'], password=request.POST['password1'])
+                user.save()
+
+                # Agregar usuario al grupo correspondiente según su rol
+                if request.POST['rol'] == 'vendedor':
+                    group = Group.objects.get(name='vendedor')
+                    user.groups.add(group)
+                elif request.POST['rol'] == 'comprador':
+                    group = Group.objects.get(name='comprador')
+                    user.groups.add(group)
+
+                login(request, user)
+                print('usuario creado satisfactoriamente')
+                return redirect('index')
+            except IntegrityError:
+                return render(request, 'registro.html', {"register": RegistroVendedorForm(), "error": "Username already exists."})
+        else:
+            return render(request, 'registroVendedor.html', {
+            'register': RegistroVendedorForm(),
+            "error": 'Contraseñas no coinciden'
+            })
+
+def registroCliente(request):
+    if request.method == 'GET':
+        return render(request, 'registroCliente.html', {
+            'register': RegistroVendedorForm() # utiliza la instancia del formulario personalizado
+        })
+    else:
+        if request.POST['password1'] == request.POST['password2']:
+            try:
+                user = User.objects.create_user(username=request.POST['username'], password=request.POST['password1'])
+                user.save()
+
+                login(request, user)
+                print('usuario creado satisfactoriamente')
+                return redirect('index')
+            except IntegrityError:
+                return render(request, 'registroCliente.html', {"register": RegistroVendedorForm(), "error": "Username already exists."})
+        else:
+            return render(request, 'registroCliente.html', {
+            'register': RegistroVendedorForm(),
+            "error": 'Contraseñas no coinciden'
+            })
