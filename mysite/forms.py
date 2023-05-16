@@ -6,8 +6,8 @@ from .models import DimVendedores, DimProducts
 
 class RegistroVendedorForm(forms.ModelForm):
     username = forms.CharField(label="Nombre de usuario")
-    password1 = forms.CharField(label="Contraseña")
-    password2 = forms.CharField(label="Confirmación de contraseña")
+    password1 = forms.CharField(widget=forms.PasswordInput, label="Contraseña")
+    password2 = forms.CharField(widget=forms.PasswordInput, label="Confirmación de contraseña")
     nombreTienda = forms.CharField(label="Nombre de la tienda")
     telefono = forms.CharField(label="Telefono")
     latitude = forms.CharField(label="Latitud")
