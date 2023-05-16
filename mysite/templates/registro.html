@@ -2,17 +2,73 @@
 {% block content %}
 <style>
     .elegir-registro {
-        width: 40%;
+        width: 100%;
         height: 40%;
         display: flex;
+        justify-content: space-evenly;
+        padding: 5%;
+    }
+
+    .elegir-registro button {
+        font-size: 1.5em;
+        background-color: #ebad8d;
+        border: solid;
+        cursor: pointer;
+        font-family: Poppins, sans-serif;
+        width: 300px;
+        height: 300px;
+        display: flex;
+        flex-direction: column;
         align-items: center;
-        justify-content: space-between;
+        justify-content: center;
+        font-weight: 800;
+    }
+
+    .elegir-registro button img {
+        margin-bottom: 10px;
+    }
+
+    h3{
+        font-size: 35px;
+        margin: 5px;
+        
+    }
+    a {
+    text-decoration: none;
+
+    }
+
+    .elegir-registro button:hover {
+        background-color: #3E8E41;
+    }
+
+    @media screen and (max-width: 319px) {
+        .elegir-registro{
+            display: flex;
+            flex-direction: column;
+        }
+        .elegir-registro button{
+            width: 230px;
+            height: 165px;
+        }
     }
 
 </style>
+<br>
+<center><h3>Bienvenido, para empezar puedes registrarte como....</h3></center>
 <div class="elegir-registro">
-    <button><a href="/registroVendedor">Registrarse como Vendedor</a></button>
-    <button><a href="/registroCliente">Registrarse como Cliente</a></button>
+    <a href="/registroVendedor">
+        <button>
+            <img src="../../static/img/vendedor.png" alt="Vendedor">
+            <span>Vendedor</span>
+        </button>
+    </a>
+    <a href="/registroCliente">
+        <button>
+            <img src="../../static/img/Comprador.png" alt="Comprador">
+            <span>Comprador</span>      
+        </button>
+    </a>
 </div>
 
 {{ error }}

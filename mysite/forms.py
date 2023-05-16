@@ -8,11 +8,11 @@ class RegistroVendedorForm(forms.ModelForm):
     username = forms.CharField(label="Nombre de usuario")
     password1 = forms.CharField(label="Contraseña")
     password2 = forms.CharField(label="Confirmación de contraseña")
-    nombreTienda = forms.CharField(label="Nombre de la Tienda")
+    nombreTienda = forms.CharField(label="Nombre de la tienda")
     telefono = forms.CharField(label="Telefono")
-    latitude = forms.CharField(label="ubicacion de la tienda: latitud")
-    longitude = forms.CharField(label="ubicacion de la tienda: longitud")
-    horario = forms.CharField(label="Horario")
+    latitude = forms.CharField(label="Latitud")
+    longitude = forms.CharField(label="Longitud")
+    horario = forms.CharField(label="Horario de la tienda")
     productos = forms.ModelMultipleChoiceField(queryset=DimProducts.objects.all(), widget=forms.SelectMultiple)
 
     class Meta:
