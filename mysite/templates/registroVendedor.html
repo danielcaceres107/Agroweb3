@@ -70,27 +70,31 @@
         font-size: 20px;
         padding: 10px;
     }    
+    .password-field input[type="password"] {
+        -webkit-text-security: disc;
+        -moz-text-security: disc;
+        -ms-text-security: disc;
+    }
 </style>
 
 <form action="/registro/" method="POST">
     {% csrf_token %}
     {{ register.username.label_tag }} <input type="text" name="{{ register.username.name }}"
+    <div class="password-field">
     {{ register.password1.label_tag }} <input type="password" name="{{ register.password1.name }}"
     {{ register.password2.label_tag }} <input type="password" name="{{ register.password2.name }}"
+    </div>
     {{ register.nombreTienda.label_tag }} <input type="text" name="{{ register.nombreTienda.name }}"
     {{ register.telefono.label_tag }} <input type="text" name="{{ register.telefono.name }}"
     {{ register.horario.label_tag }} <input type="text" name="{{ register.horario.name }}"
         placeholder="Formato ej: [6:00-22:00] 24h">
-    
     <br>
     <h5>Ubicacion exacta de la tienda</h5>
-    {{ register.latitude.label_tag }} <input type="text" name="{{ register.latitude.name }}"
+    {{ register.latitude.label_tag }} <input type="text" id="id_latitude" name="{{ register.latitude.name }}"
         placeholder="Asegurese de ingresar la latidud correcta">
-    {{ register.longitude.label_tag }} <input type="text" name="{{ register.longitude.name }}"
+    {{ register.longitude.label_tag }} <input type="text" id="id_longitude" name="{{ register.longitude.name }}"
         placeholder="Asegurese de ingresar la longitud correcta">
     <br>
-    
-
 
     <div class=" fieldWrapper">
     {{ register.productos.errors }}
@@ -99,6 +103,15 @@
     </div>
     <strong><button type="submit" style="background-color: #ebad8d">Registrarse</button></strong>
 </form>
+
+<script>
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(function (position) {
+            document.getElementById("id_latitude").value = position.coords.latitude;
+            document.getElementById("id_longitude").value = position.coords.longitude;
+        });
+    }
+</script>
 
 <div id="espacio"></div>
 
