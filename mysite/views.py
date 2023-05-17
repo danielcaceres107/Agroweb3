@@ -130,7 +130,8 @@ def registroVendedor(request):
 
                 # Crear un nuevo registro en la tabla DimVendedores
                 vendedor = DimVendedores(
-                    nombreVendedor=request.POST['username'],
+                    nombreVendedor=request.POST['nombreVendedor'],
+                    cedula=request.POST['cedula'],
                     nombreTienda=request.POST['nombreTienda'],
                     telefono=request.POST['telefono'],
                     latitude=request.POST['latitude'],
@@ -183,7 +184,7 @@ def registroCliente(request):
                 )
                 print(cliente)
                 cliente.save()
-                
+
                 # Autenticar y realizar el inicio de sesión con el backend predeterminado
                 user = authenticate(
                     request, username=request.POST['username'], password=request.POST['password1'])

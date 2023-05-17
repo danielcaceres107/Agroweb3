@@ -6,6 +6,8 @@ from .models import DimVendedores, DimProducts, DimClientes
 
 class RegistroVendedorForm(forms.ModelForm):
     username = forms.CharField(label="Nombre de usuario")
+    nombreVendedor = forms.CharField(label="Nombre Vendedor")
+    cedula = forms.CharField(label="Cedula")
     password1 = forms.CharField(widget=forms.PasswordInput, label="Contraseña")
     password2 = forms.CharField(widget=forms.PasswordInput, label="Confirmación de contraseña")
     nombreTienda = forms.CharField(label="Nombre de la tienda")
@@ -17,7 +19,7 @@ class RegistroVendedorForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('username', 'password1', 'password2', 'nombreTienda', 'telefono', 'latitude', 'longitude', 'horario', 'productos')
+        fields = ('username', 'nombreVendedor', 'cedula', 'password1', 'password2', 'nombreTienda', 'telefono', 'latitude', 'longitude', 'horario', 'productos')
 
 class RegistroClientesForm(forms.ModelForm):
     nombreCliente = forms.CharField(label="Nombre del cliente")

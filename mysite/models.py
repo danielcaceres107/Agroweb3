@@ -15,7 +15,7 @@ class DimProducts(models.Model):
 class DimVendedores(models.Model):
     nombreVendedor = models.CharField(max_length=200, unique=True)
     nombreTienda = models.CharField(max_length=200,blank=True, null=True)
-    password = models.BinaryField()
+    cedula = models.CharField(max_length=20)
     telefono = models.CharField(max_length=200,blank=True, null=True)
     latitude = models.CharField(max_length=200,blank=True, null=True)
     longitude = models.CharField(max_length=200,blank=True, null=True)
@@ -31,5 +31,7 @@ class DimVendedores(models.Model):
 class DimClientes(models.Model):
     nombreCliente = models.CharField(max_length=200, unique=True)
     usuarioCliente = models.CharField(max_length=200, unique=True)
-    passwordCliente = models.BinaryField()
     correo = models.CharField(max_length=200, unique=True)
+
+    def __str__(self):
+        return self.nombreCliente
