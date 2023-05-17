@@ -15,6 +15,8 @@ from .forms import RegistroVendedorForm
 from decimal import Decimal
 from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.models import Group
+from django.shortcuts import render, redirect
+from .forms import EditarPerfilForm
 
 # Create your views here.
 
@@ -183,3 +185,14 @@ def registroCliente(request):
                 'register': RegistroVendedorForm(),
                 "error": 'Contraseñas no coinciden'
             })
+        
+
+def editar_perfil(request):
+    if request.method == 'POST':
+        form = EditarPerfilForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('perfil')  # Redirigir a la página del perfil actualizado
+    else:
+        form = EditarPerfilForm(instance=request.user)
+    return render(request, 'perfil.html', {'form': form})

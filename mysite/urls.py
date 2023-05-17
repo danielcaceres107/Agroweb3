@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from . import views
+from .views import editar_perfil
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,5 +28,6 @@ urlpatterns = [
     path('mydata/',views.mydata, name="mydata"),
     path('logout/', views.signout, name='logout'),
     path('registroCliente/', views.registroCliente, name= 'registroCliente'),
-    path('registroVendedor/', views.registroVendedor, name= 'registroVendedor')
+    path('registroVendedor/', views.registroVendedor, name= 'registroVendedor'),
+    path('perfil/', editar_perfil, name='perfil')
 ]

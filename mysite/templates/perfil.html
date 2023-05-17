@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 30px auto;
+        max-width: 400px;
+        padding: 20px;
+        border: 2px solid #ccc;
+        border-radius: 10px;
+    }
+
+    /* Estilo para los campos del formulario */
+    input {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        border: none;
+        background-color: #f2f2f2;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Estilo para el botón */
+    button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px;
+        margin-top: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    /* Estilo para el mensaje de error */
+    #error {
+        color: red;
+        font-size: 14px;
+        margin-top: 10px;
+    }
+
+    /* Estilo para el campo de confirmación de contraseña */
+    #id_password2 {
+        width: 100%;
+    }
+
+    #espacio {
+        height: 50px;
+    }
+
+    .pantalla-perfil {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 40%;
+    border: solid;
+    padding: 5%;
+    margin: 3%;
+    margin: 0 auto; 
+    margin-top: 50px; 
+    justify-content: center; 
+}
+
+    .perfil-info{
+        justify-content: center;
+    }
+
+
+
+</style>
+<div class="pantalla-perfil">
+<div class="perfil-info">
+    <h2>Mi perfil</h2>
+    <p><strong>Nombre de usuario:</strong> {{ user.username }}</p>
+    <p><strong>Nombre de la tienda:</strong> {{ user.nombreTienda }}</p>
+    <p><strong>Teléfono:</strong> {{ user.telefono }}</p>
+    <p><strong>Latitud:</strong> {{ user.latitude }}</p>
+    <p><strong>Longitud:</strong> {{ user.longitude }}</p>
+    <p><strong>Horario de la tienda:</strong> {{ user.horario }}</p>
+    <button type="button" onclick="editProfile()">Editar perfil</button>
+</div>
+</div>
+
+
+<script>
+    function editProfile() {
+        // Redirige al usuario a la página de edición de perfil
+        window.location.href = "/editar-perfil/";
+    }
+</script>
+
+<div id="espacio"></div>
+{% endblock %}

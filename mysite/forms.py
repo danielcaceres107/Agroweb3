@@ -18,3 +18,17 @@ class RegistroVendedorForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ('username', 'password1', 'password2', 'nombreTienda', 'telefono', 'latitude', 'longitude', 'horario', 'productos')
+
+
+class EditarPerfilForm(forms.ModelForm):
+    username = forms.CharField(label="Nombre de usuario")
+    nombreTienda = forms.CharField(label="Nombre de la tienda")
+    telefono = forms.CharField(label="Teléfono")
+    latitude = forms.CharField(label="Latitud")
+    longitude = forms.CharField(label="Longitud")
+    horario = forms.CharField(label="Horario de la tienda")
+    productos = forms.ModelMultipleChoiceField(queryset=DimProducts.objects.all(), widget=forms.SelectMultiple)
+
+    class Meta:
+        model = User
+        fields = ('username', 'nombreTienda', 'telefono', 'latitude', 'longitude', 'horario', 'productos')
