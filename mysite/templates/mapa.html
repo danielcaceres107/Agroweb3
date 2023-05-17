@@ -31,7 +31,6 @@
             url: "{% url 'mydata' %}",
             method: 'GET',
             success: function (data) {
-                console.log("first data")
                 console.log(data);
                 initMap(data.vendedores);
             }
@@ -63,7 +62,7 @@
             vendedor.productos.map(producto => {
                 panelProducts += '<li><h3>' + producto.fields.nombreProd + '</h3></li>'
                     + '<li> <img src= "' + producto.fields.imagenProdUrl + '" alt = "' + producto.fields.nombreProd + '" width="120" height="160"> </li>' 
-                    + '<li> <div id="preciooo"> $' + producto.fields.precio + ' COP </div></li>'
+                    + '<li> <div id="precio"> $' + producto.fields.precio + ' COP </div></li>'
                     + '<li> <p style="text-align: justify">' + producto.fields.descripcion + '</p> </li>'
                     + '<li>' + '<button id="add-to-cart-btn">Agregar producto</button>' + '</li> <br> <hr>'
             });
@@ -89,7 +88,7 @@
                     '<div id="contenedor-productos">' + panelProducts + '</div>' +
                     '<h5>Medios de pago:</h5>' +
                     '<div id="pagos"> <a href="https://transacciones.nequi.com/bdigital/login.jsp" target="_blank"><img src="/static/img/nequi-logo.png" width="70px"/></a>' + 
-                    '<a href="#" alt="Comunicarse directamente con el vendedor"><img src="/static/img/efectivo.png" width="70px height="70px"/></a> </div>';
+                    '<a href="#" alt="Comunicarse directamente con el vendedor"><p>efectivo</p><img src="/static/img/efectivo.png" width="70px height="70px"/></a> </div>';
 
                 // Agrega un evento de clic al botón de cerrar panel
                 document.getElementById("close-panel-btn").addEventListener("click", function () {

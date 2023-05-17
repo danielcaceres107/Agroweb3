@@ -49,13 +49,24 @@
     #espacio {
         height: 50px;
     }
+
+    .password-field input[type="password"] {
+        -webkit-text-security: disc;
+        -moz-text-security: disc;
+        -ms-text-security: disc;
+        align-items: center;
+    }
 </style>
 
-<form action="/registro/" method="POST">
+<form action="/registroCliente/" method="POST">
     {% csrf_token %}
-    {{ register.username.label_tag }} {{ register.username }}
-    {{ register.password1.label_tag }} {{ register.password1 }}
-    {{ register.password2.label_tag }} {{ register.password2 }}
+    {{ register.username.label_tag }} <input type="text" name="{{ register.username.name }}">
+    {{ register.nombreCliente.label_tag }} <input type="text" name="{{ register.nombreCliente.name }}">
+    {{ register.correo.label_tag }} <input type="text" name="{{ register.correo.name }}">
+    <div class="password-field">
+        {{ register.password1.label_tag }} <input type="password" name="{{ register.password1.name }}">
+        {{ register.password2.label_tag }} <input type="password" name="{{ register.password2.name }}">
+    </div>
     <strong><button type="submit" style="background-color: #ebad8d">Registrarse</button></strong>
 </form>
 

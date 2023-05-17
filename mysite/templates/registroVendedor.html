@@ -74,18 +74,19 @@
         -webkit-text-security: disc;
         -moz-text-security: disc;
         -ms-text-security: disc;
+        text-align: center;
     }
 </style>
 
 <form action="/registroVendedor/" method="POST">
     {% csrf_token %}
-    {{ register.username.label_tag }} <input type="text" name="{{ register.username.name }}"
+    {{ register.username.label_tag }} <input type="text" name="{{ register.username.name }}">
     <div class="password-field">
-    {{ register.password1.label_tag }} <input type="password" name="{{ register.password1.name }}"
-    {{ register.password2.label_tag }} <input type="password" name="{{ register.password2.name }}"
+    {{ register.password1.label_tag }} <input type="password" name="{{ register.password1.name }}">
+    {{ register.password2.label_tag }} <input type="password" name="{{ register.password2.name }}">
     </div>
-    {{ register.nombreTienda.label_tag }} <input type="text" name="{{ register.nombreTienda.name }}"
-    {{ register.telefono.label_tag }} <input type="text" name="{{ register.telefono.name }}"
+    {{ register.nombreTienda.label_tag }} <input type="text" name="{{ register.nombreTienda.name }}">
+    {{ register.telefono.label_tag }} <input type="text" name="{{ register.telefono.name }}">
     {{ register.horario.label_tag }} <input type="text" name="{{ register.horario.name }}"
         placeholder="Formato ej: [6:00-22:00] 24h">
     <br>

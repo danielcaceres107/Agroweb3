@@ -1,9 +1,9 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.views import View
 from agroweb import settings
-from .models import DimVendedores, DimProducts
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from .models import DimVendedores, DimClientes
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
@@ -11,7 +11,7 @@ from django.db import IntegrityError
 from django.views.decorators.http import require_POST
 from django.core import serializers
 import json
-from .forms import RegistroVendedorForm
+from .forms import RegistroVendedorForm, RegistroClientesForm
 from decimal import Decimal
 from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.models import Group
@@ -166,7 +166,7 @@ def registroCliente(request):
     if request.method == 'GET':
         return render(request, 'registroCliente.html', {
             # utiliza la instancia del formulario personalizado
-            'register': RegistroVendedorForm()
+            'register': RegistroClientesForm()
         })
     else:
         if request.POST['password1'] == request.POST['password2']:
@@ -175,16 +175,30 @@ def registroCliente(request):
                     username=request.POST['username'], password=request.POST['password1'])
                 user.save()
 
+                # Crear un nuevo registro en la tabla DimClientes
+                cliente = DimClientes(
+                    usuarioCliente=request.POST['username'],
+                    nombreCliente=request.POST['nombreCliente'],
+                    correo=request.POST['correo']
+                )
+                print(cliente)
+                cliente.save()
+                
+                # Autenticar y realizar el inicio de sesión con el backend predeterminado
+                user = authenticate(
+                    request, username=request.POST['username'], password=request.POST['password1'])
                 login(request, user)
+
                 print('usuario creado satisfactoriamente')
-                return redirect('index')
+                return redirect('mapa')
             except IntegrityError:
-                return render(request, 'registroCliente.html', {"register": RegistroVendedorForm(), "error": "Username already exists."})
+                return render(request, 'registroCliente.html', {"register": RegistroClientesForm(), "error": "Username already exists."})
         else:
             return render(request, 'registroCliente.html', {
-                'register': RegistroVendedorForm(),
+                'register': RegistroClientesForm(),
                 "error": 'Contraseñas no coinciden'
             })
+
         
 
 def editar_perfil(request):
