@@ -18,8 +18,10 @@ from django.contrib.auth.models import Group
 
 # Create your views here.
 
+
 def index(request):
     return HttpResponse(render(request, 'index.html'))
+
 
 def mapa(request):
     key = settings.GOOGLE_MAPS_API_KEY
@@ -28,55 +30,33 @@ def mapa(request):
     }
     return render(request, 'mapa.html', context)
 
+
 def ingreso(request):
     if request.method == 'GET':
         return render(request, 'login.html', {"form": AuthenticationForm})
     else:
-        user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
+        user = authenticate(
+            request, username=request.POST['username'], password=request.POST['password'])
         if user is not None:
             login(request, user)
             return redirect('index')
         else:
             return render(request, 'login.html', {"form": AuthenticationForm, "error": "Username or password is incorrect."})
 
+
 def registro(request):
-    if request.method == 'GET':
-        return render(request, 'registro.html', {
-            'register': RegistroVendedorForm() # utiliza la instancia del formulario personalizado
-        })
-    else:
-        if request.POST['password1'] == request.POST['password2']:
-            try:
-                user = User.objects.create_user(username=request.POST['username'], password=request.POST['password1'])
-                user.save()
+    return HttpResponse(render(request, 'registro.html'))
 
-                # Agregar usuario al grupo correspondiente según su rol
-                if request.POST['rol'] == 'vendedor':
-                    group = Group.objects.get(name='vendedor')
-                    user.groups.add(group)
-                elif request.POST['rol'] == 'comprador':
-                    group = Group.objects.get(name='comprador')
-                    user.groups.add(group)
-
-                login(request, user)
-                print('usuario creado satisfactoriamente')
-                return redirect('index')
-            except IntegrityError:
-                return render(request, 'registro.html', {"register": RegistroVendedorForm(), "error": "Username already exists."})
-        else:
-            return render(request, 'registro.html', {
-            'register': RegistroVendedorForm(),
-            "error": 'Contraseñas no coinciden'
-            })
 
 @login_required
 def signout(request):
     logout(request)
     return redirect('index')
 
+
 @login_required
 def mydata(request):
-    
+
     vendedores = DimVendedores.objects.all()
 
     # Crear una lista de diccionarios para almacenar la información de cada vendedor y sus productos
@@ -104,7 +84,8 @@ def mydata(request):
                 'pk': producto.id,
                 'fields': {
                     'nombreProd': producto.nombreProd,
-                    'precio': str(producto.precioProd),  # Convertir el decimal a una cadena de caracteres
+                    # Convertir el decimal a una cadena de caracteres
+                    'precio': str(producto.precioProd),
                     'descripcion': producto.descripcionProd,
                     'imagenProdUrl': request.build_absolute_uri('/static' + producto.imagenProd.url)
                 }
@@ -118,7 +99,8 @@ def mydata(request):
     }
 
     # Convertir el diccionario en un objeto JSON
-    result_json = json.dumps(result_dict, cls=DjangoJSONEncoder, default=decimal_default)
+    result_json = json.dumps(
+        result_dict, cls=DjangoJSONEncoder, default=decimal_default)
 
     return HttpResponse(result_json, content_type='application/json')
 
@@ -127,47 +109,68 @@ def mydata(request):
 def decimal_default(obj):
     if isinstance(obj, Decimal):
         return float(obj)
-    raise TypeError("Object of type '%s' is not JSON serializable" % type(obj)._name_)
+    raise TypeError("Object of type '%s' is not JSON serializable" %
+                    type(obj)._name_)
+
 
 def registroVendedor(request):
     if request.method == 'GET':
         return render(request, 'registroVendedor.html', {
-            'register': RegistroVendedorForm() # utiliza la instancia del formulario personalizado
+            # utiliza la instancia del formulario personalizado
+            'register': RegistroVendedorForm()
         })
     else:
         if request.POST['password1'] == request.POST['password2']:
             try:
-                user = User.objects.create_user(username=request.POST['username'], password=request.POST['password1'])
+                user = User.objects.create_user(
+                    username=request.POST['username'], password=request.POST['password1'])
                 user.save()
 
-                # Agregar usuario al grupo correspondiente según su rol
-                if request.POST['rol'] == 'vendedor':
-                    group = Group.objects.get(name='vendedor')
-                    user.groups.add(group)
-                elif request.POST['rol'] == 'comprador':
-                    group = Group.objects.get(name='comprador')
-                    user.groups.add(group)
+                # Crear un nuevo registro en la tabla DimVendedores
+                vendedor = DimVendedores(
+                    nombreVendedor=request.POST['username'],
+                    nombreTienda=request.POST['nombreTienda'],
+                    telefono=request.POST['telefono'],
+                    latitude=request.POST['latitude'],
+                    longitude=request.POST['longitude'],
+                    horario=request.POST['horario']
+                )
+                print(vendedor)
+                vendedor.save()
 
+                # Obtener los productos seleccionados del formulario
+                productos_seleccionados = request.POST.getlist('productos')
+
+                # Establecer la relación muchos a muchos utilizando el método set()
+                vendedor.productos.set(productos_seleccionados)
+
+                # Autenticar y realizar el inicio de sesión con el backend predeterminado
+                user = authenticate(
+                    request, username=request.POST['username'], password=request.POST['password1'])
                 login(request, user)
+
                 print('usuario creado satisfactoriamente')
-                return redirect('index')
+                return redirect('mapa')
             except IntegrityError:
-                return render(request, 'registro.html', {"register": RegistroVendedorForm(), "error": "Username already exists."})
+                return render(request, 'registroVendedor.html', {"register": RegistroVendedorForm(), "error": "Username already exists."})
         else:
             return render(request, 'registroVendedor.html', {
-            'register': RegistroVendedorForm(),
-            "error": 'Contraseñas no coinciden'
+                'register': RegistroVendedorForm(),
+                "error": 'Contraseñas no coinciden'
             })
+
 
 def registroCliente(request):
     if request.method == 'GET':
         return render(request, 'registroCliente.html', {
-            'register': RegistroVendedorForm() # utiliza la instancia del formulario personalizado
+            # utiliza la instancia del formulario personalizado
+            'register': RegistroVendedorForm()
         })
     else:
         if request.POST['password1'] == request.POST['password2']:
             try:
-                user = User.objects.create_user(username=request.POST['username'], password=request.POST['password1'])
+                user = User.objects.create_user(
+                    username=request.POST['username'], password=request.POST['password1'])
                 user.save()
 
                 login(request, user)
@@ -177,6 +180,6 @@ def registroCliente(request):
                 return render(request, 'registroCliente.html', {"register": RegistroVendedorForm(), "error": "Username already exists."})
         else:
             return render(request, 'registroCliente.html', {
-            'register': RegistroVendedorForm(),
-            "error": 'Contraseñas no coinciden'
+                'register': RegistroVendedorForm(),
+                "error": 'Contraseñas no coinciden'
             })

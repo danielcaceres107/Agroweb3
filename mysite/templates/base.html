@@ -147,8 +147,8 @@
 
                     <li><a class="nav-link active" href="/">Inicio</a></li>
                     <li><a class="nav-link" href="/mapa">Mapa</a></li>
-                    <li><a class="nav-link" href="/registro">Registro</a></li>
                     {% if user.is_authenticated %}
+                    <li><a class="nav-link" href="#">Miperfil</a></li>
                     <li><a class="nav-link" href="/logout">Logout</a></li>
                     <style>
                         #botonxd {
@@ -163,6 +163,7 @@
                     {% else %}
 
                     <body>
+                        <li><a class="nav-link" href="/registro">Registro</a></li>
                         <li><a class="nav-link" href="/login">Login</a></li>
 
                         {%endif%}
@@ -176,7 +177,7 @@
 
             <h1>AgroWeb</h1>
             {% if user.is_authenticated %}
-            <h2 id="cosa-texto">Bienvenido <span style="color: #ebad8d">{{ user.username }}</span>, eres un {{  user.group }}</h2>
+            <h2 id="cosa-texto">Bienvenido <span style="color: #ebad8d">{{ user.username }}</span></h2>
             {% else %}
             <p id="textazzzo">LA MEJOR APLICACIÓN PARA LA COMPRA Y VENTA DE PRODUCTOS AGRICOLAS, DIRECTAMENTE CON EL
                 PRODUCTOR Y SIN

@@ -77,7 +77,7 @@
     }
 </style>
 
-<form action="/registro/" method="POST">
+<form action="/registroVendedor/" method="POST">
     {% csrf_token %}
     {{ register.username.label_tag }} <input type="text" name="{{ register.username.name }}"
     <div class="password-field">

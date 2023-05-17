@@ -28,13 +28,8 @@ class DimVendedores(models.Model):
 
     def __str__(self):
         return self.nombreVendedor
-class DimClientes(User):
+class DimClientes(models.Model):
     nombreCliente = models.CharField(max_length=200, unique=True)
     usuarioCliente = models.CharField(max_length=200, unique=True)
     passwordCliente = models.BinaryField()
     correo = models.CharField(max_length=200, unique=True)
-
-class Superusuarios(User):
-    superUser = models.CharField(max_length=200, unique=True)
-    correo = models.CharField(max_length=200, unique=True)
-    passwordSuper = models.BinaryField()
