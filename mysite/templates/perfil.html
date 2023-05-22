@@ -9,8 +9,6 @@
         margin: 30px auto;
         max-width: 400px;
         padding: 20px;
-        border: 2px solid #ccc;
-        border-radius: 10px;
     }
 
     /* Estilo para los campos del formulario */
@@ -52,43 +50,86 @@
     }
 
     .pantalla-perfil {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 40%;
-    border: solid;
-    padding: 5%;
-    margin: 3%;
-    margin: 0 auto; 
-    margin-top: 50px; 
-    justify-content: center; 
-}
-
-    .perfil-info{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 40%;
+        border: solid;
+        padding: 5%;
+        margin: 3%;
+        margin: 0 auto;
+        margin-top: 50px;
         justify-content: center;
     }
 
-
-
+    .perfil-info {
+        justify-content: center;
+    }
 </style>
 <div class="pantalla-perfil">
-<div class="perfil-info">
-    <h2>Mi perfil</h2>
-    <p><strong>Nombre de usuario:</strong> {{ user.username }}</p>
-    <p><strong>Nombre de la tienda:</strong> {{ user.nombreTienda }}</p>
-    <p><strong>Teléfono:</strong> {{ user.telefono }}</p>
-    <p><strong>Latitud:</strong> {{ user.latitude }}</p>
-    <p><strong>Longitud:</strong> {{ user.longitude }}</p>
-    <p><strong>Horario de la tienda:</strong> {{ user.horario }}</p>
-    <button type="button" onclick="editProfile()">Editar perfil</button>
-</div>
+    <div class="perfil-info">
+        <h2>Mi perfil</h2>
+        {% if user.username == vendedor.usuarioVendedor %}
+        <p><strong>Nombre de usuario:</strong> {{ vendedor.nombreVendedor }}</p>
+        <p><strong>Nombre de la tienda:</strong> {{ vendedor.nombreTienda }}</p>
+        <p><strong>Teléfono:</strong> {{ vendedor.telefono }}</p>
+        <p><strong>Latitud:</strong> {{ vendedor.latitude }}</p>
+        <p><strong>Longitud:</strong> {{ vendedor.longitude }}</p>
+        <p><strong>Horario de la tienda:</strong> {{ vendedor.horario }}</p>
+        <!--<button type="button" onclick="editProfile()">Editar perfil</button>-->
+        <div class="update-ubicacion">
+            <form method="POST">
+                {% csrf_token %}
+    
+                <button type="button" onclick="updateLocation()">Poner tienda en ubicacion actual</button>
+    
+            </form>
+        </div>
+        {% elif user.username == cliente.usuarioCliente %}
+        <p><strong>Nombre de usuario:</strong> {{ cliente.nombreCliente }}</p>
+        <p><strong>Correo:</strong> {{ cliente.correo }}</p>
+        <!--<button type="button" onclick="editProfile()">Editar perfil</button>-->
+        {% else %}
+        <p><strong>No se encontraron datos</strong></p>
+        {% endif %}
+    </div>
 </div>
 
 
 <script>
+    function updateLocation() {
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                var latitude = position.coords.latitude;
+                var longitude = position.coords.longitude;
+
+                // Aquí puedes enviar los valores de latitud y longitud al backend mediante una petición AJAX o realizar cualquier otra acción que desees.
+                // Por ejemplo, puedes enviar los datos a una vista de Django para actualizar la tabla DimVendedores.
+
+                // Ejemplo de petición AJAX utilizando jQuery
+                $.ajax({
+                    url: '/actualizar-ubicacion/',
+                    method: 'POST',
+                    data: {
+                        latitude: latitude,
+                        longitude: longitude
+                    },
+                    success: function (response) {
+                        // Aquí puedes manejar la respuesta del servidor si es necesario
+                        console.log('Ubicación actualizada correctamente');
+                    },
+                    error: function (error) {
+                        // Aquí puedes manejar cualquier error que ocurra durante la petición AJAX
+                        console.error('Error al actualizar la ubicación:', error);
+                    }
+                });
+            });
+        }
+    }
+
     function editProfile() {
         // Redirige al usuario a la página de edición de perfil
-        window.location.href = "/editar-perfil/";
+        window.location.href = "/editarPerfil/";
     }
 </script>
 

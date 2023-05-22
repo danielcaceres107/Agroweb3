@@ -14,6 +14,7 @@ class DimProducts(models.Model):
         return self.nombreProd
 class DimVendedores(models.Model):
     nombreVendedor = models.CharField(max_length=200, unique=True)
+    usuarioVendedor = models.CharField(max_length=200, unique=True)
     nombreTienda = models.CharField(max_length=200,blank=True, null=True)
     cedula = models.CharField(max_length=20)
     telefono = models.CharField(max_length=200,blank=True, null=True)
@@ -21,6 +22,7 @@ class DimVendedores(models.Model):
     longitude = models.CharField(max_length=200,blank=True, null=True)
     horario = models.CharField(max_length=200,blank=True, null=True)
     productos = models.ManyToManyField(DimProducts, related_name='productos_venta')
+
 
     def set_password(self, password):
         """Convierte el password a varbinary(max)"""

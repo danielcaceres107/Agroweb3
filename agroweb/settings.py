@@ -11,6 +11,14 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
+
+# Cargar las variables de entorno desde el archivo .env // el archivo .env no se sube a github
+PRODUCTION_SECRET_KEY= config('PRODUCTION_SECRET_KEY')
+API_KEY = config('API_KEY')
+DB_NAME = config('DB_NAME')
+DB_USER = config('DB_USER')
+DB_PASSWORD = config('DB_PASSWORD')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,10 +28,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-uxs@nh(xwt5+rmx&h&o!t@&zpl)a5d43@=9e=@1m2&j!2)gepc'
+SECRET_KEY = PRODUCTION_SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = []
 
@@ -79,11 +87,11 @@ WSGI_APPLICATION = 'agroweb.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'mssql',
-        'NAME': 'AgrowebDB',
+        'NAME': DB_NAME,
         'HOST': 'agrowebs.database.windows.net',
         'PORT': '',
-        'USER': 'sadecp',
-        'PASSWORD': 'Colombia0707',
+        'USER': DB_USER,
+        'PASSWORD': DB_PASSWORD,
         'OPTIONS': {
             'driver': 'ODBC Driver 18 for SQL Server',
         },
@@ -135,7 +143,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-GOOGLE_MAPS_API_KEY = 'AIzaSyCAIuQhVMvvo7gzO0tfINYI2CaZVnCUsY4'
+GOOGLE_MAPS_API_KEY = API_KEY
 
 BASE_COUNTRY = 'CO'
 

@@ -131,6 +131,7 @@ def registroVendedor(request):
                 # Crear un nuevo registro en la tabla DimVendedores
                 vendedor = DimVendedores(
                     nombreVendedor=request.POST['nombreVendedor'],
+                    usuarioVendedor=request.POST['username'],
                     cedula=request.POST['cedula'],
                     nombreTienda=request.POST['nombreTienda'],
                     telefono=request.POST['telefono'],
@@ -202,12 +203,16 @@ def registroCliente(request):
 
         
 
-def editar_perfil(request):
-    if request.method == 'POST':
-        form = EditarPerfilForm(request.POST, instance=request.user)
-        if form.is_valid():
-            form.save()
-            return redirect('perfil')  # Redirigir a la página del perfil actualizado
-    else:
-        form = EditarPerfilForm(instance=request.user)
-    return render(request, 'perfil.html', {'form': form})
+def perfil(request):
+    if request.user.is_authenticated:
+        try:
+            vendedor = DimVendedores.objects.get(usuarioVendedor=request.user.username)
+            return render(request, 'perfil.html', {'vendedor': vendedor })
+        except DimVendedores.DoesNotExist :
+            try:
+                cliente = DimClientes.objects.get(usuarioCliente=request.user.username)
+                return render(request, 'perfil.html', {'cliente': cliente})
+            except DimClientes.DoesNotExist:
+                return render(request, 'perfil.html', {})
+    else :
+        return render(request, 'perfil.html', {})
