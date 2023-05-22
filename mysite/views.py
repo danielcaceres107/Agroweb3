@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views import View
 from agroweb import settings
 from .models import DimVendedores, DimClientes
@@ -17,6 +17,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.models import Group
 from django.shortcuts import render, redirect
 from .forms import EditarPerfilForm
+from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 
@@ -216,3 +217,26 @@ def perfil(request):
                 return render(request, 'perfil.html', {})
     else :
         return render(request, 'perfil.html', {})
+    
+@csrf_exempt
+def actualizarUbicacion(request):
+    if request.method == 'POST':
+        latitude = request.POST.get('latitude', None)
+        longitude = request.POST.get('longitude', None)
+        print("python")
+        print(latitude)
+        print(longitude)
+        try:
+            vendedor = DimVendedores.objects.get(usuarioVendedor=request.user.username)
+            vendedor.latitude = latitude
+            vendedor.longitude = longitude
+            print(vendedor.latitude)
+            print(vendedor.longitude)
+            print(latitude)
+            print(longitude)
+            vendedor.save()
+            return JsonResponse({'message': 'Ubicación actualizada correctamente.'})
+        except DimVendedores.DoesNotExist:
+            return JsonResponse({'message': 'No se encontró el vendedor.'})
+    else:
+        return JsonResponse({'message': 'Método no permitido.'})

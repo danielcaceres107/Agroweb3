@@ -28,5 +28,6 @@ urlpatterns = [
     path('logout/', views.signout, name='logout'),
     path('registroCliente/', views.registroCliente, name= 'registroCliente'),
     path('registroVendedor/', views.registroVendedor, name= 'registroVendedor'),
-    path('perfil/', views.perfil, name='perfil')
+    path('perfil/', views.perfil, name='perfil'),
+    path('actualizarUbicacion/', views.actualizarUbicacion, name='actualizarUbicacion')
 ]

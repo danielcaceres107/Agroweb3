@@ -80,9 +80,10 @@
         <div class="update-ubicacion">
             <form method="POST">
                 {% csrf_token %}
-    
-                <button type="button" onclick="updateLocation()">Poner tienda en ubicacion actual</button>
-    
+
+                <button type="button" id="ubicacion-actual-btn" onclick="updateLocation()">Poner tienda en ubicacion
+                    actual</button>
+
             </form>
         </div>
         {% elif user.username == cliente.usuarioCliente %}
@@ -98,33 +99,42 @@
 
 <script>
     function updateLocation() {
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(function (position) {
-                var latitude = position.coords.latitude;
-                var longitude = position.coords.longitude;
+        document.getElementById("ubicacion-actual-btn").addEventListener("click", function () {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    var latitude = position.coords.latitude;
+                    var longitude = position.coords.longitude;
+                    console.log("geolocation")
+                    console.log(latitude)
+                    console.log(longitude)
 
-                // Aquí puedes enviar los valores de latitud y longitud al backend mediante una petición AJAX o realizar cualquier otra acción que desees.
-                // Por ejemplo, puedes enviar los datos a una vista de Django para actualizar la tabla DimVendedores.
+                    // Actualizar los campos de latitud y longitud en la tabla DimVendedores
+                    fetch("/actualizarUbicacion/", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                            "X-CSRFToken": "{{ csrf_token }}",
+                        },
+                        body: `latitude=${latitude}&longitude=${longitude}`
 
-                // Ejemplo de petición AJAX utilizando jQuery
-                $.ajax({
-                    url: '/actualizar-ubicacion/',
-                    method: 'POST',
-                    data: {
-                        latitude: latitude,
-                        longitude: longitude
-                    },
-                    success: function (response) {
-                        // Aquí puedes manejar la respuesta del servidor si es necesario
-                        console.log('Ubicación actualizada correctamente');
-                    },
-                    error: function (error) {
-                        // Aquí puedes manejar cualquier error que ocurra durante la petición AJAX
-                        console.error('Error al actualizar la ubicación:', error);
-                    }
+                    }).then(function (response) {
+                        console.log("then")
+                        console.log(latitude)
+                        console.log(longitude)
+                        if (response.ok) {
+                            console.log("actualizacion exitosa, refrescar la pagina")
+                            //location.reload();
+                        } else {
+                            console.log("Error al actualizar la ubicación.");
+                        }
+                    }).catch(function (error) {
+                        console.log("Error al actualizar la ubicación:", error);
+                    });
                 });
-            });
-        }
+            } else {
+                console.log("Geolocalización no compatible en este navegador.");
+            }
+        });
     }
 
     function editProfile() {
