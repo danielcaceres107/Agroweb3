@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Registro exitoso</title>
+</head>
+<body>
+    <h2>¡Registro exitoso!</h2>
+    <p>Hola {{ nombreVendedor }},</p>
+    <p>Tu registro como vendedor ha sido exitoso. A continuación se muestran los detalles de tu cuenta:</p>
+    <ul>
+        <li><strong>Nombre de vendedor:</strong> {{ nombreVendedor }}</li>
+        <li><strong>Nombre de la tienda:</strong> {{ nombreTienda }}</li>
+    </ul>
+    <p>Los datos que proporcionaste se van a revisar, por ahora puedes ver tu perfil normalmente</p>
+    <p>¡Gracias por unirte a nuestro sitio!</p>
+</body>
+</html>
+{% endblock %}

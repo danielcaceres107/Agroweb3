@@ -9,7 +9,6 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.views.decorators.http import require_POST
-from django.core import serializers
 import json
 from .forms import RegistroVendedorForm, RegistroClientesForm
 from decimal import Decimal
@@ -18,7 +17,14 @@ from django.contrib.auth.models import Group
 from django.shortcuts import render, redirect
 from .forms import EditarPerfilForm
 from django.views.decorators.csrf import csrf_exempt
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from decouple import config
 
+# Cargar las variables de entorno desde el archivo .env // el archivo .env no se sube a github
+CORREO= config('CORREO')
+CONTRASENA = config('CONTRASENA')
 # Create your views here.
 
 
@@ -155,7 +161,44 @@ def registroVendedor(request):
                 login(request, user)
 
                 print('usuario creado satisfactoriamente')
-                return redirect('mapa')
+
+                # Código para enviar el correo electrónico
+                smtp_host = 'smtp.office365.com'
+                smtp_port = 587
+                smtp_username = CORREO
+                smtp_password = CONTRASENA
+                sender = CORREO
+                recipient = 'fowxd7@gmail.com'
+                subject = 'Registro de '+ request.POST['username'] +' como vendedor Agroweb'
+                message = '''
+                <html>
+                <head></head>
+                <body>
+                    <h2>Registro del usuario '''+ request.POST['nombreVendedor'] + ''' para revision :</h2>
+                    <p><strong>Usuario: </strong> '''+ request.POST['username'] + ''' </p>
+                    <p><strong>Nombre Completo: </strong> '''+ request.POST['nombreVendedor'] + ''' </p>
+                    <p><strong>Cedula: </strong> '''+ request.POST['cedula'] + ''' </p>
+                    <p><strong>Nombre de la Tienda: </strong> '''+ request.POST['nombreTienda'] + ''' </p>
+                    <p><strong>Celular: </strong> '''+ request.POST['telefono'] + ''' </p>
+                    <p><strong>Horario de trabajo: </strong> '''+ request.POST['horario'] + ''' </p>
+                    <p>¡Gracias por unirte a nuestro sitio!</p>
+                </body>
+                </html>
+                '''
+
+                msg = MIMEMultipart('alternative')
+                msg['Subject'] = subject
+                msg['From'] = sender
+                msg['To'] = recipient
+                html_part = MIMEText(message, 'html')
+                msg.attach(html_part)
+
+                with smtplib.SMTP(smtp_host, smtp_port) as smtp:
+                    smtp.starttls()
+                    smtp.login(smtp_username, smtp_password)
+                    smtp.sendmail(sender, recipient, msg.as_string())
+
+                return redirect('registroExitosoV')
             except IntegrityError:
                 return render(request, 'registroVendedor.html', {"register": RegistroVendedorForm(), "error": "Username already exists."})
         else:
@@ -164,6 +207,8 @@ def registroVendedor(request):
                 "error": 'Contraseñas no coinciden'
             })
 
+def registroExitosoVendedor(request):
+    return HttpResponse(render(request, 'registroExitosoV.html'))
 
 def registroCliente(request):
     if request.method == 'GET':
@@ -191,6 +236,38 @@ def registroCliente(request):
                 user = authenticate(
                     request, username=request.POST['username'], password=request.POST['password1'])
                 login(request, user)
+
+                                # Código para enviar el correo electrónico
+                smtp_host = 'smtp.office365.com'
+                smtp_port = 587
+                smtp_username = CORREO
+                smtp_password = CONTRASENA
+                sender = CORREO
+                recipient = request.POST['correo']
+                subject = 'Registro de '+ request.POST['username'] +' como cliente Agroweb'
+                message = '''
+                <html>
+                <head></head>
+                <body>
+                    <h2>¡Registro exitoso!</h2>
+                    <p>Hola,</p>
+                    <p>Tu registro como cliente Agroweb ha sido exitoso.</p>
+                    <p>¡Gracias por unirte a nuestro sitio!</p>
+                </body>
+                </html>
+                '''
+
+                msg = MIMEMultipart('alternative')
+                msg['Subject'] = subject
+                msg['From'] = sender
+                msg['To'] = recipient
+                html_part = MIMEText(message, 'html')
+                msg.attach(html_part)
+
+                with smtplib.SMTP(smtp_host, smtp_port) as smtp:
+                    smtp.starttls()
+                    smtp.login(smtp_username, smtp_password)
+                    smtp.sendmail(sender, recipient, msg.as_string())
 
                 print('usuario creado satisfactoriamente')
                 return redirect('mapa')
