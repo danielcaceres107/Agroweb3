@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import DimVendedores, DimProducts, DimClientes
+from .models import Vendedores, Products, Clientes
 
 
 class RegistroVendedorForm(forms.ModelForm):
@@ -15,14 +15,14 @@ class RegistroVendedorForm(forms.ModelForm):
     latitude = forms.CharField(label="Latitud")
     longitude = forms.CharField(label="Longitud")
     horario = forms.CharField(label="Horario de la tienda")
-    productos = forms.ModelMultipleChoiceField(queryset=DimProducts.objects.all(), widget=forms.SelectMultiple)
+    productos = forms.ModelMultipleChoiceField(queryset=Products.objects.all(), widget=forms.SelectMultiple)
 
     class Meta:
         model = User
         fields = ('username', 'nombreVendedor', 'cedula', 'password1', 'password2', 'nombreTienda', 'telefono', 'latitude', 'longitude', 'horario', 'productos')
 
 class RegistroClientesForm(forms.ModelForm):
-    nombreCliente = forms.CharField(label="Nombre del cliente")
+    nombreCliente = forms.CharField(label="Nombre Completo")
     username = forms.CharField(label="Nombre de usuario")
     correo = forms.CharField(label="Correo")
     password1 = forms.CharField(widget=forms.PasswordInput, label="Contraseña")
@@ -39,7 +39,7 @@ class EditarPerfilForm(forms.ModelForm):
     latitude = forms.CharField(label="Latitud")
     longitude = forms.CharField(label="Longitud")
     horario = forms.CharField(label="Horario de la tienda")
-    productos = forms.ModelMultipleChoiceField(queryset=DimProducts.objects.all(), widget=forms.SelectMultiple)
+    productos = forms.ModelMultipleChoiceField(queryset=Products.objects.all(), widget=forms.SelectMultiple)
 
     class Meta:
         model = User

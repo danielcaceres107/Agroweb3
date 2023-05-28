@@ -45,9 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'mysite.apps.MysiteConfig',
-    'allauth',
-    'allauth.account',
+    'mysite.apps.MysiteConfig'
 ]
 
 MIDDLEWARE = [
@@ -86,15 +84,12 @@ WSGI_APPLICATION = 'agroweb.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'mssql',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': DB_NAME,
-        'HOST': 'agrowebs.database.windows.net',
-        'PORT': '',
         'USER': DB_USER,
         'PASSWORD': DB_PASSWORD,
-        'OPTIONS': {
-            'driver': 'ODBC Driver 18 for SQL Server',
-        },
+        'HOST': 'agrowebdb.cjw4kxhu3x9y.us-east-1.rds.amazonaws.com',
+        'PORT': '5432',
     }
 }
 
@@ -115,11 +110,6 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
-]
-
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
 

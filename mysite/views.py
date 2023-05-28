@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from django.views import View
 from agroweb import settings
-from .models import DimVendedores, DimClientes
+from .models import Vendedores, Clientes, Products
+from .carrito import Carrito
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
@@ -21,12 +22,13 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from decouple import config
+import decimal
 
 # Cargar las variables de entorno desde el archivo .env // el archivo .env no se sube a github
 CORREO= config('CORREO')
 CONTRASENA = config('CONTRASENA')
-# Create your views here.
 
+# Create your views here.
 
 def index(request):
     return HttpResponse(render(request, 'index.html'))
@@ -39,6 +41,70 @@ def mapa(request):
     }
     return render(request, 'mapa.html', context)
 
+#logica carrito en mapa
+
+def agregar_producto(request, producto_id):
+    carrito = Carrito(request)
+    producto = Products.objects.get(id=producto_id)
+    carrito.agregar(producto)
+
+    return redirect("mapa")
+
+def eliminar_producto(request, producto_id):
+    carrito = Carrito(request)
+    producto = Products.objects.get(id=producto_id)
+    carrito.eliminar(producto)
+    print(producto_id)
+    return redirect("mapa")
+
+def restar_producto(request, producto_id):
+    carrito = Carrito(request)
+    producto = Products.objects.get(id=producto_id)
+    carrito.restar(producto)
+    print(producto_id)
+    return redirect("mapa")
+
+def limpiar_carrito(request):
+    carrito = Carrito(request)
+    carrito.limpiar()
+    return redirect("mapa")
+
+def enviar_correo(carrito_data):
+    # Configurar los datos del correo
+    remitente = CORREO
+    destinatario = CORREO
+    asunto = 'Datos del carrito'
+    
+    # Crear el cuerpo del mensaje
+    cuerpo = "Detalles del carrito:\n\n"
+    for key, value in carrito_data.items():
+        nombre = value['nombre']
+        acumulado = value['acumulado']
+        cuerpo += f"Nombre: {nombre}\n"
+        cuerpo += f"Acumulado: {acumulado}\n\n"
+
+    # Crear el objeto del mensaje
+    mensaje = MIMEMultipart()
+    mensaje['From'] = remitente
+    mensaje['To'] = destinatario
+    mensaje['Subject'] = asunto
+
+    # Agregar el cuerpo del mensaje
+    mensaje.attach(MIMEText(cuerpo, 'plain'))
+
+    # Enviar el correo utilizando el servidor SMTP de Office 365
+    servidor_smtp = smtplib.SMTP('smtp.office365.com', 587)
+    servidor_smtp.starttls()
+    servidor_smtp.login(remitente, 'tu_contraseña')
+    servidor_smtp.send_message(mensaje)
+    servidor_smtp.quit()
+
+def enviar_carrito(request):
+    carrito = Carrito(request)
+    carrito_data = carrito.obtener_carrito()
+    return redirect("mapa")
+
+#login
 
 def ingreso(request):
     if request.method == 'GET':
@@ -66,7 +132,7 @@ def signout(request):
 @login_required
 def mydata(request):
 
-    vendedores = DimVendedores.objects.all()
+    vendedores = Vendedores.objects.all()
 
     # Crear una lista de diccionarios para almacenar la información de cada vendedor y sus productos
     data = []
@@ -94,7 +160,7 @@ def mydata(request):
                 'fields': {
                     'nombreProd': producto.nombreProd,
                     # Convertir el decimal a una cadena de caracteres
-                    'precio': str(producto.precioProd),
+                    'precio': float(producto.precioProd),
                     'descripcion': producto.descripcionProd,
                     'imagenProdUrl': request.build_absolute_uri('/static' + producto.imagenProd.url)
                 }
@@ -136,7 +202,7 @@ def registroVendedor(request):
                 user.save()
 
                 # Crear un nuevo registro en la tabla DimVendedores
-                vendedor = DimVendedores(
+                vendedor = Vendedores(
                     nombreVendedor=request.POST['nombreVendedor'],
                     usuarioVendedor=request.POST['username'],
                     cedula=request.POST['cedula'],
@@ -224,7 +290,7 @@ def registroCliente(request):
                 user.save()
 
                 # Crear un nuevo registro en la tabla DimClientes
-                cliente = DimClientes(
+                cliente = Clientes(
                     usuarioCliente=request.POST['username'],
                     nombreCliente=request.POST['nombreCliente'],
                     correo=request.POST['correo']
@@ -237,7 +303,7 @@ def registroCliente(request):
                     request, username=request.POST['username'], password=request.POST['password1'])
                 login(request, user)
 
-                                # Código para enviar el correo electrónico
+                # Código para enviar el correo electrónico
                 smtp_host = 'smtp.office365.com'
                 smtp_port = 587
                 smtp_username = CORREO
@@ -284,13 +350,13 @@ def registroCliente(request):
 def perfil(request):
     if request.user.is_authenticated:
         try:
-            vendedor = DimVendedores.objects.get(usuarioVendedor=request.user.username)
+            vendedor = Vendedores.objects.get(usuarioVendedor=request.user.username)
             return render(request, 'perfil.html', {'vendedor': vendedor })
-        except DimVendedores.DoesNotExist :
+        except Vendedores.DoesNotExist :
             try:
-                cliente = DimClientes.objects.get(usuarioCliente=request.user.username)
+                cliente = Clientes.objects.get(usuarioCliente=request.user.username)
                 return render(request, 'perfil.html', {'cliente': cliente})
-            except DimClientes.DoesNotExist:
+            except Clientes.DoesNotExist:
                 return render(request, 'perfil.html', {})
     else :
         return render(request, 'perfil.html', {})
@@ -304,7 +370,7 @@ def actualizarUbicacion(request):
         print(latitude)
         print(longitude)
         try:
-            vendedor = DimVendedores.objects.get(usuarioVendedor=request.user.username)
+            vendedor = Vendedores.objects.get(usuarioVendedor=request.user.username)
             vendedor.latitude = latitude
             vendedor.longitude = longitude
             print(vendedor.latitude)
@@ -313,7 +379,7 @@ def actualizarUbicacion(request):
             print(longitude)
             vendedor.save()
             return JsonResponse({'message': 'Ubicación actualizada correctamente.'})
-        except DimVendedores.DoesNotExist:
+        except Vendedores.DoesNotExist:
             return JsonResponse({'message': 'No se encontró el vendedor.'})
     else:
         return JsonResponse({'message': 'Método no permitido.'})

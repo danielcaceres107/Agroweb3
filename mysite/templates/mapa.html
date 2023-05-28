@@ -61,16 +61,16 @@
 
             vendedor.productos.map(producto => {
                 panelProducts += '<li><h3>' + producto.fields.nombreProd + '</h3></li>'
-                    + '<li> <img src= "' + producto.fields.imagenProdUrl + '" alt = "' + producto.fields.nombreProd + '" width="120" height="160"> </li>' 
+                    + '<li> <img src= "' + producto.fields.imagenProdUrl + '" alt = "' + producto.fields.nombreProd + '" width="120" height="160"> </li>'
                     + '<li> <div id="precio"> $' + producto.fields.precio + ' COP </div></li>'
                     + '<li> <p style="text-align: justify">' + producto.fields.descripcion + '</p> </li>'
-                    + '<li>' + '<button id="add-to-cart-btn">Agregar producto</button>' + '</li> <br> <hr>'
+                    + '<li> <a href="/agregar/' + producto.pk + '">Agregar al carrito </a> </li> <br> <hr>';
+                console.log(producto.pk)
             });
 
             panelProducts += '</ul></div>';
 
-
-            // Agrega un evento de clic al marcador para mostrar el panel lateral
+            // Agrega un evento de click al marcador para mostrar el panel lateral
             marker.addListener('click', function () {
                 // Muestra el panel lateral
                 document.getElementById("info-panel").style.display = "block";
@@ -79,7 +79,7 @@
                     '<button id="close-panel-btn" font-size="large">&times;</button>' +
                     '<div id="info-header">' +
                     '<h3>' + vendedor.fields.nombreTienda + '</h3>' +
-                    '</div>' + 
+                    '</div>' +
                     '<div id="estado-tienda"> ' + '</div> <hr>' +
                     '<div id="mapholder">' +
                     '<p><strong>Teléfono:</strong> ' + vendedor.fields.telefono + '</p>' +
@@ -87,7 +87,7 @@
                     '<p><strong>Vendedor:</strong> ' + vendedor.fields.nombreVendedor + '</p> <hr>' +
                     '<div id="contenedor-productos">' + panelProducts + '</div>' +
                     '<h5>Medios de pago:</h5>' +
-                    '<div id="pagos"> <a href="https://transacciones.nequi.com/bdigital/login.jsp" target="_blank"><img src="/static/img/nequi-logo.png" width="70px"/></a>' + 
+                    '<div id="pagos"> <a href="https://transacciones.nequi.com/bdigital/login.jsp" target="_blank"><img src="/static/img/nequi-logo.png" width="70px"/></a>' +
                     '<a href="#" alt="Comunicarse directamente con el vendedor"><p>efectivo</p><img src="/static/img/efectivo.png" width="70px height="70px"/></a> </div>';
 
                 // Agrega un evento de clic al botón de cerrar panel
@@ -95,6 +95,9 @@
                     // Oculta el panel lateral
                     document.getElementById("info-panel").style.display = "none";
                 });
+
+                //agregar un evento click al boton para agregar producto al carrito
+                const addToCartButton = document.getElementById("add-to-cart-btn");
 
                 // Implementación del sistema de horarios
                 const openingHours = vendedor.fields.horario.split('-');
@@ -128,10 +131,11 @@
             <img id="imagenProd" src="" alt="">
         </div>
     </div>
-    <!-- <div id="map"></div> -->
-
 
 
     <script src="https://maps.googleapis.com/maps/api/js?key={{key}}&callback=initMap&v=weekly" defer></script>
 </div>
+<!-- hacer logica If info panel is active "activar carrito"-->
+{% include "carrito.html" %}
+
 {% endblock %}
