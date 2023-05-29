@@ -40,7 +40,7 @@
         #info-panel button {
             top: 1em;
             right: 1em;
-            font-size: 1.5em;
+            font-size: 1.1em;
             background-color: #ebad8d;
             border: solid;
             cursor: pointer;
@@ -78,6 +78,7 @@
             color: #666666;
             display: flex;
             flex-direction: column;
+            align-items: center;
         }
 
         #info-panel ul {
@@ -131,6 +132,8 @@
             font-weight: 800;
         }
 
+       
+
     </style>
 
     <header class="header">
@@ -150,6 +153,8 @@
                     {% if user.is_authenticated %}
                     <li><a class="nav-link" href="/perfil">Mi Perfil</a></li>
                     <li><a class="nav-link" href="/logout">Logout</a></li>
+                    <div>{% include "carrito.html" %}</div>
+                    
                     <style>
                         #botonxd {
                             display: none;

@@ -2,6 +2,7 @@
 {% block content %}
 
 {% if user.is_authenticated %}
+
 <div></div>
 {% else %}
 <!-- <div id="info-panel" <style> #info-panel{display: none}</style>></div>  -->
@@ -64,7 +65,7 @@
                     + '<li> <img src= "' + producto.fields.imagenProdUrl + '" alt = "' + producto.fields.nombreProd + '" width="120" height="160"> </li>'
                     + '<li> <div id="precio"> $' + producto.fields.precio + ' COP </div></li>'
                     + '<li> <p style="text-align: justify">' + producto.fields.descripcion + '</p> </li>'
-                    + '<li> <a href="/agregar/' + producto.pk + '">Agregar al carrito </a> </li> <br> <hr>';
+                    + '<button class="btn-agregar-carrito" onclick="agregarAlCarrito('+ producto.pk +')">Agregar al carrito</button>';
                 console.log(producto.pk)
             });
 
@@ -136,6 +137,12 @@
     <script src="https://maps.googleapis.com/maps/api/js?key={{key}}&callback=initMap&v=weekly" defer></script>
 </div>
 <!-- hacer logica If info panel is active "activar carrito" -->
-{% include "carrito.html" %}
 
+{% if user.is_authenticated %}
+<div class="carrito-responsive">
+<img src="../../static/img/carrito.png" onclick="mostrarCarrito()" width="60px" alt=""> 
+</div>
+{% else %}
+<div></div>
+{% endif %}
 {% endblock %}

@@ -75,6 +75,13 @@
 	height: 50px;
 }
 
+.msg-error{
+    font-size: 18px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
 	</style>
 
@@ -83,6 +90,8 @@
     {{ form.as_p }}
     <strong><button type="submit" style="background-color: #ebad8d">Iniciar sesión</button></strong>
   </form>
-  <p>{{ error }}</p>
+    <div class="msg-error">
+  {{ error }}
+    </div>
   <div id="espacio"></div>
 {% endblock %}

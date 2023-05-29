@@ -121,7 +121,7 @@ def ingreso(request):
             login(request, user)
             return redirect('index')
         else:
-            return render(request, 'login.html', {"form": AuthenticationForm, "error": "Username or password is incorrect."})
+            return render(request, 'login.html', {"form": AuthenticationForm, "error": "Credenciales inválidas, por favor intente nuevamente"})
 
 
 def registro(request):
