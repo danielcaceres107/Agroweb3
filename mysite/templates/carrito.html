@@ -93,10 +93,6 @@
     justify-content: space-between;
   }
 
-  /* .boton-mostrar-carrito h5{
-  margin-left: 60px;
-} */
-
   .boton-ocultar-carrito {
     display: flex;
     justify-content: end;
@@ -232,10 +228,8 @@
     <hr>
   </div>
   <div class="botones-env-lim">
-    <div class="col-6"><a href="{% url 'Clean' %}" class="btn btn-danger">Limpiar</a></div>
-    <div class="col-6"><a href="{% url 'SendCart' %}"
-        onclick="alert('Se enviarán los datos de compra al vendedor, puedes revisarlos en tu correo')"
-        class="btn btn-success">Enviar</a></div>
+    <div class="col-6"><a href="{% url 'Clean' %}">Limpiar</a></div>
+    <div class="col-6"><a href="{% url 'SendCart' %}" onclick="alert('Se enviarán los datos de compra al vendedor, puedes revisarlos en tu correo')">Enviar</a></div>
   </div>
 </div>
 <div class="boton-mostrar-carrito">
