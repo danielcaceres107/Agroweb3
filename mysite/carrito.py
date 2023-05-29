@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 class Carrito:
     def __init__(self, request):
         self.request = request
@@ -20,10 +18,6 @@ class Carrito:
                 "acumulado": int(producto.precioProd),
                 "cantidad": 1,
             }
-            print("dentro del carrito")
-            print("nombre: " + producto.nombreProd + " acomulado: ")
-            print(producto.precioProd + 21)
-            print(self.carrito[id]["acumulado"])
         else:
             self.carrito[id]["cantidad"] += 1
             if "acumulado" in self.carrito[id]:
@@ -55,5 +49,4 @@ class Carrito:
         self.session.modified = True
 
     def obtener_carrito(self):
-        print(self.carrito)
         return self.carrito

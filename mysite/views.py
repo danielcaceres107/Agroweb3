@@ -54,14 +54,12 @@ def eliminar_producto(request, producto_id):
     carrito = Carrito(request)
     producto = Products.objects.get(id=producto_id)
     carrito.eliminar(producto)
-    print(producto_id)
     return redirect("mapa")
 
 def restar_producto(request, producto_id):
     carrito = Carrito(request)
     producto = Products.objects.get(id=producto_id)
     carrito.restar(producto)
-    print(producto_id)
     return redirect("mapa")
 
 def limpiar_carrito(request):
@@ -69,14 +67,26 @@ def limpiar_carrito(request):
     carrito.limpiar()
     return redirect("mapa")
 
-def enviar_correo(carrito_data):
+
+def enviar_carrito(request):
+    carrito = Carrito(request)
+    carrito_data = carrito.obtener_carrito()
+
+    # Obtener el objeto User actual
+    usuario = request.user
+
+    enviar_correo(carrito_data, usuario)
+    carrito.limpiar()
+    return redirect("mapa")
+
+def enviar_correo(carrito_data, usuario):
     # Configurar los datos del correo
     remitente = CORREO
-    destinatario = CORREO
+    destinatario = ["danielcaceres107@gmail.com", "fowxd7@gmail.com", usuario.email]
     asunto = 'Datos del carrito'
     
     # Crear el cuerpo del mensaje
-    cuerpo = "Detalles del carrito:\n\n"
+    cuerpo = "Compra en agroweb de "+ usuario.username + ":\n\n"
     for key, value in carrito_data.items():
         nombre = value['nombre']
         acumulado = value['acumulado']
@@ -86,7 +96,7 @@ def enviar_correo(carrito_data):
     # Crear el objeto del mensaje
     mensaje = MIMEMultipart()
     mensaje['From'] = remitente
-    mensaje['To'] = destinatario
+    mensaje['To'] = ', '.join(destinatario)
     mensaje['Subject'] = asunto
 
     # Agregar el cuerpo del mensaje
@@ -95,14 +105,9 @@ def enviar_correo(carrito_data):
     # Enviar el correo utilizando el servidor SMTP de Office 365
     servidor_smtp = smtplib.SMTP('smtp.office365.com', 587)
     servidor_smtp.starttls()
-    servidor_smtp.login(remitente, 'tu_contraseña')
+    servidor_smtp.login(remitente, CONTRASENA)
     servidor_smtp.send_message(mensaje)
     servidor_smtp.quit()
-
-def enviar_carrito(request):
-    carrito = Carrito(request)
-    carrito_data = carrito.obtener_carrito()
-    return redirect("mapa")
 
 #login
 
@@ -212,7 +217,7 @@ def registroVendedor(request):
                     longitude=request.POST['longitude'],
                     horario=request.POST['horario']
                 )
-                print(vendedor)
+
                 vendedor.save()
 
                 # Obtener los productos seleccionados del formulario
@@ -286,7 +291,7 @@ def registroCliente(request):
         if request.POST['password1'] == request.POST['password2']:
             try:
                 user = User.objects.create_user(
-                    username=request.POST['username'], password=request.POST['password1'])
+                    username=request.POST['username'], password=request.POST['password1'], email=request.POST['correo'])
                 user.save()
 
                 # Crear un nuevo registro en la tabla DimClientes
@@ -295,7 +300,7 @@ def registroCliente(request):
                     nombreCliente=request.POST['nombreCliente'],
                     correo=request.POST['correo']
                 )
-                print(cliente)
+
                 cliente.save()
 
                 # Autenticar y realizar el inicio de sesión con el backend predeterminado
@@ -366,17 +371,10 @@ def actualizarUbicacion(request):
     if request.method == 'POST':
         latitude = request.POST.get('latitude', None)
         longitude = request.POST.get('longitude', None)
-        print("python")
-        print(latitude)
-        print(longitude)
         try:
             vendedor = Vendedores.objects.get(usuarioVendedor=request.user.username)
             vendedor.latitude = latitude
             vendedor.longitude = longitude
-            print(vendedor.latitude)
-            print(vendedor.longitude)
-            print(latitude)
-            print(longitude)
             vendedor.save()
             return JsonResponse({'message': 'Ubicación actualizada correctamente.'})
         except Vendedores.DoesNotExist:

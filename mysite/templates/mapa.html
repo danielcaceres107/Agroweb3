@@ -88,7 +88,7 @@
                     '<div id="contenedor-productos">' + panelProducts + '</div>' +
                     '<h5>Medios de pago:</h5>' +
                     '<div id="pagos"> <a href="https://transacciones.nequi.com/bdigital/login.jsp" target="_blank"><img src="/static/img/nequi-logo.png" width="70px"/></a>' +
-                    '<a href="#" alt="Comunicarse directamente con el vendedor"><p>efectivo</p><img src="/static/img/efectivo.png" width="70px height="70px"/></a> </div>';
+                    '<a alt="Comunicarse directamente con el vendedor"><p>efectivo</p><img src="/static/img/efectivo.png" width="70px height="70px"/></a> </div>';
 
                 // Agrega un evento de clic al botón de cerrar panel
                 document.getElementById("close-panel-btn").addEventListener("click", function () {
@@ -135,7 +135,7 @@
 
     <script src="https://maps.googleapis.com/maps/api/js?key={{key}}&callback=initMap&v=weekly" defer></script>
 </div>
-<!-- hacer logica If info panel is active "activar carrito"-->
+<!-- hacer logica If info panel is active "activar carrito" -->
 {% include "carrito.html" %}
 
 {% endblock %}
