@@ -79,7 +79,6 @@ def enviar_carrito(request):
     carrito.limpiar()
     return redirect("mapa")
 
-@login_required
 def enviar_correo(carrito_data, usuario):
     # Configurar los datos del correo
     remitente = CORREO
