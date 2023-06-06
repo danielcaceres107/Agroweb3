@@ -23,12 +23,18 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from decouple import config
 import decimal
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.crypto import get_random_string
+from django.core.cache import cache
+from django.urls import reverse
 
 # Cargar las variables de entorno desde el archivo .env // el archivo .env no se sube a github
-CORREO= config('CORREO')
+CORREO = config('CORREO')
 CONTRASENA = config('CONTRASENA')
 
 # Create your views here.
+
 
 def index(request):
     return HttpResponse(render(request, 'index.html'))
@@ -41,7 +47,8 @@ def mapa(request):
     }
     return render(request, 'mapa.html', context)
 
-#logica carrito en mapa
+# logica carrito en mapa
+
 
 def agregar_producto(request, producto_id):
     carrito = Carrito(request)
@@ -50,17 +57,20 @@ def agregar_producto(request, producto_id):
 
     return redirect("mapa")
 
+
 def eliminar_producto(request, producto_id):
     carrito = Carrito(request)
     producto = Products.objects.get(id=producto_id)
     carrito.eliminar(producto)
     return redirect("mapa")
 
+
 def restar_producto(request, producto_id):
     carrito = Carrito(request)
     producto = Products.objects.get(id=producto_id)
     carrito.restar(producto)
     return redirect("mapa")
+
 
 def limpiar_carrito(request):
     carrito = Carrito(request)
@@ -79,14 +89,18 @@ def enviar_carrito(request):
     carrito.limpiar()
     return redirect("mapa")
 
+# correo del carrito
+
+
 def enviar_correo(carrito_data, usuario):
     # Configurar los datos del correo
     remitente = CORREO
-    destinatario = ["danielcaceres107@gmail.com", "fowxd7@gmail.com", usuario.email]
+    destinatario = ["danielcaceres107@gmail.com",
+                    "fowxd7@gmail.com", usuario.email]
     asunto = 'Datos del carrito'
-    
+
     # Crear el cuerpo del mensaje
-    cuerpo = "Compra en agroweb de "+ usuario.username + ":\n\n"
+    cuerpo = "Compra en agroweb de " + usuario.username + ":\n\n"
     for key, value in carrito_data.items():
         nombre = value['nombre']
         acumulado = value['acumulado']
@@ -109,7 +123,8 @@ def enviar_correo(carrito_data, usuario):
     servidor_smtp.send_message(mensaje)
     servidor_smtp.quit()
 
-#login
+# login
+
 
 def ingreso(request):
     if request.method == 'GET':
@@ -202,60 +217,59 @@ def registroVendedor(request):
     else:
         if request.POST['password1'] == request.POST['password2']:
             try:
-                user = User.objects.create_user(
-                    username=request.POST['username'], password=request.POST['password1'])
-                user.save()
 
-                # Crear un nuevo registro en la tabla DimVendedores
-                vendedor = Vendedores(
-                    nombreVendedor=request.POST['nombreVendedor'],
-                    usuarioVendedor=request.POST['username'],
-                    cedula=request.POST['cedula'],
-                    nombreTienda=request.POST['nombreTienda'],
-                    telefono=request.POST['telefono'],
-                    latitude=request.POST['latitude'],
-                    longitude=request.POST['longitude'],
-                    horario=request.POST['horario']
-                )
-
-                vendedor.save()
+                # Generar un token único
+                token = get_random_string(length=32)
 
                 # Obtener los productos seleccionados del formulario
                 productos_seleccionados = request.POST.getlist('productos')
 
-                # Establecer la relación muchos a muchos utilizando el método set()
-                vendedor.productos.set(productos_seleccionados)
+                # Guardar los datos en caché con el token como clave
+                datos_vendedor = {
+                    'username': request.POST['username'],
+                    'vendedor': request.POST['nombreVendedor'],
+                    'password' : request.POST['password1'],
+                    'cedula': request.POST['cedula'],
+                    'nombreTienda': request.POST['nombreTienda'],
+                    'telefono': request.POST['telefono'],
+                    'latitude': request.POST['latitude'],
+                    'longitude': request.POST['longitude'],
+                    'horario' : request.POST['horario'],
+                    'productos' : productos_seleccionados
+                }
 
-                # Autenticar y realizar el inicio de sesión con el backend predeterminado
-                user = authenticate(
-                    request, username=request.POST['username'], password=request.POST['password1'])
-                login(request, user)
 
-                print('usuario creado satisfactoriamente')
+                # Guardar los datos en caché con el token como clave
+                cache.set(token, datos_vendedor)
 
-                # Código para enviar el correo electrónico
+                # Generar el enlace de validación
+                enlace_validacion = request.build_absolute_uri(
+                    reverse('validarRegistro', args=[token]))
+
+                # Enviar el correo electrónico de validación
                 smtp_host = 'smtp.office365.com'
                 smtp_port = 587
                 smtp_username = CORREO
                 smtp_password = CONTRASENA
                 sender = CORREO
-                recipient = 'fowxd7@gmail.com'
-                subject = 'Registro de '+ request.POST['username'] +' como vendedor Agroweb'
+                recipient = 'danielcaceres107@gmail.com'
+                subject = 'Registro de ' + request.POST['username'] + ' como vendedor Agroweb'
                 message = '''
                 <html>
                 <head></head>
                 <body>
-                    <h2>Registro del usuario '''+ request.POST['nombreVendedor'] + ''' para revision :</h2>
-                    <p><strong>Usuario: </strong> '''+ request.POST['username'] + ''' </p>
-                    <p><strong>Nombre Completo: </strong> '''+ request.POST['nombreVendedor'] + ''' </p>
-                    <p><strong>Cedula: </strong> '''+ request.POST['cedula'] + ''' </p>
-                    <p><strong>Nombre de la Tienda: </strong> '''+ request.POST['nombreTienda'] + ''' </p>
-                    <p><strong>Celular: </strong> '''+ request.POST['telefono'] + ''' </p>
-                    <p><strong>Horario de trabajo: </strong> '''+ request.POST['horario'] + ''' </p>
-                    <p>¡Gracias por unirte a nuestro sitio!</p>
+                    <h2>Registro del usuario ''' + request.POST['nombreVendedor'] + ''' para revision :</h2>
+                    <p><strong>Usuario: </strong> ''' + request.POST['username'] + ''' </p>
+                    <p><strong>Nombre Completo: </strong> ''' + request.POST['nombreVendedor'] + ''' </p>
+                    <p><strong>Cedula: </strong> ''' + request.POST['cedula'] + ''' </p>
+                    <p><strong>Nombre de la Tienda: </strong> ''' + request.POST['nombreTienda'] + ''' </p>
+                    <p><strong>Celular: </strong> ''' + request.POST['telefono'] + ''' </p>
+                    <p><strong>Horario de trabajo: </strong> ''' + request.POST['horario'] + ''' </p>
+
+                    <a href="{}" style="background-color: blue; border: none; color: white; padding: 15px 32px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer;">Validar Registro</a>
                 </body>
                 </html>
-                '''
+                '''.format(enlace_validacion)
 
                 msg = MIMEMultipart('alternative')
                 msg['Subject'] = subject
@@ -269,7 +283,7 @@ def registroVendedor(request):
                     smtp.login(smtp_username, smtp_password)
                     smtp.sendmail(sender, recipient, msg.as_string())
 
-                return redirect('registroExitosoV')
+                return HttpResponse('Correo enviado para validar')
             except IntegrityError:
                 return render(request, 'registroVendedor.html', {"register": RegistroVendedorForm(), "error": "Username already exists."})
         else:
@@ -278,8 +292,54 @@ def registroVendedor(request):
                 "error": 'Contraseñas no coinciden'
             })
 
+
+def validarRegistro(request, token):
+    # Verificar si el token es válido y existe en la caché
+    datos_vendedor = cache.get(token)
+
+    if datos_vendedor:
+        # Guardar los datos del vendedor en la base de datos
+        user = User.objects.create_user(
+            username=datos_vendedor['username'], password=datos_vendedor['password'])
+        user.save()
+
+        # Crear un nuevo registro en la tabla DimVendedores
+        vendedor = Vendedores(
+            nombreVendedor=datos_vendedor['vendedor'],
+            usuarioVendedor=datos_vendedor['username'],
+            nombreTienda=datos_vendedor['nombreTienda'],
+            cedula=datos_vendedor['cedula'],
+            telefono=datos_vendedor['telefono'],
+            latitude=datos_vendedor['latitude'],
+            longitude=datos_vendedor['longitude'],
+            horario=datos_vendedor['horario']
+        )
+
+        vendedor.save()
+
+        # Establecer la relación muchos a muchos utilizando el método set()
+        vendedor.productos.set(datos_vendedor['productos'])
+
+        # Autenticar y realizar el inicio de sesión con el backend predeterminado (?)
+        #user = authenticate(
+        #    request, username=datos_vendedor['username'], password=datos_vendedor['password1'])
+        #login(request, user)
+
+        print('usuario creado satisfactoriamente')
+
+        # Eliminar los datos de la caché después de la validación
+        cache.delete(token)
+
+        # Redirigir a una página de confirmación o mostrar un mensaje al usuario
+        return HttpResponse(render(request, 'mapa.html'))
+    else:
+        # Redirigir a una página de error o mostrar un mensaje de token inválido
+        return HttpResponse('Token inválido')
+
+
 def registroExitosoVendedor(request):
     return HttpResponse(render(request, 'registroExitosoV.html'))
+
 
 def registroCliente(request):
     if request.method == 'GET':
@@ -315,7 +375,8 @@ def registroCliente(request):
                 smtp_password = CONTRASENA
                 sender = CORREO
                 recipient = request.POST['correo']
-                subject = 'Registro de '+ request.POST['username'] +' como cliente Agroweb'
+                subject = 'Registro de ' + \
+                    request.POST['username'] + ' como cliente Agroweb'
                 message = '''
                 <html>
                 <head></head>
@@ -350,29 +411,32 @@ def registroCliente(request):
                 "error": 'Contraseñas no coinciden'
             })
 
-        
 
 def perfil(request):
     if request.user.is_authenticated:
         try:
-            vendedor = Vendedores.objects.get(usuarioVendedor=request.user.username)
-            return render(request, 'perfil.html', {'vendedor': vendedor })
-        except Vendedores.DoesNotExist :
+            vendedor = Vendedores.objects.get(
+                usuarioVendedor=request.user.username)
+            return render(request, 'perfil.html', {'vendedor': vendedor})
+        except Vendedores.DoesNotExist:
             try:
-                cliente = Clientes.objects.get(usuarioCliente=request.user.username)
+                cliente = Clientes.objects.get(
+                    usuarioCliente=request.user.username)
                 return render(request, 'perfil.html', {'cliente': cliente})
             except Clientes.DoesNotExist:
                 return render(request, 'perfil.html', {})
-    else :
+    else:
         return render(request, 'perfil.html', {})
-    
+
+
 @csrf_exempt
 def actualizarUbicacion(request):
     if request.method == 'POST':
         latitude = request.POST.get('latitude', None)
         longitude = request.POST.get('longitude', None)
         try:
-            vendedor = Vendedores.objects.get(usuarioVendedor=request.user.username)
+            vendedor = Vendedores.objects.get(
+                usuarioVendedor=request.user.username)
             vendedor.latitude = latitude
             vendedor.longitude = longitude
             vendedor.save()

@@ -35,5 +35,6 @@ urlpatterns = [
     path('registroVendedor/', views.registroVendedor, name= 'registroVendedor'),
     path('perfil/', views.perfil, name='perfil'),
     path('actualizarUbicacion/', views.actualizarUbicacion, name='actualizarUbicacion'),
-    path('registro-exitoso-vendedor/', views.registroExitosoVendedor, name='registroExitosoV')
+    path('registro-exitoso-vendedor/', views.registroExitosoVendedor, name='registroExitosoV'),
+    path('validar/<str:token>/', views.validarRegistro, name='validarRegistro')
 ]
