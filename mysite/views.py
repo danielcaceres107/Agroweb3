@@ -295,9 +295,11 @@ def registroVendedor(request):
 
                 # Adjuntar el archivo PDF al mensaje
                 if documento_adjunto:
-                    pdf_part = MIMEApplication(documento_adjunto.read(), 'pdf')
+                    documento_adjunto.seek(0)
+                    pdf_data = documento_adjunto.read()
+                    pdf_part = MIMEApplication(pdf_data, 'pdf')
                     pdf_part.add_header('Content-Disposition', 'attachment',
-                                        filename='documento.pdf')
+                                        filename='registroMercantil.pdf')
                     msg.attach(pdf_part)
 
                 with smtplib.SMTP(smtp_host, smtp_port) as smtp:
