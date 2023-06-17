@@ -78,7 +78,7 @@
     }
 </style>
 
-<form action="/registroVendedor/" method="POST">
+<form action="/registroVendedor/" method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     {{ register.username.label_tag }} <input type="text" name="{{ register.username.name }}">
     {{ register.nombreVendedor.label_tag }} <input type="text" name="{{ register.nombreVendedor.name }}">
@@ -87,10 +87,9 @@
     {{ register.password1.label_tag }} <input type="password" name="{{ register.password1.name }}">
     {{ register.password2.label_tag }} <input type="password" name="{{ register.password2.name }}">
     </div>
-    {{ register.nombreTienda.label_tag }} <input type="text" name="{{ register.nombreTienda.name }}">
     {{ register.telefono.label_tag }} <input type="text" name="{{ register.telefono.name }}">
-    {{ register.horario.label_tag }} <input type="text" name="{{ register.horario.name }}"
-        placeholder="Formato ej: [6:00-22:00] 24h">
+    {{ register.documentoMercantil.label_tag }} <input type="file" name="{{ register.documentoMercantil.name }}">
+    {{ register.nombreTienda.label_tag }} <input type="text" name="{{ register.nombreTienda.name }}">
     <br>
     <h5>Ubicacion exacta de la tienda</h5>
     {{ register.latitude.label_tag }} <input type="text" id="id_latitude" name="{{ register.latitude.name }}"
@@ -98,6 +97,9 @@
     {{ register.longitude.label_tag }} <input type="text" id="id_longitude" name="{{ register.longitude.name }}"
         placeholder="Asegurese de ingresar la longitud correcta">
     <br>
+
+    {{ register.horario.label_tag }} <input type="text" name="{{ register.horario.name }}"
+    placeholder="Formato ej: [6:00-22:00] 24h">
 
     <div class=" fieldWrapper">
     {{ register.productos.errors }}

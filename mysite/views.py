@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
-from django.views import View
 from agroweb import settings
 from .models import Vendedores, Clientes, Products
 from .carrito import Carrito
@@ -9,7 +8,6 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
-from django.views.decorators.http import require_POST
 import json
 from .forms import RegistroVendedorForm, RegistroClientesForm
 from decimal import Decimal
@@ -21,13 +19,14 @@ from django.views.decorators.csrf import csrf_exempt
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
 from decouple import config
-import decimal
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
 from django.core.cache import cache
 from django.urls import reverse
+import os
+import tempfile
+from django.core.files.base import ContentFile
 
 # Cargar las variables de entorno desde el archivo .env // el archivo .env no se sube a github
 CORREO = config('CORREO')
@@ -224,20 +223,35 @@ def registroVendedor(request):
                 # Obtener los productos seleccionados del formulario
                 productos_seleccionados = request.POST.getlist('productos')
 
+                # Obtener la ruta de la carpeta de archivos temporales
+                ruta_temporal = tempfile.gettempdir()
+
+                # Obtener el archivo adjunto
+                documento_adjunto = request.FILES.get('documentoMercantil')
+
+                if documento_adjunto:
+                    # Generar una ruta única para guardar el archivo
+                    archivo_path = os.path.join(ruta_temporal, documento_adjunto.name)
+                    with open(archivo_path, 'wb') as file:
+                        for chunk in documento_adjunto.chunks():
+                            file.write(chunk)
+                else:
+                    archivo_path = None
+
                 # Guardar los datos en caché con el token como clave
                 datos_vendedor = {
                     'username': request.POST['username'],
                     'vendedor': request.POST['nombreVendedor'],
-                    'password' : request.POST['password1'],
+                    'password': request.POST['password1'],
                     'cedula': request.POST['cedula'],
                     'nombreTienda': request.POST['nombreTienda'],
                     'telefono': request.POST['telefono'],
+                    'documentoMercantil': archivo_path,
                     'latitude': request.POST['latitude'],
                     'longitude': request.POST['longitude'],
-                    'horario' : request.POST['horario'],
-                    'productos' : productos_seleccionados
+                    'horario': request.POST['horario'],
+                    'productos': productos_seleccionados
                 }
-
 
                 # Guardar los datos en caché con el token como clave
                 cache.set(token, datos_vendedor)
@@ -252,8 +266,9 @@ def registroVendedor(request):
                 smtp_username = CORREO
                 smtp_password = CONTRASENA
                 sender = CORREO
-                recipient = 'danielcaceres107@gmail.com'
-                subject = 'Registro de ' + request.POST['username'] + ' como vendedor Agroweb'
+                recipient = 'fowxd7@gmail.com'
+                subject = 'Registro de ' + \
+                    request.POST['username'] + ' como vendedor Agroweb'
                 message = '''
                 <html>
                 <head></head>
@@ -264,7 +279,7 @@ def registroVendedor(request):
                     <p><strong>Cedula: </strong> ''' + request.POST['cedula'] + ''' </p>
                     <p><strong>Nombre de la Tienda: </strong> ''' + request.POST['nombreTienda'] + ''' </p>
                     <p><strong>Celular: </strong> ''' + request.POST['telefono'] + ''' </p>
-                    <p><strong>Horario de trabajo: </strong> ''' + request.POST['horario'] + ''' </p>
+                    <p><strong>Horario de trabajo: </strong> ''' + request.POST['horario'] + ''' </p> <br>
 
                     <a href="{}" style="background-color: blue; border: none; color: white; padding: 15px 32px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer;">Validar Registro</a>
                 </body>
@@ -277,6 +292,13 @@ def registroVendedor(request):
                 msg['To'] = recipient
                 html_part = MIMEText(message, 'html')
                 msg.attach(html_part)
+
+                # Adjuntar el archivo PDF al mensaje
+                if documento_adjunto:
+                    pdf_part = MIMEApplication(documento_adjunto.read(), 'pdf')
+                    pdf_part.add_header('Content-Disposition', 'attachment',
+                                        filename='documento.pdf')
+                    msg.attach(pdf_part)
 
                 with smtplib.SMTP(smtp_host, smtp_port) as smtp:
                     smtp.starttls()
@@ -315,15 +337,21 @@ def validarRegistro(request, token):
             horario=datos_vendedor['horario']
         )
 
+        # Guardar el archivo PDF en el campo documentoMercantil
+        documento_adjunto = datos_vendedor['documentoMercantil']
+        if documento_adjunto:
+            archivo_pdf = ContentFile(documento_adjunto.read())
+            vendedor.documentoMercantil.save(documento_adjunto.name, archivo_pdf, save=True)
+
         vendedor.save()
 
         # Establecer la relación muchos a muchos utilizando el método set()
         vendedor.productos.set(datos_vendedor['productos'])
 
         # Autenticar y realizar el inicio de sesión con el backend predeterminado (?)
-        #user = authenticate(
+        # user = authenticate(
         #    request, username=datos_vendedor['username'], password=datos_vendedor['password1'])
-        #login(request, user)
+        # login(request, user)
 
         print('usuario creado satisfactoriamente')
 

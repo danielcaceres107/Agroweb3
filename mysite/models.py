@@ -21,6 +21,7 @@ class Vendedores(models.Model):
     nombreTienda = models.CharField(max_length=200,blank=True, null=True)
     cedula = models.CharField(max_length=20)
     telefono = models.CharField(max_length=200,blank=True, null=True)
+    documentoMercantil = models.FileField(upload_to='pdfs/', blank=True, null=True)
     latitude = models.CharField(max_length=200,blank=True, null=True)
     longitude = models.CharField(max_length=200,blank=True, null=True)
     horario = models.CharField(max_length=200,blank=True, null=True)

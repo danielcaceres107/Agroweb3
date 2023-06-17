@@ -12,6 +12,7 @@ class RegistroVendedorForm(forms.ModelForm):
     password2 = forms.CharField(widget=forms.PasswordInput, label="Confirmación de contraseña")
     nombreTienda = forms.CharField(label="Nombre de la tienda")
     telefono = forms.CharField(label="Telefono")
+    documentoMercantil = forms.FileField(label="Adjuntar Registro Mercantil", required=False)
     latitude = forms.CharField(label="Latitud")
     longitude = forms.CharField(label="Longitud")
     horario = forms.CharField(label="Horario de la tienda")
@@ -19,7 +20,7 @@ class RegistroVendedorForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('username', 'nombreVendedor', 'cedula', 'password1', 'password2', 'nombreTienda', 'telefono', 'latitude', 'longitude', 'horario', 'productos')
+        fields = ('username', 'nombreVendedor', 'cedula', 'password1', 'password2', 'nombreTienda', 'telefono', 'documentoMercantil','latitude', 'longitude', 'horario', 'productos')
 
 class RegistroClientesForm(forms.ModelForm):
     nombreCliente = forms.CharField(label="Nombre Completo")
