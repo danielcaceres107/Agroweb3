@@ -299,7 +299,7 @@ def registroVendedor(request):
                     pdf_data = documento_adjunto.read()
                     pdf_part = MIMEApplication(pdf_data, 'pdf')
                     pdf_part.add_header('Content-Disposition', 'attachment',
-                                        filename='registroMercantil.pdf')
+                                        filename="registroMercantil_"+request.POST['username']+".pdf")
                     msg.attach(pdf_part)
 
                 with smtplib.SMTP(smtp_host, smtp_port) as smtp:
@@ -307,7 +307,7 @@ def registroVendedor(request):
                     smtp.login(smtp_username, smtp_password)
                     smtp.sendmail(sender, recipient, msg.as_string())
 
-                return render(request, 'msjValidarCorreo.html', {'mensaje': 'Estamos verificando la información proporcionada, en unos minutos podras acceder a todos nuestros servicios.'})
+                return render(request, 'msjValidarCorreo.html', {'mensaje': 'Estamos verificando la información proporcionada, al terminar está validacion podrás acceder a todos nuestros servicios.'})
             except IntegrityError:
                 return render(request, 'registroVendedor.html', {"register": RegistroVendedorForm(), "error": "El nombre de usuario ya esta en uso, intente nuevamente."})
         else:
