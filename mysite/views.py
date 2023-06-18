@@ -307,9 +307,9 @@ def registroVendedor(request):
                     smtp.login(smtp_username, smtp_password)
                     smtp.sendmail(sender, recipient, msg.as_string())
 
-                return HttpResponse('Correo enviado para validar')
+                return render(request, 'msjValidarCorreo.html', {'mensaje': 'Estamos verificando la información proporcionada, en unos minutos podras acceder a todos nuestros servicios.'})
             except IntegrityError:
-                return render(request, 'registroVendedor.html', {"register": RegistroVendedorForm(), "error": "Username already exists."})
+                return render(request, 'registroVendedor.html', {"register": RegistroVendedorForm(), "error": "El nombre de usuario ya esta en uso, intente nuevamente."})
         else:
             return render(request, 'registroVendedor.html', {
                 'register': RegistroVendedorForm(),
