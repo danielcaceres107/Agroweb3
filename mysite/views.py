@@ -266,7 +266,7 @@ def registroVendedor(request):
                 smtp_username = CORREO
                 smtp_password = CONTRASENA
                 sender = CORREO
-                recipient = 'fowxd7@gmail.com'
+                recipient = 'danielcaceres107@gmail.com'
                 subject = 'Registro de ' + \
                     request.POST['username'] + ' como vendedor Agroweb'
                 message = '''
@@ -342,8 +342,10 @@ def validarRegistro(request, token):
         # Guardar el archivo PDF en el campo documentoMercantil
         documento_adjunto = datos_vendedor['documentoMercantil']
         if documento_adjunto:
-            archivo_pdf = ContentFile(documento_adjunto.read())
-            vendedor.documentoMercantil.save(documento_adjunto.name, archivo_pdf, save=True)
+            with open(documento_adjunto, 'rb') as file:
+                archivo_pdf = file.read()
+            archivo_pdf_data = ContentFile(archivo_pdf)
+            vendedor.documentoMercantil.save('registroMercantil.pdf', archivo_pdf_data, save=True)
 
         vendedor.save()
 
