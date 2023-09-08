@@ -76,7 +76,7 @@
         <p><strong>Latitud:</strong> {{ vendedor.latitude }}</p>
         <p><strong>Longitud:</strong> {{ vendedor.longitude }}</p>
         <p><strong>Horario de la tienda:</strong> {{ vendedor.horario }}</p>
-        <!--<button type="button" onclick="editProfile()">Editar perfil</button>-->
+        <button type="button" onclick="editProfileV()">Editar perfil</button>
         <div class="update-ubicacion">
             <form method="POST">
                 {% csrf_token %}
@@ -89,7 +89,7 @@
         {% elif user.username == cliente.usuarioCliente %}
         <p><strong>Nombre de usuario:</strong> {{ cliente.nombreCliente }}</p>
         <p><strong>Correo:</strong> {{ cliente.correo }}</p>
-        <!--<button type="button" onclick="editProfile()">Editar perfil</button>-->
+        <button type="button" onclick="editProfileC()">Editar perfil</button>
         {% else %}
         <p><strong>No se encontraron datos</strong></p>
         {% endif %}
@@ -137,9 +137,14 @@
         });
     }
 
-    function editProfile() {
+    function editProfileV() {
         // Redirige al usuario a la página de edición de perfil
-        window.location.href = "/editarPerfil/";
+        window.location.href = "/editarPerfilV/";
+    }
+
+    function editProfileC() {
+        // Redirige al usuario a la página de edición de perfil
+        window.location.href = "/editarPerfilC/";
     }
 </script>
 

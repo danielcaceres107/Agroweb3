@@ -459,7 +459,36 @@ def perfil(request):
                 return render(request, 'perfil.html', {})
     else:
         return render(request, 'perfil.html', {})
+    
+def editarPerfilV(request):
+    if request.method == 'POST':
 
+        vendedor = Vendedores.objects.get(usuarioVendedor=request.user.username)
+
+        # Recorrer los campos del formulario
+        for field in request.POST:
+            if field != 'csrfmiddlewaretoken' and field != 'username':
+                value = request.POST.get(field)
+                # Verificar si el campo tiene un valor
+                if value:
+                    setattr(vendedor, field, value)  # Actualizar el campo con el valor del formulario
+
+        # Guardar los cambios en la base de datos
+        vendedor.save()
+
+        # Redireccionar a una página de éxito o hacer cualquier otro manejo que desees}
+        return render(request, 'perfil.html')
+
+    else:
+        # Obtener el objeto vendedor del usuario actual
+        vendedor = Vendedores.objects.get(usuarioVendedor=request.user.username)
+
+    return render(request, 'editarPerfilV.html', {'vendedor': vendedor})
+    
+def editarPerfilC(request):
+    cliente = Clientes.objects.get(
+        usuarioCliente=request.user.username)
+    return render(request, 'editarPerfilC.html', {'cliente': cliente})
 
 @csrf_exempt
 def actualizarUbicacion(request):
