@@ -40,7 +40,7 @@
 
     function initMap(data) {
         // Oculta el panel lateral al inicio
-        document.getElementById("info-panel").style.display = "none";
+        // document.getElementById("info-panel").style.display = "none";
 
         // genera el mapa localizado en la via choachi
         const map = new google.maps.Map(document.getElementById("map"), {
@@ -56,46 +56,50 @@
                 icon: '../../static/img/puesto.png'
             })
 
-            var panelProducts = '<div>' +
-                '<h4>Productos:</h4>' +
-                '<ul>';
+            var panelProducts = '<div id="tarjetaproducto">' +
+            // '<h4>Productos:</h4>' +
+            '<div class="productos-container">'; // Agrega un contenedor para los productos
 
             vendedor.productos.map(producto => {
-                panelProducts += '<li><h3>' + producto.fields.nombreProd + '</h3></li>'
-                    + '<li> <img src= "' + producto.fields.imagenProdUrl + '" alt = "' + producto.fields.nombreProd + '" width="120" height="160"> </li>'
-                    + '<li> <div id="precio"> $' + producto.fields.precio + ' COP </div></li>'
-                    + '<li> <p style="text-align: justify">' + producto.fields.descripcion + '</p> </li>'
-                    + '<li> <a href="/agregar/' + producto.pk + '" class="btn-agregar">Agregar al carrito </a> </li> <br> <hr>';
-                console.log(producto.pk)
+                panelProducts += '<div class="producto">' + // Agrega un contenedor para cada producto
+                    '<h3>' + producto.fields.nombreProd + '</h3>' +
+                    '<img src="' + producto.fields.imagenProdUrl + '" alt="' + producto.fields.nombreProd + '" width="120" height="160">' +
+                    '<div class="precio"> $' + producto.fields.precio + ' COP </div>' +
+                    '<p style="text-align: justify">' + producto.fields.descripcion + '</p>' +
+                    '<a href="/agregar/' + producto.pk + '" class="btn-agregar">Agregar al carrito</a>' +
+                    '</div>';
+                console.log(producto.pk);
             });
 
-            panelProducts += '</ul></div>';
+            panelProducts += '</div></div>'; 
+
 
             // Agrega un evento de click al marcador para mostrar el panel lateral
             marker.addListener('click', function () {
-                // Muestra el panel lateral
-                document.getElementById("info-panel").style.display = "block";
-                // Muestra la información del marcador en el panel
-                document.getElementById("info-panel").innerHTML =
-                    '<button id="close-panel-btn" font-size="large">&times;</button>' +
+            // Muestra la información de la tienda en el contenedor
+            const storeInfoContainer = document.getElementById("store-info-container");
+            storeInfoContainer.innerHTML = 
+                    // '<button id="close-panel-btn" font-size="large">&times;</button>' +
                     '<div id="info-header">' +
                     '<h3>' + vendedor.fields.nombreTienda + '</h3>' +
-                    '</div>' +
-                    '<div id="estado-tienda"> ' + '</div> <hr>' +
+                    '<div id="estado-tienda"> ' + '</div>'+
+                    '</div>'+
                     '<div id="mapholder">' +
                     '<p><strong>Teléfono:</strong> ' + vendedor.fields.telefono + '</p>' +
                     '<p><strong>Horario:</strong> ' + vendedor.fields.horario + '</p>' +
-                    '<p><strong>Vendedor:</strong> ' + vendedor.fields.nombreVendedor + '</p> <hr>' +
-                    '<div id="contenedor-productos">' + panelProducts + '</div>' +
-                    '<h5>Medios de pago:</h5>' +
-                    '<div id="pagos"> <a href="https://transacciones.nequi.com/bdigital/login.jsp" target="_blank"><img src="/static/img/nequi-logo.png" width="70px"/></a>' +
-                    '<a alt="Comunicarse directamente con el vendedor"><p>efectivo</p><img src="/static/img/efectivo.png" width="70px height="70px"/></a> </div>';
+                    '<p><strong>Vendedor:</strong> ' + vendedor.fields.nombreVendedor + '</p>' +
+                    '</div>'+
+                    '<div id="contenedor-productos">' + panelProducts + '</div>' 
+                    // '<h5>Medios de pago:</h5>'
+                    // '<div id="pagos"> <a href="https://transacciones.nequi.com/bdigital/login.jsp" target="_blank"><img src="/static/img/nequi-logo.png" width="70px"/></a>' +
+                    // '<a alt="Comunicarse directamente con el vendedor"><p>efectivo</p><img src="/static/img/efectivo.png" width="70px height="70px"/></a> </div>'
+                    ;
 
                 // Agrega un evento de clic al botón de cerrar panel
-                document.getElementById("close-panel-btn").addEventListener("click", function () {
-                    // Oculta el panel lateral
-                    document.getElementById("info-panel").style.display = "none";
-                });
+                // document.getElementById("close-panel-btn").addEventListener("click", function () {
+                //     // Oculta el panel lateral
+                //     document.getElementById("info-panel").style.display = "none";
+                // });
 
                 //agregar un evento click al boton para agregar producto al carrito
                 const addToCartButton = document.getElementById("add-to-cart-btn");
@@ -122,20 +126,18 @@
 </script>
 
 <div class="mapholder">
+    <!-- Agrega un contenedor para el mapa -->
+    <div id="map" style="height: 70vh;"></div>
+</div>
 
-    <!-- Agrega un contenedor para el mapa y el panel -->
-    <div style="position: relative; height: 100vh;">
-        <!-- Agrega un elemento para el mapa -->
-        <div id="map" style="height: 100%;"></div>
-        <!-- Agrega el panel lateral de información -->
-        <div id="info-panel">
-            <img id="imagenProd" src="" alt="">
-        </div>
-    </div>
-
+<!-- Agrega un contenedor para mostrar la información de la tienda -->
+<div id="store-info-container">
+    <!-- Aquí se mostrará la información de la tienda -->
+</div>
 
     <script src="https://maps.googleapis.com/maps/api/js?key={{key}}&callback=initMap&v=weekly" defer></script>
 </div>
+
 <!-- hacer logica If info panel is active "activar carrito" -->
 
 {% if user.is_authenticated %}
@@ -144,5 +146,6 @@
 </div>
 {% else %}
 <div></div>
+
 {% endif %}
 {% endblock %}
