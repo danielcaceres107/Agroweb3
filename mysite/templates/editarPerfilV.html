@@ -95,30 +95,66 @@
 </style>
 <form action="/editarPerfilV/" method="POST">
     {% csrf_token %}
-    <p><strong>Nombre de usuario:</strong></p><input type="text" name="username" placeholder="{{ vendedor.usuarioVendedor }}">
-    <p><strong>Nombre del vendedor:</strong></p><input type="text" name="{{ register.nombreVendedor.name }}" placeholder="{{ vendedor.nombreVendedor }}">
-    <p><strong>Cedula:</strong></p><input type="text" name="{{ register.cedula.name }}" placeholder="{{ vendedor.cedula }}">
+    <p>
+        <strong>Nombre del vendedor:</strong>
+    </p>
+    <input type="text" name="{{ register.nombreVendedor.name }}" placeholder="{{ vendedor.nombreVendedor }}">
+
+    <p>
+        <strong>Nombre de usuario:</strong>
+    </p>
+    <input type="text" name="username" placeholder="{{ vendedor.usuarioVendedor }}">
+    
+    <p>
+        <strong>Cedula:</strong>
+    </p>
+    <input type="text" name="{{ register.cedula.name }}" placeholder="{{ vendedor.cedula }}">
+
     <div class="password-field">
-    <p><strong>Contraseña:</strong></p><input type="password" name="{{ register.password1.name }}" values="{{ vendedor.password }}">
-    <p><strong>Confirmar contraseña:</strong></p><input type="password" name="{{ register.password2.name }}">
+        <p>
+            <strong>Contraseña:</strong>
+        </p>
+        <input type="password" name="{{ register.password1.name }}" values="{{ vendedor.password }}">
+        <p>
+            <strong>Confirmar contraseña:</strong>
+        </p>
+        <input type="password" name="{{ register.password2.name }}">
     </div>
-    <p><strong>Nombre de la tienda:</strong></p> <input type="text" name="{{ register.nombreTienda.name }}" placeholder="{{ vendedor.nombreTienda }}">
-    <p><strong>Telefono:</strong></p><input type="text" name="{{ register.telefono.name }}" placeholder="{{ vendedor.telefono }}">
-    <p><strong>Horario:</strong></p> <input type="text" name="{{ register.horario.name }}"
-        placeholder="{{ vendedor.horario }}">
+
+    <p>
+        <strong>Nombre de la tienda:</strong>
+    </p>
+    <input type="text" name="{{ register.nombreTienda.name }}" placeholder="{{ vendedor.nombreTienda }}">
+
+    <p>
+        <strong>Telefono:</strong>
+    </p>
+    <input type="text" name="{{ register.telefono.name }}" placeholder="{{ vendedor.telefono }}">
+
+    <p>
+        <strong>Horario:</strong>
+    </p>
+    <input type="text" name="{{ register.horario.name }}" placeholder="{{ vendedor.horario }}">
     <br>
     <h5>Ubicacion exacta de la tienda</h5>
-    <p><strong>latitud:</strong></p> <input type="text" id="id_latitude" name="{{ register.latitude.name }}"
-        placeholder="{{ vendedor.latitude }}">
-    <p><strong>longitud:</strong></p><input type="text" id="id_longitude" name="{{ register.longitude.name }}"
-        placeholder="{{ vendedor.longitude }}">
+    <p>
+        <strong>latitud:</strong>
+    </p>
+    <input type="text" id="id_latitude" name="{{ register.latitude.name }}" placeholder="{{ vendedor.latitude }}">
+    <p>
+        <strong>longitud:</strong>
+    </p>
+    <input type="text" id="id_longitude" name="{{ register.longitude.name }}" placeholder="{{ vendedor.longitude }}">
     <br>
 
     <div class=" fieldWrapper">
-    {{ register.productos.errors }}
-    <label for="{{ register.productos.id_for_label }}">Productos:</label><br>
-    {{ register.productos }}
+        {{ register.productos.errors }}
+        <label for="{{ register.productos.id_for_label }}">Productos:</label><br>
+        {{ register.productos }}
     </div>
-    <strong><button type="submit" style="background-color: #ebad8d">Actualizar Información</button></strong>
+
+    <strong>
+        <button type="submit" style="background-color: #ebad8d">Actualizar Información</button>
+    </strong>
 </form>
 {% endblock %}

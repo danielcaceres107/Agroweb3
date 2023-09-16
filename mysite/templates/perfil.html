@@ -65,6 +65,27 @@
     .perfil-info {
         justify-content: center;
     }
+
+    .pantalla-movimientos {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 40%;
+        border: solid;
+        padding: 5%;
+        margin: 3%;
+        margin: 0 auto;
+        margin-top: 50px;
+        justify-content: center;
+    }
+
+    .ventas-info {
+        justify-content: center;
+    }
+
+    .compras-info {
+        justify-content: center;
+    }
 </style>
 <div class="pantalla-perfil">
     <div class="perfil-info">
@@ -87,7 +108,8 @@
             </form>
         </div>
         {% elif user.username == cliente.usuarioCliente %}
-        <p><strong>Nombre de usuario:</strong> {{ cliente.nombreCliente }}</p>
+        <p><strong>Nombre Completo:</strong> {{ cliente.nombreCliente }}</p>
+        <p><strong>Nombre usuario:</strong> {{ cliente.usuarioCliente }}</p>
         <p><strong>Correo:</strong> {{ cliente.correo }}</p>
         <button type="button" onclick="editProfileC()">Editar perfil</button>
         {% else %}
@@ -95,8 +117,18 @@
         {% endif %}
     </div>
 </div>
-
-
+<div class="pantalla-movimientos">
+    {% if user.username == vendedor.usuarioVendedor %}
+    <div class="ventas-info">
+        <h2>Ultimas ventas</h2>
+        <a href="/crear_producto">Añadir un producto </button>
+    </div>
+    {% elif user.username == cliente.usuarioCliente %}
+    <div class="compras-info">
+        <h2>Ultimas compras</h2>
+    </div>
+    {% endif %}
+</div>
 <script>
     function updateLocation() {
         document.getElementById("ubicacion-actual-btn").addEventListener("click", function () {

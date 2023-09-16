@@ -60,8 +60,8 @@
 
 <form action="/registroCliente/" method="POST">
     {% csrf_token %}
-    {{ register.username.label_tag }} <input type="text" name="{{ register.username.name }}">
     {{ register.nombreCliente.label_tag }} <input type="text" name="{{ register.nombreCliente.name }}">
+    {{ register.username.label_tag }} <input type="text" name="{{ register.username.name }}">
     {{ register.correo.label_tag }} <input type="text" name="{{ register.correo.name }}">
     <div class="password-field">
         {{ register.password1.label_tag }} <input type="password" name="{{ register.password1.name }}">

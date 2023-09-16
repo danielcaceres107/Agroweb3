@@ -58,22 +58,25 @@ button {
     align-items: center;
 }
 </style>
-<form action="/editarPerfilC/" method="POST">
+<form action="/crear_producto/" method="POST" enctype="multipart/form-data">
     {% csrf_token %}
-    <p><strong>Nombre Completo:</strong></p>
-    <input type="text" name="{{ register.nombreCliente.name }}" placeholder="{{ cliente.nombreCliente }}">
-    <p><strong>Nombre usuario:</strong></p>
-    <input type="text" name="{{ register.username }}" placeholder="{{ cliente.usuarioCliente }}">
-    <p><strong>Cedula:</strong></p>
-    <input type="text" name="{{ register.cedula.name }}" placeholder="{{ cliente.cedula }}">
-    <p><strong>Correo:</strong></p>
-    <input type="text" name="{{ register.correo.name }}" placeholder="{{ cliente.correo }}">
-    <div class="password-field">
-        <p><strong>Contraseña:</strong></p>
-        <input type="password" name="{{ register.password1.name }}" values="{{ vendedor.password }}">
-        <p><strong>Confirmar contraseña:</strong></p>
-        <input type="password" name="{{ register.password2.name }}">
-    </div>
-    <strong><button type="submit" style="background-color: #ebad8d">Actualizar Datos</button></strong>
+    <p><strong>Nombre:</strong></p>
+    <input type="text" name="nombreProd" placeholder="Manzanas">
+    <p><strong>Precio:</strong></p>
+    <input type="text" name="precioProd" placeholder="8000">
+    <p><strong>Descripcion de cantidad:</strong></p>
+    <input type="text" name="descripcionProd" placeholder="paquete de 20 manzanas">
+    <p><strong>Imagen:</strong></p>
+    <input type="file" name="imagenProd">
+    <p>El tamaño de la imagen debe ser cercano a 4000x6000</p>
+
+    <strong><button type="submit" style="background-color: #ebad8d">Crear Producto</button></strong>
 </form>
+<div class="error-message">
+    {{ productForm.nombreProd.errors }}
+    {{ productForm.precioProd.errors }}
+    {{ productForm.descripcionProd.errors }}
+    {{ productForm.imagenProd.errors }}
+</div>
+
 {% endblock %}

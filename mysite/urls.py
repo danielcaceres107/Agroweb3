@@ -38,5 +38,6 @@ urlpatterns = [
     path('editarPerfilC/', views.editarPerfilC, name='editarPerfil'),
     path('actualizarUbicacion/', views.actualizarUbicacion, name='actualizarUbicacion'),
     path('registro-exitoso-vendedor/', views.registroExitosoVendedor, name='registroExitosoV'),
-    path('validar/<str:token>/', views.validarRegistro, name='validarRegistro')
+    path('validar/<str:token>/', views.validarRegistro, name='validarRegistro'),
+    path('crear_producto/', views.crear_producto, name='crear_producto')
 ]

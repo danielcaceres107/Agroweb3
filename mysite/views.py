@@ -9,7 +9,7 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 import json
-from .forms import RegistroVendedorForm, RegistroClientesForm
+from .forms import ProductoForm, RegistroVendedorForm, RegistroClientesForm
 from decimal import Decimal
 from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.models import Group
@@ -99,7 +99,7 @@ def enviar_correo(carrito_data, usuario):
     asunto = 'Datos del carrito'
 
     # Crear el cuerpo del mensaje
-    cuerpo = "Compra en agroweb de " + usuario.username + ":\n\n"
+    cuerpo = "Estimado usuario" + usuario.username + ", gracias por comprar en Agroweb, los datos de su compra son:\n\n"
     for key, value in carrito_data.items():
         nombre = value['nombre']
         acumulado = value['acumulado']
@@ -268,11 +268,13 @@ def registroVendedor(request):
                 sender = CORREO
                 recipient = 'danielcaceres107@gmail.com'
                 subject = 'Registro de ' + \
-                    request.POST['username'] + ' como vendedor Agroweb'
+                    request.POST['nombreVendedor'] + ' como vendedor Agroweb'
                 message = '''
                 <html>
                 <head></head>
                 <body>
+                    Estimado usuario, gracias por hacer parte de la comunidad de vendedores Agroweb, se realizara la validacion de los siguientes datos registrados:
+
                     <h2>Registro del usuario ''' + request.POST['nombreVendedor'] + ''' para revision :</h2>
                     <p><strong>Usuario: </strong> ''' + request.POST['username'] + ''' </p>
                     <p><strong>Nombre Completo: </strong> ''' + request.POST['nombreVendedor'] + ''' </p>
@@ -408,7 +410,7 @@ def registroCliente(request):
                 sender = CORREO
                 recipient = request.POST['correo']
                 subject = 'Registro de ' + \
-                    request.POST['username'] + ' como cliente Agroweb'
+                    request.POST['nombreCliente'] + ' como cliente Agroweb'
                 message = '''
                 <html>
                 <head></head>
@@ -443,17 +445,14 @@ def registroCliente(request):
                 "error": 'Contraseñas no coinciden'
             })
 
-
 def perfil(request):
     if request.user.is_authenticated:
         try:
-            vendedor = Vendedores.objects.get(
-                usuarioVendedor=request.user.username)
+            vendedor = Vendedores.objects.get(usuarioVendedor=request.user.username)
             return render(request, 'perfil.html', {'vendedor': vendedor})
         except Vendedores.DoesNotExist:
             try:
-                cliente = Clientes.objects.get(
-                    usuarioCliente=request.user.username)
+                cliente = Clientes.objects.get(usuarioCliente=request.user.username)
                 return render(request, 'perfil.html', {'cliente': cliente})
             except Clientes.DoesNotExist:
                 return render(request, 'perfil.html', {})
@@ -476,7 +475,7 @@ def editarPerfilV(request):
         # Guardar los cambios en la base de datos
         vendedor.save()
 
-        # Redireccionar a una página de éxito o hacer cualquier otro manejo que desees}
+        # Redireccionar a una página de Miperfil
         return render(request, 'perfil.html')
 
     else:
@@ -486,8 +485,25 @@ def editarPerfilV(request):
     return render(request, 'editarPerfilV.html', {'vendedor': vendedor})
     
 def editarPerfilC(request):
-    cliente = Clientes.objects.get(
-        usuarioCliente=request.user.username)
+    if request.method == 'POST':
+        cliente = Clientes.objects.get(usuarioCliente=request.user.username)
+        
+        # Recorrer los campos del formulario
+        for field in request.POST:
+            if field != 'csrfmiddlewaretoken' and field != 'username':
+                value = request.POST.get(field)
+                # Verificar si el campo tiene un valor
+                if value:
+                    setattr(cliente, field, value)  # Actualizar el campo con el valor del formulario
+
+        # Guardar los cambios en la base de datos
+        cliente.save()
+
+        # Redireccionar a una página de Miperfil
+        return render(request, 'perfil.html')
+    else:
+        # Obtener el objeto cliente del usuario actual
+        cliente = Clientes.objects.get(usuarioCliente=request.user.username)
     return render(request, 'editarPerfilC.html', {'cliente': cliente})
 
 @csrf_exempt
@@ -506,3 +522,20 @@ def actualizarUbicacion(request):
             return JsonResponse({'message': 'No se encontró el vendedor.'})
     else:
         return JsonResponse({'message': 'Método no permitido.'})
+    
+def crear_producto(request):
+    if request.method == 'POST':
+        productForm = ProductoForm(request.POST, request.FILES)
+        print('hola')
+        if productForm.is_valid():
+            productForm.save()
+            print('producto agregado en la BD')
+            # Realizar alguna acción adicional después de guardar el producto
+            return render(request, 'msjProductoRegistrado.html')
+        else:
+            print(productForm.errors)  # Muestra los errores en la consola
+    else:
+        print('no entra')
+        productForm = ProductoForm()
+
+    return render(request, 'crear_producto.html', {'productForm': productForm})

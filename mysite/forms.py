@@ -45,3 +45,13 @@ class EditarPerfilForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ('username', 'nombreTienda', 'telefono', 'latitude', 'longitude', 'horario', 'productos')
+
+
+class ProductoForm(forms.ModelForm):
+    nombreProd = forms.CharField(label="Nombre del producto")
+    precioProd = forms.CharField(label="Precio del producto")
+    descripcionProd = forms.CharField(label="Descripcion del producto")
+    imagenProd = forms.ImageField(label="Imagen del producto")
+    class Meta:
+        model = Products
+        fields = ['nombreProd', 'precioProd', 'descripcionProd', 'imagenProd']

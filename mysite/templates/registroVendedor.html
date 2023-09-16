@@ -95,8 +95,8 @@
 
 <form action="/registroVendedor/" method="POST" enctype="multipart/form-data">
     {% csrf_token %}
-    {{ register.username.label_tag }} <input type="text" name="{{ register.username.name }}">
     {{ register.nombreVendedor.label_tag }} <input type="text" name="{{ register.nombreVendedor.name }}">
+    {{ register.username.label_tag }} <input type="text" name="{{ register.username.name }}">
     {{ register.cedula.label_tag }} <input type="text" name="{{ register.cedula.name }}">
     <div class="password-field">
     {{ register.password1.label_tag }} <input type="password" name="{{ register.password1.name }}">
