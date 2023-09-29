@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from agroweb import settings
-from .models import Vendedores, Clientes, Products
+from .models import Vendedores, Clientes, Products, Pedidos, ProductosPedidosConexion, VendedoresPedidosConexion
 from .carrito import Carrito
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
@@ -27,13 +27,11 @@ from django.urls import reverse
 import os
 import tempfile
 from django.core.files.base import ContentFile
+from datetime import datetime
 
 # Cargar las variables de entorno desde el archivo .env // el archivo .env no se sube a github
 CORREO = config('CORREO')
 CONTRASENA = config('CONTRASENA')
-
-# Create your views here.
-
 
 def index(request):
     return HttpResponse(render(request, 'index.html'))
@@ -47,50 +45,114 @@ def mapa(request):
     return render(request, 'mapa.html', context)
 
 # logica carrito en mapa
+@csrf_exempt
+def agregar_producto(request, producto_id, vendedor_id):
+    try:
+        # Obtener el vendedor
+        vendedor = Vendedores.objects.get(id=vendedor_id)
+        # desde el vendedor obtener la tienda
+        tienda = vendedor.nombreTienda
+        print("nombreTienda: " + tienda)
+    except Vendedores.DoesNotExist:
+        return redirect('mapa')
 
+    try:
+        # Obtener el producto específico del vendedor
+        producto = vendedor.productos.get(id=producto_id)
+    except Products.DoesNotExist:
+        # Producto no encontrado en la tienda del vendedor
+        return redirect('mapa')
 
-def agregar_producto(request, producto_id):
+    # Agregar el producto al carrito
     carrito = Carrito(request)
-    producto = Products.objects.get(id=producto_id)
-    carrito.agregar(producto)
+    carrito.agregar(producto, vendedor_id, tienda)
 
-    return redirect("mapa")
+    return JsonResponse({'message': 'Producto agregado al carrito'})
 
 
+
+@csrf_exempt 
 def eliminar_producto(request, producto_id):
     carrito = Carrito(request)
     producto = Products.objects.get(id=producto_id)
     carrito.eliminar(producto)
-    return redirect("mapa")
+    return redirect('mapa')
 
-
-def restar_producto(request, producto_id):
+@csrf_exempt 
+def restar_producto(request, producto_id, vendedor_id):
     carrito = Carrito(request)
     producto = Products.objects.get(id=producto_id)
-    carrito.restar(producto)
-    return redirect("mapa")
+    carrito.restar(producto, vendedor_id)
+    return redirect('mapa')
 
-
+@csrf_exempt 
 def limpiar_carrito(request):
     carrito = Carrito(request)
     carrito.limpiar()
-    return redirect("mapa")
+    return redirect('mapa')
 
+@csrf_exempt
+def get_carrito(request):
+    # se debe obtener la información del carrito para actualizar el carrito al instante (aun no funciona)
+    # buscar la manera de obtener lo que hay en carrito.html y modificar su contenido
+    carrito = Carrito(request)
+    carrito_data = carrito.obtener_carrito()
+    print(carrito_data)
 
+    carrito_html = {
+        'carrito': carrito,
+    }
+    
+    return render(request, 'carrito.html', carrito_html)
+
+@csrf_exempt
 def enviar_carrito(request):
     carrito = Carrito(request)
     carrito_data = carrito.obtener_carrito()
 
-    # Obtener el objeto User actual
-    usuario = request.user
+    # Obtener el objeto User actual (usuario de compra)
+    usuario_compra = request.user
 
-    enviar_correo(carrito_data, usuario)
+    # Calcular el monto total del pedido basado en los productos en el carrito
+    total_amount = sum(item['acumulado'] * item['cantidad'] for item in carrito_data.values())
+
+    # Crear una nueva instancia de Pedido y guardarla en la base de datos
+    nuevo_pedido = Pedidos.objects.create(
+        usuario_compra=usuario_compra,
+        total=total_amount,
+        fecha=datetime.now()
+    )
+
+    # Inicializa una lista para almacenar los vendedores asociados al producto
+    vendedores_list = []
+
+    # Asignar los productos en el carrito a la nueva orden de pedido
+    for item_id, item_data in carrito_data.items():
+        producto = Products.objects.get(id=item_id)
+        cantidad = item_data['cantidad']
+        ProductosPedidosConexion.objects.create(pedido=nuevo_pedido, producto=producto, cantidad=cantidad)
+        
+        # Obtener los vendedores asociados a este producto
+
+        # Itera a través de los elementos en el carrito para encontrar vendedores para el producto dado, meterlos en una lista y agregar cada uno a VendedoresPedidosConexion
+
+        # Agrega el vendedor a la lista si aún no está presente
+        if item_data['vendedor_id'] not in vendedores_list:
+            print("vendedor agregado en lista")
+            vendedores_list.append(item_data['vendedor_id'])
+
+        print(vendedores_list)
+        # Crear relaciones con los vendedores
+        for vendedor_i in vendedores_list:
+            print(vendedor_i)
+            VendedoresPedidosConexion.objects.create(pedido=nuevo_pedido, vendedor = Vendedores.objects.get(id=vendedor_i))
+
+    enviar_correo(carrito_data, usuario_compra)
     carrito.limpiar()
-    return redirect("mapa")
+
+    return redirect('mapa')
 
 # correo del carrito
-
-
 def enviar_correo(carrito_data, usuario):
     # Configurar los datos del correo
     remitente = CORREO
@@ -99,12 +161,14 @@ def enviar_correo(carrito_data, usuario):
     asunto = 'Datos del carrito'
 
     # Crear el cuerpo del mensaje
-    cuerpo = "Estimado usuario" + usuario.username + ", gracias por comprar en Agroweb, los datos de su compra son:\n\n"
+    cuerpo = "Estimado usuario " + usuario.username + ", gracias por comprar en Agroweb, los datos de su compra son:\n\n"
     for key, value in carrito_data.items():
         nombre = value['nombre']
         acumulado = value['acumulado']
-        cuerpo += f"Nombre: {nombre}\n"
-        cuerpo += f"Acumulado: {acumulado}\n\n"
+        tienda = value['tienda']
+        cuerpo += f"Producto: {nombre}\n"
+        cuerpo += f"Acumulado: {acumulado}\n"
+        cuerpo += f"Tienda: {tienda}\n\n"
 
     # Crear el objeto del mensaje
     mensaje = MIMEMultipart()
@@ -123,8 +187,6 @@ def enviar_correo(carrito_data, usuario):
     servidor_smtp.quit()
 
 # login
-
-
 def ingreso(request):
     if request.method == 'GET':
         return render(request, 'login.html', {"form": AuthenticationForm})
@@ -159,7 +221,7 @@ def mydata(request):
     # Iterar sobre los vendedores y crear un diccionario con su información y la de sus productos
     for vendedor in vendedores:
         vendedor_data = {
-            'model': 'miapp.dimvendedores',
+            'model': 'mysite.Vendedores',
             'pk': vendedor.id,
             'fields': {
                 'nombreVendedor': vendedor.nombreVendedor,
@@ -174,7 +236,7 @@ def mydata(request):
         productos = []
         for producto in vendedor.productos.all():
             productos.append({
-                'model': 'miapp.dimproductos',
+                'model': 'mysite.Products',
                 'pk': producto.id,
                 'fields': {
                     'nombreProd': producto.nombreProd,
@@ -526,7 +588,6 @@ def actualizarUbicacion(request):
 def crear_producto(request):
     if request.method == 'POST':
         productForm = ProductoForm(request.POST, request.FILES)
-        print('hola')
         if productForm.is_valid():
             productForm.save()
             print('producto agregado en la BD')

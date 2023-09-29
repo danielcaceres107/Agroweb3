@@ -61,14 +61,18 @@
             '<div class="productos-container">'; // Agrega un contenedor para los productos
 
             vendedor.productos.map(producto => {
+                // Crear la clave única para identificar el producto en esta tienda
+                const claveUnica = producto.pk + '-' + vendedor.pk;
+
                 panelProducts += '<div class="producto">' + // Agrega un contenedor para cada producto
                     '<h3>' + producto.fields.nombreProd + '</h3>' +
                     '<img src="' + producto.fields.imagenProdUrl + '" alt="' + producto.fields.nombreProd + '" width="120" height="160">' +
                     '<div class="precio"> $' + producto.fields.precio + ' COP </div>' +
                     '<p style="text-align: justify">' + producto.fields.descripcion + '</p>' +
-                    '<a href="/agregar/' + producto.pk + '" class="btn-agregar">Agregar al carrito</a>' +
+                    '<button class="btn-agregar" data-producto="'+ producto.pk +'" data-vendedor="'+ vendedor.pk + '">Agregar al carrito</button>' +
                     '</div>';
                 console.log(producto.pk);
+                console.log(claveUnica);
             });
 
             panelProducts += '</div></div>'; 
@@ -90,19 +94,7 @@
                     '<p><strong>Vendedor:</strong> ' + vendedor.fields.nombreVendedor + '</p>' +
                     '</div>'+
                     '<div id="contenedor-productos">' + panelProducts + '</div>' 
-                    // '<h5>Medios de pago:</h5>'
-                    // '<div id="pagos"> <a href="https://transacciones.nequi.com/bdigital/login.jsp" target="_blank"><img src="/static/img/nequi-logo.png" width="70px"/></a>' +
-                    // '<a alt="Comunicarse directamente con el vendedor"><p>efectivo</p><img src="/static/img/efectivo.png" width="70px height="70px"/></a> </div>'
                     ;
-
-                // Agrega un evento de clic al botón de cerrar panel
-                // document.getElementById("close-panel-btn").addEventListener("click", function () {
-                //     // Oculta el panel lateral
-                //     document.getElementById("info-panel").style.display = "none";
-                // });
-
-                //agregar un evento click al boton para agregar producto al carrito
-                const addToCartButton = document.getElementById("add-to-cart-btn");
 
                 // Implementación del sistema de horarios
                 const openingHours = vendedor.fields.horario.split('-');
@@ -118,6 +110,51 @@
                     document.getElementById("estado-tienda").innerHTML +=
                         '<p style="color:red;" font-size="30px"> <strong> Cerrado</strong></p>'
                 }
+
+                // Agrega un evento de clic a los botones "Agregar al carrito"
+                $('.btn-agregar').on('click', function () {
+                    const productoId = $(this).data('producto');
+                    const vendedorId = $(this).data('vendedor');
+
+                    $.ajax({
+                        type: 'POST', // Utiliza el método POST
+                        url: '/agregar/' + productoId + '/' + vendedorId, // URL de la vista para agregar el producto al carrito
+                        dataType: 'json',
+                        success: function (data) {
+                            // Maneja la respuesta del servidor, por ejemplo, mostrar un mensaje de éxito
+                            alert(data.message);
+
+                            actualizarCarrito();
+                        },
+                        error: function () {
+                            // Maneja los errores de la solicitud Ajax
+                            alert('Error al agregar el producto al carrito.');
+                        }
+                    });
+                });
+
+                function actualizarCarrito() {
+                    // Realiza una solicitud Ajax para obtener la información actualizada del carrito desde el servidor
+                    $.ajax({
+                        url: '/obtener_carrito/',  // Debes definir una URL adecuada para obtener la información del carrito desde el servidor
+                        method: 'POST',
+                        dataType: 'html',
+                        success: function (data) {
+                            // Actualiza el contenido del carrito en la página
+                            
+                            $('.contenedor-carrito').html(data.carrito_html);//Se necesita modificar el Dom de carrito.html
+                            alert("se actualizo el contenido del carrito")
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            // Maneja los errores de la solicitud AJAX
+                            console.log('Error en la solicitud AJAX:', textStatus, errorThrown);
+
+                            // Puedes mostrar un mensaje de error al usuario
+                            alert('Error al actualizar la información del carrito');
+                        }
+                    });
+                }
+
             });
         });
     }

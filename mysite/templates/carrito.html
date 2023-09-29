@@ -198,6 +198,7 @@
           <th scope="col">NOMBRE</th>
           <th scope="col">PRECIO</th>
           <th scope="col">CANTIDAD</th>
+          <th scope="col">TIENDA</th>
         </tr>
       </thead>
       <tbody>
@@ -207,9 +208,10 @@
           <td>{{value.nombre}}</td>
           <td>{{value.acumulado}}</td>
           <td>{{value.cantidad}}
-            <a href="{% url 'Add' value.producto_id %}" class="badge btn btn-dark badge-dark">+</a>
-            <a href="{% url 'Sub' value.producto_id %}" class="badge btn btn-dark badge-dark">-</a>
+            <button type="button" class="btn-agregar" data-producto="{{ value.producto_id }}" data-vendedor="{{ value.vendedor_id }}">+</button>
+            <button href="{% url 'Sub' value.producto_id value.vendedor_id %}" class="badge btn btn-dark badge-dark">-</button>
           </td>
+          <td>{{ value.tienda }}</td>
         </tr>
         {% endfor %}
         {% else %}

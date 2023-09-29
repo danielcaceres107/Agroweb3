@@ -11,7 +11,6 @@ class Products(models.Model):
     precioProd = models.DecimalField(max_digits=10, decimal_places=0)
     descripcionProd = models.TextField(max_length=500)
     imagenProd = models.ImageField(upload_to='img/', null=True, blank=True)
-    # Otros campos que necesites
 
     def __str__(self):
         return self.nombreProd
@@ -40,7 +39,7 @@ class Vendedores(models.Model):
         # Eliminar la instancia de vendedor correspondiente al usuario que se está eliminando
         vendedor = Vendedores.objects.get(nombreVendedor=instance.username)
         vendedor.delete()
-        
+    
 class Clientes(models.Model):
     nombreCliente = models.CharField(max_length=200, unique=True)
     usuarioCliente = models.CharField(max_length=200, unique=True)
@@ -54,3 +53,28 @@ def delete_cliente(sender, instance, **kwargs):
     # Eliminar la instancia de cliente correspondiente al usuario que se está eliminando
     cliente = Clientes.objects.get(nombreCliente=instance.username)
     cliente.delete()
+
+class Pedidos(models.Model):
+    usuario_compra = models.ForeignKey(User, related_name='comprador', on_delete=models.CASCADE)
+    vendedores_pedidos_ids = models.ManyToManyField(Vendedores, through='VendedoresPedidosConexion', related_name='vendedores')
+    productos_pedidos = models.ManyToManyField(Products, through='ProductosPedidosConexion', related_name='producto')
+    total = models.DecimalField(max_digits=10, decimal_places=2)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Pedido {self.pk} por {self.usuario_compra.username}'
+    
+class VendedoresPedidosConexion(models.Model):
+    pedido = models.ForeignKey(Pedidos, related_name='vendedores_pedidos', on_delete=models.CASCADE)
+    vendedor = models.ForeignKey(Vendedores, related_name='pedidos_vendedores', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'Vendedor: {self.vendedor.username}, Pedido: {self.pedido.pk}'
+    
+class ProductosPedidosConexion(models.Model):
+    pedido = models.ForeignKey(Pedidos, on_delete=models.CASCADE)
+    producto = models.ForeignKey(Products, on_delete=models.CASCADE)
+    cantidad = models.PositiveIntegerField() 
+
+    def __str__(self):
+        return f'Pedido: {self.pedido.pk}, Producto: {self.producto.nombre}'
