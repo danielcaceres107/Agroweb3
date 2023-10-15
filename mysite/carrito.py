@@ -10,7 +10,7 @@ class Carrito:
             self.carrito = carrito
 
     def agregar(self, producto, vendedor_id, tienda):
-        id = producto.pk + vendedor_id
+        id = str(vendedor_id) + str(producto.pk)
         if id not in self.carrito.keys():
             self.carrito[id]={
                 "producto_id": producto.pk,
@@ -18,7 +18,9 @@ class Carrito:
                 "acumulado": int(producto.precioProd),
                 "cantidad": 1,
                 "vendedor_id": vendedor_id,
-                "tienda": tienda
+                "tienda": tienda, 
+                "last_product_id": producto.pk,
+                "last_vendedor_id": vendedor_id
             }
         else:
             self.carrito[id]["cantidad"] += 1
@@ -33,13 +35,13 @@ class Carrito:
         self.session.modified = True
 
     def eliminar(self, producto, vendedor_id):
-        id = producto.pk + vendedor_id
+        id = str(vendedor_id) + str(producto.pk)
         if id in self.carrito:
             del self.carrito[id]
             self.guardar_carrito()
 
     def restar(self, producto, vendedor_id):
-        id = producto.pk + vendedor_id
+        id = str(vendedor_id) + str(producto.pk)
         if id in self.carrito.keys():
             self.carrito[id]["cantidad"] -= 1
             self.carrito[id]["acumulado"] -= int(producto.precioProd)

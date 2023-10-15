@@ -201,19 +201,19 @@
           <th scope="col">TIENDA</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="contenidoCarrito">
         {% if request.session.carrito.items %}
-        {% for key, value in request.session.carrito.items %}
-        <tr>
-          <td>{{value.nombre}}</td>
-          <td>{{value.acumulado}}</td>
-          <td>{{value.cantidad}}
-            <button type="button" class="btn-agregar" data-producto="{{ value.producto_id }}" data-vendedor="{{ value.vendedor_id }}">+</button>
-            <button href="{% url 'Sub' value.producto_id value.vendedor_id %}" class="badge btn btn-dark badge-dark">-</button>
-          </td>
-          <td>{{ value.tienda }}</td>
-        </tr>
-        {% endfor %}
+          {% for key, value in request.session.carrito.items %}
+          <tr>
+            <td>{{ value.nombre }}</td>
+            <td>{{ value.acumulado }}</td>
+            <td>{{ value.cantidad }}
+              <button type="button" class="btn-agregar" data-producto="{{ value.producto_id }}" data-vendedor="{{ value.vendedor_id }}">+</button>
+              <button type="button" class="btn-restar" data-producto="{{ value.producto_id }}" data-vendedor="{{ value.vendedor_id }}">-</button>
+            </td>
+            <td id="tienda1">{{ value.tienda }}</td>
+          </tr>
+          {% endfor %}
         {% else %}
         <tr>
           <td colspan="3">

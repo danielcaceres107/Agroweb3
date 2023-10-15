@@ -61,8 +61,6 @@
             '<div class="productos-container">'; // Agrega un contenedor para los productos
 
             vendedor.productos.map(producto => {
-                // Crear la clave única para identificar el producto en esta tienda
-                const claveUnica = producto.pk + '-' + vendedor.pk;
 
                 panelProducts += '<div class="producto">' + // Agrega un contenedor para cada producto
                     '<h3>' + producto.fields.nombreProd + '</h3>' +
@@ -72,7 +70,6 @@
                     '<button class="btn-agregar" data-producto="'+ producto.pk +'" data-vendedor="'+ vendedor.pk + '">Agregar al carrito</button>' +
                     '</div>';
                 console.log(producto.pk);
-                console.log(claveUnica);
             });
 
             panelProducts += '</div></div>'; 
@@ -111,7 +108,7 @@
                         '<p style="color:red;" font-size="30px"> <strong> Cerrado</strong></p>'
                 }
 
-                // Agrega un evento de clic a los botones "Agregar al carrito"
+                // Agrega un evento de click a los botones "Agregar al carrito"
                 $('.btn-agregar').on('click', function () {
                     const productoId = $(this).data('producto');
                     const vendedorId = $(this).data('vendedor');
@@ -121,8 +118,25 @@
                         url: '/agregar/' + productoId + '/' + vendedorId, // URL de la vista para agregar el producto al carrito
                         dataType: 'json',
                         success: function (data) {
-                            // Maneja la respuesta del servidor, por ejemplo, mostrar un mensaje de éxito
-                            alert(data.message);
+
+                            actualizarCarrito();
+                        },
+                        error: function () {
+                            // Maneja los errores de la solicitud Ajax
+                            alert('Error al agregar el producto al carrito.');
+                        }
+                    });
+                });
+                // Agrega un evento de click a los botones "Agregar al carrito"
+                $('.btn-restar').on('click', function () {
+                    const productoId = $(this).data('producto');
+                    const vendedorId = $(this).data('vendedor');
+
+                    $.ajax({
+                        type: 'POST', // Utiliza el método POST
+                        url: '/restar/' + productoId + '/' + vendedorId, // URL de la vista para agregar el producto al carrito
+                        dataType: 'json',
+                        success: function (data) {
 
                             actualizarCarrito();
                         },
@@ -140,10 +154,13 @@
                         method: 'POST',
                         dataType: 'html',
                         success: function (data) {
+                            var jsonData = JSON.parse(data);  // Parsea el JSON recibido
+
+                            // Extrae el valor de filas_html del JSON
+                            var filas_html = jsonData.filas_html;
+
                             // Actualiza el contenido del carrito en la página
-                            
-                            $('.contenedor-carrito').html(data.carrito_html);//Se necesita modificar el Dom de carrito.html
-                            alert("se actualizo el contenido del carrito")
+                            document.getElementById('contenidoCarrito').innerHTML = filas_html;
                         },
                         error: function (jqXHR, textStatus, errorThrown) {
                             // Maneja los errores de la solicitud AJAX

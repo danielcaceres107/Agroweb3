@@ -28,10 +28,15 @@ import os
 import tempfile
 from django.core.files.base import ContentFile
 from datetime import datetime
+from django.db.models import Sum
+import time
+
 
 # Cargar las variables de entorno desde el archivo .env // el archivo .env no se sube a github
 CORREO = config('CORREO')
 CONTRASENA = config('CONTRASENA')
+
+
 
 def index(request):
     return HttpResponse(render(request, 'index.html'))
@@ -52,7 +57,6 @@ def agregar_producto(request, producto_id, vendedor_id):
         vendedor = Vendedores.objects.get(id=vendedor_id)
         # desde el vendedor obtener la tienda
         tienda = vendedor.nombreTienda
-        print("nombreTienda: " + tienda)
     except Vendedores.DoesNotExist:
         return redirect('mapa')
 
@@ -97,13 +101,15 @@ def get_carrito(request):
     # buscar la manera de obtener lo que hay en carrito.html y modificar su contenido
     carrito = Carrito(request)
     carrito_data = carrito.obtener_carrito()
-    print(carrito_data)
 
-    carrito_html = {
-        'carrito': carrito,
-    }
-    
-    return render(request, 'carrito.html', carrito_html)
+    # Procesa tus datos y crea un HTML para las nuevas filas de la tabla del carrito 
+    filas_html = ''
+    for item_id, item_data in carrito_data.items():
+        fila_html = f'<tr><td>{item_data["nombre"]}</td><td>{item_data["acumulado"]}</td><td>{item_data["cantidad"]}<button type="button" class="btn-agregar" data-producto="{item_data["last_product_id"]}" data-vendedor="{item_data["last_vendedor_id"]}">+</button><button type="button" class="btn-restar" data-producto="{{ value.producto_id }}" data-vendedor="{{ value.vendedor_id }}">-</button></td><td>{item_data["tienda"]}</td></tr>'
+        filas_html += fila_html
+
+    # Retorna los datos como una respuesta JSON
+    return JsonResponse({'filas_html': filas_html})
 
 @csrf_exempt
 def enviar_carrito(request):
@@ -114,7 +120,12 @@ def enviar_carrito(request):
     usuario_compra = request.user
 
     # Calcular el monto total del pedido basado en los productos en el carrito
-    total_amount = sum(item['acumulado'] * item['cantidad'] for item in carrito_data.values())
+    total_amount = 0  # Inicializamos el monto total en cero
+    for item in carrito_data.values():
+        acumulado = item['acumulado']
+        cantidad = item['cantidad']
+        producto = item['nombre']  # Cambia 'nombre' por el nombre del campo real que almacena el nombre del producto
+
 
     # Crear una nueva instancia de Pedido y guardarla en la base de datos
     nuevo_pedido = Pedidos.objects.create(
@@ -128,9 +139,10 @@ def enviar_carrito(request):
 
     # Asignar los productos en el carrito a la nueva orden de pedido
     for item_id, item_data in carrito_data.items():
-        producto = Products.objects.get(id=item_id)
-        cantidad = item_data['cantidad']
-        ProductosPedidosConexion.objects.create(pedido=nuevo_pedido, producto=producto, cantidad=cantidad)
+        last_product_id = int(item_data['last_product_id'])
+        update_producto = Products.objects.get(id=last_product_id)
+        nueva_cantidad = item_data['cantidad']
+        ProductosPedidosConexion.objects.create(pedido=nuevo_pedido, producto=update_producto, cantidad=nueva_cantidad)
         
         # Obtener los vendedores asociados a este producto
 
@@ -141,10 +153,8 @@ def enviar_carrito(request):
             print("vendedor agregado en lista")
             vendedores_list.append(item_data['vendedor_id'])
 
-        print(vendedores_list)
         # Crear relaciones con los vendedores
         for vendedor_i in vendedores_list:
-            print(vendedor_i)
             VendedoresPedidosConexion.objects.create(pedido=nuevo_pedido, vendedor = Vendedores.objects.get(id=vendedor_i))
 
     enviar_correo(carrito_data, usuario_compra)
@@ -421,7 +431,6 @@ def validarRegistro(request, token):
         #    request, username=datos_vendedor['username'], password=datos_vendedor['password1'])
         # login(request, user)
 
-        print('usuario creado satisfactoriamente')
 
         # Eliminar los datos de la caché después de la validación
         cache.delete(token)
@@ -510,16 +519,76 @@ def registroCliente(request):
 def perfil(request):
     if request.user.is_authenticated:
         try:
-            vendedor = Vendedores.objects.get(usuarioVendedor=request.user.username)
-            return render(request, 'perfil.html', {'vendedor': vendedor})
-        except Vendedores.DoesNotExist:
+            cliente = Clientes.objects.get(usuarioCliente=request.user)
+            # Obtener los últimos 5 pedidos del usuario vendedor
+            ultimas_compras = Pedidos.objects.filter(usuario_compra_id=request.user).order_by('-fecha')[:5]
+            
+            # Crear una lista para almacenar los productos relacionados con los pedidos del cliente
+            productos_comprados = []
+
+            for pedido in ultimas_compras:
+                productos_pedido = ProductosPedidosConexion.objects.filter(pedido=pedido)
+                for producto_pedido in productos_pedido:
+                    producto = producto_pedido.producto
+                    cantidad = producto_pedido.cantidad
+                    productos_comprados.append((producto, cantidad))
+
+            return render(request, 'perfil.html', {'cliente': cliente, 'productos_comprados': productos_comprados, 'ultimas_compras': ultimas_compras})
+        except Clientes.DoesNotExist:
             try:
-                cliente = Clientes.objects.get(usuarioCliente=request.user.username)
-                return render(request, 'perfil.html', {'cliente': cliente})
-            except Clientes.DoesNotExist:
-                return render(request, 'perfil.html', {})
+                vendedor = Vendedores.objects.get(usuarioVendedor=request.user)
+
+                # Obtener los últimos 5 pedidos del usuario vendedor
+                ultimas_ventas = Pedidos.objects.filter(vendedor_pedido_id=vendedor).order_by('-fecha')[:5]
+
+                # Crear una lista para almacenar los productos relacionados con los pedidos del cliente
+                productos_vendidos = []
+
+                productos_vendidos_total = 0
+
+                list_productos_vendidos_total = calcular_productos_vendidos(vendedor)
+
+                for producto, cantidad in list_productos_vendidos_total.items():
+                    productos_vendidos_total += cantidad
+
+                for pedido in ultimas_ventas:
+                    productos_pedido = ProductosPedidosConexion.objects.filter(pedido=pedido)
+                    for producto_pedido in productos_pedido:
+                        producto = producto_pedido.producto
+                        cantidad = producto_pedido.cantidad
+                        productos_vendidos.append((producto, cantidad))
+
+                return render(request, 'perfil.html', {'vendedor': vendedor, 'productos_vendidos': productos_vendidos, 'ultimas_ventas': ultimas_ventas, 'productos_vendidos_total': productos_vendidos_total })
+            except Vendedores.DoesNotExist:
+                    return render(request, 'perfil.html', {})
     else:
         return render(request, 'perfil.html', {})
+
+
+def calcular_productos_vendidos(vendedor):
+    # Inicializa un diccionario para rastrear la cantidad de productos vendidos por cada producto
+    productos_vendidos_total = {}
+
+    # Obtén todos los pedidos relacionados con este vendedor
+    pedidos_vendedor = Pedidos.objects.filter(vendedor_pedido_id=vendedor)
+
+    # Recorre cada pedido
+    for pedido in pedidos_vendedor:
+        productos_pedido = ProductosPedidosConexion.objects.filter(pedido=pedido)
+
+        # Recorre cada producto en el pedido
+        for producto_pedido in productos_pedido:
+            producto = producto_pedido.producto
+            cantidad = producto_pedido.cantidad
+
+            # Actualiza el contador de productos vendidos para este producto
+            if producto.pk in productos_vendidos_total:
+                productos_vendidos_total[producto.pk] += cantidad
+            else:
+                productos_vendidos_total[producto.pk] = cantidad
+
+    return productos_vendidos_total
+
     
 def editarPerfilV(request):
     if request.method == 'POST':
@@ -574,8 +643,7 @@ def actualizarUbicacion(request):
         latitude = request.POST.get('latitude', None)
         longitude = request.POST.get('longitude', None)
         try:
-            vendedor = Vendedores.objects.get(
-                usuarioVendedor=request.user.username)
+            vendedor = Vendedores.objects.get(usuarioVendedor=request.user.username)
             vendedor.latitude = latitude
             vendedor.longitude = longitude
             vendedor.save()
@@ -596,7 +664,6 @@ def crear_producto(request):
         else:
             print(productForm.errors)  # Muestra los errores en la consola
     else:
-        print('no entra')
         productForm = ProductoForm()
 
     return render(request, 'crear_producto.html', {'productForm': productForm})

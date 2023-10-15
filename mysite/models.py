@@ -55,9 +55,9 @@ def delete_cliente(sender, instance, **kwargs):
     cliente.delete()
 
 class Pedidos(models.Model):
-    usuario_compra = models.ForeignKey(User, related_name='comprador', on_delete=models.CASCADE)
-    vendedores_pedidos_ids = models.ManyToManyField(Vendedores, through='VendedoresPedidosConexion', related_name='vendedores')
-    productos_pedidos = models.ManyToManyField(Products, through='ProductosPedidosConexion', related_name='producto')
+    usuario_compra_id = models.ForeignKey(User, related_name='comprador', on_delete=models.CASCADE)
+    vendedor_pedido_id = models.ManyToManyField(Vendedores, through='VendedoresPedidosConexion', related_name='vendedores_pedidos')
+    productos_pedidos = models.ManyToManyField(Products, through='ProductosPedidosConexion', related_name='productos_pedidos')
     total = models.DecimalField(max_digits=10, decimal_places=2)
     fecha = models.DateTimeField(auto_now_add=True)
 
@@ -65,8 +65,8 @@ class Pedidos(models.Model):
         return f'Pedido {self.pk} por {self.usuario_compra.username}'
     
 class VendedoresPedidosConexion(models.Model):
-    pedido = models.ForeignKey(Pedidos, related_name='vendedores_pedidos', on_delete=models.CASCADE)
-    vendedor = models.ForeignKey(Vendedores, related_name='pedidos_vendedores', on_delete=models.CASCADE)
+    pedido = models.ForeignKey(Pedidos, related_name='pedidos_ids', on_delete=models.CASCADE)
+    vendedor = models.ForeignKey(Vendedores, related_name='vendedores_ids', on_delete=models.CASCADE)
 
     def __str__(self):
         return f'Vendedor: {self.vendedor.username}, Pedido: {self.pedido.pk}'
