@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from agroweb import settings
+from mysite.my_context_processor import total_carrito
 from .models import Vendedores, Clientes, Products, Pedidos, ProductosPedidosConexion, VendedoresPedidosConexion
 from .carrito import Carrito
 from django.contrib.auth.forms import AuthenticationForm
@@ -39,7 +40,30 @@ CONTRASENA = config('CONTRASENA')
 
 
 def index(request):
-    return HttpResponse(render(request, 'index.html'))
+    if request.user.is_authenticated and request.user.username == "validador":
+        # Usuario "validador"
+        pedidos = Pedidos.objects.filter(proceso_validado=False)
+        return render(request, 'validador.html', {'pedidos': pedidos})
+    else:
+        # Otros usuarios
+        return render(request, 'index.html')
+    
+def aprobar_pedido(request, pedido_id):
+    pedido = Pedidos.objects.get(pk=pedido_id)
+
+    pedido.proceso_validado = True
+    pedido.aprobado = True
+    usuario = pedido.usuario_compra_id
+    pedido.save()
+    return redirect('index')
+
+def denegar_pedido(request, pedido_id):
+    pedido = Pedidos.objects.get(pk=pedido_id)
+
+    pedido.proceso_validado = False
+    pedido.aprobado = False
+    pedido.save()
+    return redirect('index')
 
 
 def mapa(request):
@@ -97,8 +121,6 @@ def limpiar_carrito(request):
 
 @csrf_exempt
 def get_carrito(request):
-    # se debe obtener la información del carrito para actualizar el carrito al instante (aun no funciona)
-    # buscar la manera de obtener lo que hay en carrito.html y modificar su contenido
     carrito = Carrito(request)
     carrito_data = carrito.obtener_carrito()
 
@@ -119,17 +141,18 @@ def enviar_carrito(request):
     # Obtener el objeto User actual (usuario de compra)
     usuario_compra = request.user
 
-    # Calcular el monto total del pedido basado en los productos en el carrito
-    total_amount = 0  # Inicializamos el monto total en cero
+    # monto total del pedido
+    total_carrito_dic = total_carrito(request)  # Llama a la función del contexto procesador
+    total_amount = Decimal(total_carrito_dic['total_carrito'])
+
     for item in carrito_data.values():
         acumulado = item['acumulado']
         cantidad = item['cantidad']
-        producto = item['nombre']  # Cambia 'nombre' por el nombre del campo real que almacena el nombre del producto
-
+        producto = item['nombre']
 
     # Crear una nueva instancia de Pedido y guardarla en la base de datos
     nuevo_pedido = Pedidos.objects.create(
-        usuario_compra=usuario_compra,
+        usuario_compra_id=usuario_compra,
         total=total_amount,
         fecha=datetime.now()
     )
@@ -157,7 +180,6 @@ def enviar_carrito(request):
         for vendedor_i in vendedores_list:
             VendedoresPedidosConexion.objects.create(pedido=nuevo_pedido, vendedor = Vendedores.objects.get(id=vendedor_i))
 
-    enviar_correo(carrito_data, usuario_compra)
     carrito.limpiar()
 
     return redirect('mapa')
@@ -431,6 +453,7 @@ def validarRegistro(request, token):
         #    request, username=datos_vendedor['username'], password=datos_vendedor['password1'])
         # login(request, user)
 
+        print('usuario creado satisfactoriamente')
 
         # Eliminar los datos de la caché después de la validación
         cache.delete(token)

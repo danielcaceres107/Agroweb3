@@ -35,10 +35,12 @@ urlpatterns = [
     path('registroCliente/', views.registroCliente, name= 'registroCliente'),
     path('registroVendedor/', views.registroVendedor, name= 'registroVendedor'),
     path('perfil/', views.perfil, name='perfil'),
-    path('editarPerfilV/', views.editarPerfilV, name='editarPerfil'),
-    path('editarPerfilC/', views.editarPerfilC, name='editarPerfil'),
+    path('editarPerfilV/', views.editarPerfilV, name='editarPerfilV'),
+    path('editarPerfilC/', views.editarPerfilC, name='editarPerfilC'),
     path('actualizarUbicacion/', views.actualizarUbicacion, name='actualizarUbicacion'),
     path('registro-exitoso-vendedor/', views.registroExitosoVendedor, name='registroExitosoV'),
     path('validar/<str:token>/', views.validarRegistro, name='validarRegistro'),
-    path('crear_producto/', views.crear_producto, name='crear_producto')
+    path('crear_producto/', views.crear_producto, name='crear_producto'),
+    path('aprobar_pedido/<int:pedido_id>/', views.aprobar_pedido, name='aprobarPedido'),
+    path('denegar_pedido/<int:pedido_id>/', views.denegar_pedido, name='denegarPedido'),
 ]

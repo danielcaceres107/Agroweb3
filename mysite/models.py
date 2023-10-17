@@ -60,6 +60,7 @@ class Pedidos(models.Model):
     productos_pedidos = models.ManyToManyField(Products, through='ProductosPedidosConexion', related_name='productos_pedidos')
     total = models.DecimalField(max_digits=10, decimal_places=2)
     fecha = models.DateTimeField(auto_now_add=True)
+    proceso_validado = models.BooleanField(default=False)
 
     def __str__(self):
         return f'Pedido {self.pk} por {self.usuario_compra.username}'

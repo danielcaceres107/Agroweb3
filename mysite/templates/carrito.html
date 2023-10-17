@@ -205,13 +205,13 @@
         {% if request.session.carrito.items %}
           {% for key, value in request.session.carrito.items %}
           <tr>
-            <td>{{ value.nombre }}</td>
-            <td>{{ value.acumulado }}</td>
-            <td>{{ value.cantidad }}
+            <td id="nombre">{{ value.nombre }}</td>
+            <td id="acumulado">{{ value.acumulado }}</td>
+            <td id="cantidad">{{ value.cantidad }}
               <button type="button" class="btn-agregar" data-producto="{{ value.producto_id }}" data-vendedor="{{ value.vendedor_id }}">+</button>
               <button type="button" class="btn-restar" data-producto="{{ value.producto_id }}" data-vendedor="{{ value.vendedor_id }}">-</button>
             </td>
-            <td id="tienda1">{{ value.tienda }}</td>
+            <td id="tienda">{{ value.tienda }}</td>
           </tr>
           {% endfor %}
         {% else %}

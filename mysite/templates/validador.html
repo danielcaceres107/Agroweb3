@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inicio</title>
+</head>
+<body>
+    <h1>Validar Pedidos</h1>
+    {% for pedido in pedidos %}
+    <ul>
+        <li> Id del Pedido: {{ pedido.id }}</li>
+        <li> Fecha: {{ pedido.fecha }} </li>
+        <li> Total: {{ pedido.total }} </li>
+
+        <form method="post" action="{% url 'aprobarPedido' pedido.id %}">
+            {% csrf_token %}
+            <button type="submit">Aprobar Pedido</button>
+        </form>
+        <form method="post" action="{% url 'denegarPedido' pedido.id %}">
+            {% csrf_token %}
+            <button type="submit">Denegar Pedido</button>
+        </form>
+    </ul>
+    {% endfor %}
+    <br>
+</body>
+</html>
