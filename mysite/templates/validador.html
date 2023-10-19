@@ -1,24 +1,95 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Inicio</title>
+    <title>Validación de Pedidos</title>
 </head>
-<body>
-    <h1>Validar Pedidos</h1>
-    {% for pedido in pedidos %}
-    <ul>
-        <li> Id del Pedido: {{ pedido.id }}</li>
-        <li> Fecha: {{ pedido.fecha }} </li>
-        <li> Total: {{ pedido.total }} </li>
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f5f5f5;
+        text-align: center;
+    }
 
-        <form method="post" action="{% url 'aprobarPedido' pedido.id %}">
-            {% csrf_token %}
-            <button type="submit">Aprobar Pedido</button>
-        </form>
-        <form method="post" action="{% url 'denegarPedido' pedido.id %}">
-            {% csrf_token %}
-            <button type="submit">Denegar Pedido</button>
-        </form>
+    h1 {
+        text-align: center;
+        color: #000000;
+        margin: 40px 0;
+        font-size: 50px;
+    }
+
+    .tabla-pedidos {
+        list-style: none;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin: 10px;
+        padding: 10px;
+        font-size: 22px;
+    }
+
+    .tabla-pedidos-header {
+        font-weight: bold;
+        border-bottom: 2px solid #000000;
+        font-size: 25px;
+    }
+
+    .tabla-pedidos li {
+        display: inline-block;
+        width: 24%;
+        vertical-align: top;
+        margin: 10px 0;
+    }
+
+    .tabla-pedidos form {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .tabla-pedidos button[type="submit"],
+    .tabla-pedidos button.denegar[type="submit"] {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        margin-top: 10px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+    }
+
+    .tabla-pedidos button.denegar[type="submit"] {
+        background-color: #ff4747;
+    }
+
+    .tabla-pedidos button[type="submit"]:hover {
+        background-color: #45a049;
+    }
+</style>
+<body>
+    <h1>Validación de Pedidos</h1>
+    <ul class="tabla-pedidos tabla-pedidos-header">
+        <li>Id del Pedido</li>
+        <li>Fecha</li>
+        <li>Total</li>
+        <li>Acciones</li>
+    </ul>
+    {% for pedido in pedidos %}
+    <ul class="tabla-pedidos">
+        <li>{{ pedido.id }}</li>
+        <li>{{ pedido.fecha }}</li>
+        <li>{{ pedido.total }}</li>
+        <li>
+            <form method="post" action="{% url 'aprobarPedido' pedido.id %}">
+                {% csrf_token %}
+                <button type="submit">Aprobar Pedido</button>
+            </form>
+            <form method "post" action="{% url 'denegarPedido' pedido.id %}">
+                {% csrf_token %}
+                <button type="submit" class="denegar">Denegar Pedido</button>
+            </form>
+        </li>
     </ul>
     {% endfor %}
     <br>
