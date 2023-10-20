@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Estado de los Pedidos</title>
+</head>
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f5f5f5;
+        text-align: center;
+    }
+
+    .navbar {
+        background-color: #333;
+        overflow: hidden;
+    }
+
+    .navbar a {
+        float: left;
+        display: block;
+        color: white;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+    }
+
+    h1 {
+        text-align: center;
+        color: #000000;
+        margin: 40px 0;
+        font-size: 50px;
+    }
+</style>
+<body>
+    <div class="navbar">
+        <a href="{% url 'index' %}">Validar Pedidos</a>
+        <a href="#">Validar Vendedores</a>
+        <a href="#">Estado de los Pedidos</a>
+    </div>
+    <h1>Estado de los Pedidos</h1>
+    <ul>
+        {% for pedido in pedidos %}
+            <li>
+                Pedido ID: {{ pedido.id }}
+                <br>
+                Estado: {{ pedido.estado }}
+                <br>
+                <form method="post" action="{% url 'cambiarEstadoPedido' pedido.id %}">
+                    {% csrf_token %}
+                    <select name="nuevo_estado">
+                        <option value="pendiente" {% if pedido.estado == "pendiente" %}selected{% endif %}>Pendiente</option>
+                        <option value="en_camino" {% if pedido.estado == "en_camino" %}selected{% endif %}>En Camino</option>
+                        <option value="entregado" {% if pedido.estado == "entregado" %}selected{% endif %}>Entregado</option>
+                    </select>
+                    <button type="submit">Cambiar Estado</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

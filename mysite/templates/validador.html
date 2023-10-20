@@ -10,6 +10,20 @@
         text-align: center;
     }
 
+    .navbar {
+        background-color: #333;
+        overflow: hidden;
+    }
+
+    .navbar a {
+        float: left;
+        display: block;
+        color: white;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+    }
+
     h1 {
         text-align: center;
         color: #000000;
@@ -68,6 +82,11 @@
     }
 </style>
 <body>
+    <div class="navbar">
+        <a href="#">Validar Pedidos</a>
+        <a href="#">Validar Vendedores</a>
+        <a href="/estado_pedidos">Estado de los Pedidos</a>
+    </div>
     <h1>Validación de Pedidos</h1>
     <ul class="tabla-pedidos tabla-pedidos-header">
         <li>Id del Pedido</li>
@@ -85,7 +104,7 @@
                 {% csrf_token %}
                 <button type="submit">Aprobar Pedido</button>
             </form>
-            <form method "post" action="{% url 'denegarPedido' pedido.id %}">
+            <form method="post" action="{% url 'denegarPedido' pedido.id %}">
                 {% csrf_token %}
                 <button type="submit" class="denegar">Denegar Pedido</button>
             </form>

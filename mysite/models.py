@@ -61,6 +61,7 @@ class Pedidos(models.Model):
     total = models.DecimalField(max_digits=10, decimal_places=2)
     fecha = models.DateTimeField(auto_now_add=True)
     proceso_validado = models.BooleanField(default=False)
+    estado = models.CharField(max_length=20, choices=[('pendiente', 'Pendiente'), ('en_camino', 'En Camino'), ('entregado', 'Entregado')], default='pendiente')
 
     def __str__(self):
         return f'Pedido {self.pk} por {self.usuario_compra.username}'

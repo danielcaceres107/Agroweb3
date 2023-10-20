@@ -53,6 +53,7 @@ def aprobar_pedido(request, pedido_id):
 
     pedido.proceso_validado = True
     pedido.aprobado = True
+    pedido.estado = 'en_camino'
     usuario = pedido.usuario_compra_id
     pedido.save()
     return redirect('index')
@@ -62,8 +63,31 @@ def denegar_pedido(request, pedido_id):
 
     pedido.proceso_validado = False
     pedido.aprobado = False
+    pedido.estado = 'pendiente'
     pedido.save()
     return redirect('index')
+
+def estado_pedidos(request):
+    # Obtener todos los pedidos
+    pedidos = Pedidos.objects.all()
+
+    return render(request, 'estado_pedidos.html', {'pedidos': pedidos})
+
+def cambiar_estado_pedido(request, pedido_id):
+    if request.method == "POST":
+        nuevo_estado = request.POST.get("nuevo_estado")
+        
+        try:
+            pedido = Pedidos.objects.get(pk=pedido_id)
+            pedido.estado = nuevo_estado
+            pedido.save()
+            return redirect('estadoPedidos')
+        except Pedidos.DoesNotExist:
+            # caso en que no se encuentre el pedido
+            return redirect('estadoPedidos')
+    
+    # caso en que no sea una solicitud POST
+    return redirect('estadoPedidos')
 
 
 def mapa(request):

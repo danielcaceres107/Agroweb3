@@ -43,4 +43,6 @@ urlpatterns = [
     path('crear_producto/', views.crear_producto, name='crear_producto'),
     path('aprobar_pedido/<int:pedido_id>/', views.aprobar_pedido, name='aprobarPedido'),
     path('denegar_pedido/<int:pedido_id>/', views.denegar_pedido, name='denegarPedido'),
+    path('estado_pedidos', views.estado_pedidos, name='estadoPedidos'),
+    path('cambiar_estado_pedido/<int:pedido_id>/', views.cambiar_estado_pedido, name='cambiarEstadoPedido')
 ]
