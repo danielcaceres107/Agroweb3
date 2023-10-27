@@ -6,7 +6,7 @@ from .models import Vendedores, Products, Clientes
 
 class RegistroVendedorForm(forms.ModelForm):
     username = forms.CharField(label="Nombre de usuario")
-    nombreVendedor = forms.CharField(label="Nombre Vendedor")
+    nombreVendedor = forms.CharField(label="Nombre completo del vendedor")
     cedula = forms.CharField(label="Cedula")
     password1 = forms.CharField(widget=forms.PasswordInput, label="Contraseña")
     password2 = forms.CharField(widget=forms.PasswordInput, label="Confirmación de contraseña")

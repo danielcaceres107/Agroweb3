@@ -39,6 +39,7 @@ urlpatterns = [
     path('editarPerfilC/', views.editarPerfilC, name='editarPerfilC'),
     path('actualizarUbicacion/', views.actualizarUbicacion, name='actualizarUbicacion'),
     path('registro-exitoso-vendedor/', views.registroExitosoVendedor, name='registroExitosoV'),
+    path('validarVendedor/', views.validarVendedor, name="validarVendedores"),
     path('validar/<str:token>/', views.validarRegistro, name='validarRegistro'),
     path('crear_producto/', views.crear_producto, name='crear_producto'),
     path('aprobar_pedido/<int:pedido_id>/', views.aprobar_pedido, name='aprobarPedido'),

@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
+import redis
 from agroweb import settings
 from mysite.my_context_processor import total_carrito
 from .models import Vendedores, Clientes, Products, Pedidos, ProductosPedidosConexion, VendedoresPedidosConexion
@@ -335,11 +336,19 @@ def registroVendedor(request):
         if request.POST['password1'] == request.POST['password2']:
             try:
 
-                # Generar un token único
+                r = redis.Redis(host='localhost', port=6379, db=0)
+
+                # Genera un token único
                 token = get_random_string(length=32)
 
                 # Obtener los productos seleccionados del formulario
                 productos_seleccionados = request.POST.getlist('productos')
+
+                # Convierte la lista de productos a una cadena JSON
+                productos_json = json.dumps(productos_seleccionados)
+
+                print(productos_json)
+
 
                 # Obtener la ruta de la carpeta de archivos temporales
                 ruta_temporal = tempfile.gettempdir()
@@ -356,7 +365,7 @@ def registroVendedor(request):
                 else:
                     archivo_path = None
 
-                # Guardar los datos en caché con el token como clave
+                # Obtén los datos del formulario
                 datos_vendedor = {
                     'username': request.POST['username'],
                     'vendedor': request.POST['nombreVendedor'],
@@ -368,66 +377,15 @@ def registroVendedor(request):
                     'latitude': request.POST['latitude'],
                     'longitude': request.POST['longitude'],
                     'horario': request.POST['horario'],
-                    'productos': productos_seleccionados
+                    'productos': productos_json
                 }
 
-                # Guardar los datos en caché con el token como clave
-                cache.set(token, datos_vendedor)
+                # Guarda los datos en Redis con el token como clave
+                r.hmset(token, datos_vendedor)
 
-                # Generar el enlace de validación
-                enlace_validacion = request.build_absolute_uri(
-                    reverse('validarRegistro', args=[token]))
+                print(datos_vendedor)
 
-                # Enviar el correo electrónico de validación
-                smtp_host = 'smtp.office365.com'
-                smtp_port = 587
-                smtp_username = CORREO
-                smtp_password = CONTRASENA
-                sender = CORREO
-                recipient = 'danielcaceres107@gmail.com'
-                subject = 'Registro de ' + \
-                    request.POST['nombreVendedor'] + ' como vendedor Agroweb'
-                message = '''
-                <html>
-                <head></head>
-                <body>
-                    Estimado usuario, gracias por hacer parte de la comunidad de vendedores Agroweb, se realizara la validacion de los siguientes datos registrados:
-
-                    <h2>Registro del usuario ''' + request.POST['nombreVendedor'] + ''' para revision :</h2>
-                    <p><strong>Usuario: </strong> ''' + request.POST['username'] + ''' </p>
-                    <p><strong>Nombre Completo: </strong> ''' + request.POST['nombreVendedor'] + ''' </p>
-                    <p><strong>Cedula: </strong> ''' + request.POST['cedula'] + ''' </p>
-                    <p><strong>Nombre de la Tienda: </strong> ''' + request.POST['nombreTienda'] + ''' </p>
-                    <p><strong>Celular: </strong> ''' + request.POST['telefono'] + ''' </p>
-                    <p><strong>Horario de trabajo: </strong> ''' + request.POST['horario'] + ''' </p> <br>
-
-                    <a href="{}" style="background-color: blue; border: none; color: white; padding: 15px 32px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer;">Validar Registro</a>
-                </body>
-                </html>
-                '''.format(enlace_validacion)
-
-                msg = MIMEMultipart('alternative')
-                msg['Subject'] = subject
-                msg['From'] = sender
-                msg['To'] = recipient
-                html_part = MIMEText(message, 'html')
-                msg.attach(html_part)
-
-                # Adjuntar el archivo PDF al mensaje
-                if documento_adjunto:
-                    documento_adjunto.seek(0)
-                    pdf_data = documento_adjunto.read()
-                    pdf_part = MIMEApplication(pdf_data, 'pdf')
-                    pdf_part.add_header('Content-Disposition', 'attachment',
-                                        filename="registroMercantil_"+request.POST['username']+".pdf")
-                    msg.attach(pdf_part)
-
-                with smtplib.SMTP(smtp_host, smtp_port) as smtp:
-                    smtp.starttls()
-                    smtp.login(smtp_username, smtp_password)
-                    smtp.sendmail(sender, recipient, msg.as_string())
-
-                return render(request, 'msjValidarCorreo.html', {'mensaje': 'Estamos verificando la información proporcionada, al terminar está validacion podrás acceder a todos nuestros servicios.'})
+                return render(request, 'msjValidarCorreo.html', {'mensaje': 'Estamos verificando la información proporcionada, al terminar esta validación podrás acceder a todos nuestros servicios.'})
             except IntegrityError:
                 return render(request, 'registroVendedor.html', {"register": RegistroVendedorForm(), "error": "El nombre de usuario ya esta en uso, intente nuevamente."})
         else:
@@ -436,16 +394,65 @@ def registroVendedor(request):
                 "error": 'Contraseñas no coinciden'
             })
 
+def validarVendedor(request):
+    if request.user.is_authenticated:
+        # Verifica si el usuario actual es un "validador"
+        if request.user.username == "validador":
+            r = redis.Redis(host='localhost', port=6379, db=0)
+            # Recupera todos los tokens de registros pendientes
+            tokens = r.keys('*')
+
+            registros_pendientes = []
+
+            for token in tokens:
+                datos = r.hgetall(token)
+                registros_pendientes.append({
+                    'token': token.decode('utf-8'),
+                    'username': datos[b'username'].decode('utf-8'),
+                    'vendedor': datos[b'vendedor'].decode('utf-8'),
+                    'cedula': datos[b'cedula'].decode('utf-8'),
+                    'nombreTienda': datos[b'nombreTienda'].decode('utf-8'),
+                    'telefono': datos[b'telefono'].decode('utf-8'),
+                    'documentoMercantil': datos[b'documentoMercantil'].decode('utf-8'),
+                    'latitude': datos[b'latitude'].decode('utf-8'),
+                    'longitude': datos[b'longitude'].decode('utf-8'),
+                    'horario': datos[b'horario'].decode('utf-8'),
+                    'productos': datos[b'productos'].decode('utf-8'),
+                })
+            return render(request, 'validarVendedor.html', {'registros_pendientes': registros_pendientes})
+        else:
+            # Si el usuario no es "validador", redirige a la página msjValidarCorreo
+            return render(request, 'msjValidarCorreo.html', {'mensaje': 'Estamos verificando la información proporcionada, al terminar esta validación podrás acceder a todos nuestros servicios.'})
+    else:
+        return HttpResponse('No tiene permiso para visualizar esta página')
+
 
 def validarRegistro(request, token):
-    # Verificar si el token es válido y existe en la caché
-    datos_vendedor = cache.get(token)
+    r = redis.Redis(host='localhost', port=6379, db=0)
 
-    if datos_vendedor:
+    datos_vendedor_redis = r.hgetall(token)
+
+    if datos_vendedor_redis:
+
+        datos_vendedor = {
+            'username': datos_vendedor_redis[b'username'].decode('utf-8'),
+            'password': datos_vendedor_redis[b'password'].decode('utf-8'),
+            'vendedor': datos_vendedor_redis[b'vendedor'].decode('utf-8'),
+            'cedula': datos_vendedor_redis[b'cedula'].decode('utf-8'),
+            'nombreTienda': datos_vendedor_redis[b'nombreTienda'].decode('utf-8'),
+            'telefono': datos_vendedor_redis[b'telefono'].decode('utf-8'),
+            'documentoMercantil': datos_vendedor_redis[b'documentoMercantil'].decode('utf-8'),
+            'latitude': datos_vendedor_redis[b'latitude'].decode('utf-8'),
+            'longitude': datos_vendedor_redis[b'longitude'].decode('utf-8'),
+            'horario': datos_vendedor_redis[b'horario'].decode('utf-8'),
+            'productos': datos_vendedor_redis[b'productos'].decode('utf-8'),
+        }
+        
         # Guardar los datos del vendedor en la base de datos
         user = User.objects.create_user(
             username=datos_vendedor['username'], password=datos_vendedor['password'])
         user.save()
+
 
         # Crear un nuevo registro en la tabla DimVendedores
         vendedor = Vendedores(
@@ -467,23 +474,67 @@ def validarRegistro(request, token):
             archivo_pdf_data = ContentFile(archivo_pdf)
             vendedor.documentoMercantil.save('registroMercantil.pdf', archivo_pdf_data, save=True)
 
-        vendedor.save()
+        # Convertir json en lista
+        productos_lista = json.loads(datos_vendedor['productos'])
 
         # Establecer la relación muchos a muchos utilizando el método set()
-        vendedor.productos.set(datos_vendedor['productos'])
+        vendedor.productos.set(productos_lista)
 
-        # Autenticar y realizar el inicio de sesión con el backend predeterminado (?)
-        # user = authenticate(
-        #    request, username=datos_vendedor['username'], password=datos_vendedor['password1'])
-        # login(request, user)
+        vendedor.save()
 
-        print('usuario creado satisfactoriamente')
+        # Enviar el correo electrónico de exito 
+        smtp_host = 'smtp.office365.com'
+        smtp_port = 587
+        smtp_username = CORREO
+        smtp_password = CONTRASENA
+        sender = CORREO
+        recipient = 'danielcaceres107@gmail.com'
+        subject = 'Registro de ' + \
+            datos_vendedor['vendedor'] + ' como vendedor Agroweb'
+        message = '''
+        <html>
+        <head></head>
+        <body>
+            Estimado usuario, gracias por hacer parte de la comunidad de vendedores Agroweb, se realizara la validacion de los siguientes datos registrados:
+
+            <h2>Registro del usuario ''' + datos_vendedor['vendedor'] + ''':</h2>
+            <p><strong>Usuario: </strong> ''' + datos_vendedor['username'] + ''' </p>
+            <p><strong>Nombre Completo: </strong> ''' + datos_vendedor['vendedor'] + ''' </p>
+            <p><strong>Cedula: </strong> ''' + datos_vendedor['cedula'] + ''' </p>
+            <p><strong>Nombre de la Tienda: </strong> ''' + datos_vendedor['nombreTienda'] + ''' </p>
+            <p><strong>Celular: </strong> ''' + datos_vendedor['telefono'] + ''' </p>
+            <p><strong>Horario de trabajo: </strong> ''' + datos_vendedor['horario'] + ''' </p> <br>
+
+        </body>
+        </html>
+        '''
+
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = sender
+        msg['To'] = recipient
+        html_part = MIMEText(message, 'html')
+        msg.attach(html_part)
+
+        # Adjuntar el archivo PDF al mensaje
+        if documento_adjunto:
+            with open(documento_adjunto, 'rb') as pdf_file:
+                pdf_data = pdf_file.read()
+                pdf_part = MIMEApplication(pdf_data, 'pdf')
+                pdf_part.add_header('Content-Disposition', 'attachment',
+                                    filename="registroMercantil_" + datos_vendedor['username'] + ".pdf")
+                msg.attach(pdf_part)
+
+        with smtplib.SMTP(smtp_host, smtp_port) as smtp:
+            smtp.starttls()
+            smtp.login(smtp_username, smtp_password)
+            smtp.sendmail(sender, recipient, msg.as_string())
 
         # Eliminar los datos de la caché después de la validación
-        cache.delete(token)
+        r.delete(token)
 
         # Redirigir a una página de confirmación o mostrar un mensaje al usuario
-        return HttpResponse(render(request, 'mapa.html'))
+        return HttpResponse(render(request, 'registroExitosoV.html'))
     else:
         # Redirigir a una página de error o mostrar un mensaje de token inválido
         return HttpResponse('Token inválido')

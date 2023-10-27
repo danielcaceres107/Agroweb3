@@ -1,0 +1,35 @@
+{% extends 'base_validador.html' %}
+{% block content %}
+<h1>Validar Vendedores</h1>
+<ul>
+    {% for registro in registros_pendientes %}
+    <li>
+        <strong>Nombre de Usuario:</strong> {{ registro.username }}
+    </li>
+    <li>
+        <strong>Nombre del Vendedor:</strong> {{ registro.vendedor }}
+    </li>
+    <li>
+        <strong>Cédula:</strong> {{ registro.cedula }}
+    </li>
+    <li>
+        <strong>Nombre de la Tienda:</strong> {{ registro.nombreTienda }}
+    </li>
+    <li>
+        <strong>Teléfono:</strong> {{ registro.telefono }}
+    </li>
+    <li>
+        <strong>Horario de Trabajo:</strong> {{ registro.horario }}
+    </li>
+    <li>
+        <strong>Documento Mercantil: </strong><a href="{{ registro.documentoMercantil.url }}" download>Descargar PDF</a>
+    </li>
+    <form method="post">
+        {% csrf_token %}
+        <a href="{% url 'validarRegistro' registro.token %}">Aprobar Vendedor</a>
+        <button type="submit" name="denegar">Denegar Vendedor</button>
+    </form>
+    <br>
+    {% endfor %}
+</ul>
+{% endblock %}

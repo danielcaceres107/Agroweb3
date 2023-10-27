@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 from decouple import config
+import os
 
 # Cargar las variables de entorno desde el archivo .env // el archivo .env no se sube a github
 PRODUCTION_SECRET_KEY= config('PRODUCTION_SECRET_KEY')
@@ -35,6 +36,8 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = []
 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
 
 # Application definition
 
@@ -91,6 +94,16 @@ DATABASES = {
         'PASSWORD': DB_PASSWORD,
         'HOST': 'agrowebdb.cjw4kxhu3x9y.us-east-1.rds.amazonaws.com',
         'PORT': '5432',
+    }
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT CLASS": "django_redis.client.DefaultC1ient" ,
+        }
     }
 }
 
