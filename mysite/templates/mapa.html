@@ -53,7 +53,7 @@
             const marker = new google.maps.Marker({
                 position: { lat: parseFloat(vendedor.fields.latitude), lng: parseFloat(vendedor.fields.longitude) },
                 map: map,
-                icon: '../../static/img/puesto.png'
+                icon: '../../static/media/img/puesto.png'
             })
 
             var panelProducts = '<div id="tarjetaproducto">' +
@@ -200,7 +200,7 @@
 
 {% if user.is_authenticated %}
 <div class="carrito-responsive">
-<img src="../../static/img/carrito.png" onclick="mostrarCarrito()" width="60px" alt=""> 
+<img src="../../static/media/img/carrito.png" onclick="mostrarCarrito()" width="60px" alt=""> 
 </div>
 {% else %}
 <div></div>

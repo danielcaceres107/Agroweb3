@@ -221,8 +221,14 @@ def enviar_carrito(request):
             return HttpResponse(error_message, status=400)  # O muestra un mensaje de error, como prefieras
 
     if usuario:
-        sms_carrito(usuario.telefono)
-        llamada(usuario.telefono)
+        try:
+            sms_carrito(usuario.telefono)
+        except:
+            print("no se pudo enviar el sms")
+        try:
+            llamada(usuario.telefono)
+        except:
+            print("no se pudo realizar la llamada")
 
     carrito.limpiar()
 
@@ -234,10 +240,7 @@ def sms_carrito(telefono) :
     account_sid="ACb00996a2f2fc7f7993b8e2d7ea8966c7"
     auth_token="0b2f159f74cbc27e8b532fe0ab9c3509"
 
-    #    print (phone)
-    print("Entro a enviar....")
     client = Client(account_sid, auth_token)
-    print ("OK1")
     message = client.messages.create(to="+57"+telefono,
                                 from_="+4672500913",
                                 body="Estimado Comprador agradecemos su compra en Agroweb ")

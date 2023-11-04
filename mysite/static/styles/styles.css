@@ -18,7 +18,7 @@ body {
 }
 
 .header {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(../img/bg.jpg);
+    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(../media/img/bg.jpg);
     background-position: center bottom;
     background-repeat: no-repeat;
     background-size: cover;
@@ -163,7 +163,7 @@ body {
 }
 
 .services {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(../img/bg2.jpg);
+    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(../media/img/bg2.jpg);
     background-position: center center;
     background-repeat: no-repeat;
     background-size: cover;
@@ -221,7 +221,7 @@ body {
 }
 
 .general-2 {
-    background-image: url(../img/agri.jpg);
+    background-image: url(../media/img/agri.jpg);
     background-position: center center;
     background-repeat: no-repeat;
     background-size: cover;
@@ -229,7 +229,7 @@ body {
 }
 
 .general-3 {
-    background-image: url(../img/disp.jpg);
+    background-image: url(../media/img/disp.jpg);
     background-position: center center;
     background-repeat: no-repeat;
     background-size: cover;
