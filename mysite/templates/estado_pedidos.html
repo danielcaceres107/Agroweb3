@@ -1,23 +1,125 @@
 {% extends 'base_validador.html' %}
 {% block content %}
-    <h1>Estado de los Pedidos</h1>
-    <ul>
-        {% for pedido in pedidos %}
-            <li>
-                Pedido ID: {{ pedido.id }}
-                <br>
-                Estado: {{ pedido.estado }}
-                <br>
-                <form method="post" action="{% url 'cambiarEstadoPedido' pedido.id %}">
-                    {% csrf_token %}
-                    <select name="nuevo_estado">
-                        <option value="pendiente" {% if pedido.estado == "pendiente" %}selected{% endif %}>Pendiente</option>
-                        <option value="en_camino" {% if pedido.estado == "en_camino" %}selected{% endif %}>En Camino</option>
-                        <option value="entregado" {% if pedido.estado == "entregado" %}selected{% endif %}>Entregado</option>
-                    </select>
-                    <button type="submit">Cambiar Estado</button>
-                </form>
-            </li>
-        {% endfor %}
-    </ul>
+{% load static %}
+<style>
+    h1 {
+        color: #333;
+        margin: 20px 0;
+        text-align: center;
+    }
+
+    ul {
+        list-style: none;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin: 10px;
+        padding: 20px;
+    }
+
+    li {
+        display: flex;
+        align-items: center;
+        list-style: none;
+        border-bottom: 1px solid #ccc;
+        padding: 5px;
+        margin: 10px;
+        justify-content: space-around;
+        padding-bottom: 10px;
+    }
+
+    li img {
+        width: 35px;
+        height: 35px;
+        margin-right: 10px;
+    }
+
+    li div {
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+
+    li div select,
+    li div button {
+        margin-left: auto;
+    }
+
+    .info-container {
+        display: flex;
+        align-items: center;
+        width: 40%;
+    }
+
+    .id-container,
+    .state-container {
+        width: 50%; 
+        text-align: right; 
+        padding-right: 10px;
+    }
+
+    .img-container {
+        width: 10%;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end; 
+    }
+
+    select {
+        padding: 8px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-left: 88px;
+        margin-right: 50px;
+    }
+
+    button {
+        padding: 8px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        background-color: #4CAF50;
+        color: white;
+        transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+        background-color: #45a049;
+    }
+
+</style>
+
+<h1>Estado de los Pedidos</h1>
+<ul>
+    {% for pedido in pedidos %}
+        <li>
+            <div class="info-container">
+                <div class="id-container">
+                    Pedido ID: {{ pedido.id }}
+                </div>
+                <div class="state-container">
+                    Estado: {{ pedido.estado }}
+                </div>
+            </div>
+            <div class="img-container">
+                <img src="{% static 'media/img/' %}{% if pedido.estado == 'pendiente' %}pendiente.png{% elif pedido.estado == 'en_camino' %}enproceso.png{% elif pedido.estado == 'entregado' %}entregado.png{% endif %}" alt="{{ pedido.estado }}">
+            </div>
+            <form method="post" action="{% url 'cambiarEstadoPedido' pedido.id %}">
+                {% csrf_token %}
+                <select name="nuevo_estado">
+                    <option value="pendiente" {% if pedido.estado == "pendiente" %}selected{% endif %}>Pendiente</option>
+                    <option value="en_camino" {% if pedido.estado == "en_camino" %}selected{% endif %}>En Camino</option>
+                    <option value="entregado" {% if pedido.estado == "entregado" %}selected{% endif %}>Entregado</option>
+                </select>
+                <button type="submit">Cambiar Estado</button>
+            </form>
+        </li>
+    {% endfor %}
+</ul>
 {% endblock %}
+
+
+
