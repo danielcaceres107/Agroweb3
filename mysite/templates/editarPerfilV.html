@@ -13,7 +13,6 @@
        border-radius: 10px;
    }
 
-   /* Estilo para los campos del formulario */
    input {
        padding: 10px;
        margin: 10px 0;
@@ -22,10 +21,9 @@
        background-color: #f2f2f2;
        width: 100%;
        box-sizing: border-box;
-       text-align: center; /* Centra el texto dentro del campo */
+       text-align: center; 
    }
 
-   /* Estilo para el botón */
    button {
        background-color: #4CAF50;
        color: white;
@@ -36,14 +34,12 @@
        cursor: pointer;
    }
 
-   /* Estilo para el mensaje de error */
    #error {
        color: red;
        font-size: 14px;
        margin-top: 10px;
    }
 
-   /* Estilo para el campo de confirmación de contraseña */
    #id_password2 {
        width: 100%;
    }
@@ -98,61 +94,56 @@
     <p>
         <strong>Nombre del vendedor:</strong>
     </p>
-    <input type="text" name="{{ register.nombreVendedor.name }}" placeholder="{{ vendedor.nombreVendedor }}">
+    <input type="text" name="nombreVendedor" value="{{ vendedor.nombreVendedor }}">
 
-    <p>
-        <strong>Nombre de usuario:</strong>
-    </p>
-    <input type="text" name="username" placeholder="{{ vendedor.usuarioVendedor }}">
-    
     <p>
         <strong>Cedula:</strong>
     </p>
-    <input type="text" name="{{ register.cedula.name }}" placeholder="{{ vendedor.cedula }}">
-
-    <div class="password-field">
-        <p>
-            <strong>Contraseña:</strong>
-        </p>
-        <input type="password" name="{{ register.password1.name }}" values="{{ vendedor.password }}">
-        <p>
-            <strong>Confirmar contraseña:</strong>
-        </p>
-        <input type="password" name="{{ register.password2.name }}">
-    </div>
-
+    <input type="text" name="cedula" value="{{ vendedor.cedula }}">
+    
     <p>
         <strong>Nombre de la tienda:</strong>
     </p>
-    <input type="text" name="{{ register.nombreTienda.name }}" placeholder="{{ vendedor.nombreTienda }}">
+    <input type="text" name="nombreTienda" value="{{ vendedor.nombreTienda }}">
 
     <p>
         <strong>Telefono:</strong>
     </p>
-    <input type="text" name="{{ register.telefono.name }}" placeholder="{{ vendedor.telefono }}">
+    <input type="text" name="telefono" value="{{ vendedor.telefono }}">
 
     <p>
         <strong>Horario:</strong>
     </p>
-    <input type="text" name="{{ register.horario.name }}" placeholder="{{ vendedor.horario }}">
+    <input type="text" name="horario" value="{{ vendedor.horario }}">
     <br>
+
     <h5>Ubicacion exacta de la tienda</h5>
     <p>
         <strong>latitud:</strong>
     </p>
-    <input type="text" id="id_latitude" name="{{ register.latitude.name }}" placeholder="{{ vendedor.latitude }}">
+    <input type="text" id="id_latitude" name="latitude" value="{{ vendedor.latitude }}">
     <p>
         <strong>longitud:</strong>
     </p>
-    <input type="text" id="id_longitude" name="{{ register.longitude.name }}" placeholder="{{ vendedor.longitude }}">
+    <input type="text" id="id_longitude" name="longitude" value="{{ vendedor.longitude }}">
     <br>
 
-    <div class=" fieldWrapper">
+    <div class="fieldWrapper">
         {{ register.productos.errors }}
         <label for="{{ register.productos.id_for_label }}">Productos:</label><br>
-        {{ register.productos }}
+        <p>{{ register.productos }}</p>
     </div>
-
+    <h5>Cambiar contraseña</h5>
+    <div class="password-field">
+        <p>
+            <strong>Contraseña:</strong>
+        </p>
+        <input type="password" name="password1" placeholder="********">
+        <p>
+            <strong>Confirmar contraseña:</strong>
+        </p>
+        <input type="password" name="password2" placeholder="********">
+    </div>
     <strong>
         <button type="submit" style="background-color: #ebad8d">Actualizar Información</button>
     </strong>

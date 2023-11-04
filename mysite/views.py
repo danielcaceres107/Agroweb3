@@ -9,6 +9,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 import json
 from .forms import ProductoForm, RegistroVendedorForm, RegistroClientesForm
@@ -25,6 +26,7 @@ from email.mime.application import MIMEApplication
 from decouple import config
 from django.utils.crypto import get_random_string
 from django.core.cache import cache
+from django.contrib import messages
 from django.urls import reverse
 import os
 import tempfile
@@ -32,6 +34,7 @@ from django.core.files.base import ContentFile
 from datetime import datetime
 from django.db.models import Sum
 import time
+from twilio.rest import Client
 
 
 # Cargar las variables de entorno desde el archivo .env // el archivo .env no se sube a github
@@ -167,7 +170,7 @@ def enviar_carrito(request):
     usuario_compra = request.user
 
     # monto total del pedido
-    total_carrito_dic = total_carrito(request)  # Llama a la función del contexto procesador
+    total_carrito_dic = total_carrito(request)  # Llama a la función de my_context_processor
     total_amount = Decimal(total_carrito_dic['total_carrito'])
 
     for item in carrito_data.values():
@@ -205,9 +208,55 @@ def enviar_carrito(request):
         for vendedor_i in vendedores_list:
             VendedoresPedidosConexion.objects.create(pedido=nuevo_pedido, vendedor = Vendedores.objects.get(id=vendedor_i))
 
+    enviar_correo(carrito_data, usuario_compra)
+    try:
+        usuario = Clientes.objects.get(usuarioCliente=request.user.username)
+    except ObjectDoesNotExist:
+        # Si el usuario no se encuentra en Clientes, busca en Vendedores
+        try:
+            usuario = Vendedores.objects.get(usuarioVendedor=request.user.username)
+        except ObjectDoesNotExist:
+            # El usuario no se encuentra en ninguna de las dos tablas, maneja este caso aquí
+            error_message = "Usuario inválido"
+            return HttpResponse(error_message, status=400)  # O muestra un mensaje de error, como prefieras
+
+    if usuario:
+        sms_carrito(usuario.telefono)
+        llamada(usuario.telefono)
+
     carrito.limpiar()
 
     return redirect('mapa')
+
+def sms_carrito(telefono) :
+    print("Enviando sms del SICC...")
+
+    account_sid="ACb00996a2f2fc7f7993b8e2d7ea8966c7"
+    auth_token="0b2f159f74cbc27e8b532fe0ab9c3509"
+
+    #    print (phone)
+    print("Entro a enviar....")
+    client = Client(account_sid, auth_token)
+    print ("OK1")
+    message = client.messages.create(to="+57"+telefono,
+                                from_="+4672500913",
+                                body="Estimado Comprador agradecemos su compra en Agroweb ")
+    print(message.sid)
+
+def llamada(telefono) :
+    print("Realizando llamada - MOnitorizacion SICC - SIT LTDA, Colombia")
+    #mensa=input("Escriba el mensaje que desea enviar: ")
+    #numero=input("Escriba numero de telefono con el signo + codigo del pais y telefono: ")
+    account_sid="ACb00996a2f2fc7f7993b8e2d7ea8966c7"
+    auth_token="0b2f159f74cbc27e8b532fe0ab9c3509"
+    
+    client = Client(account_sid, auth_token)
+    call = client.calls.create(url='https://handler.twilio.com/twiml/EH5bda876424d95b012cf33d73d3a90896',
+                                    to='+57'+telefono,
+                                    from_='+4672500913'
+                                    )
+    print(call.sid)
+    print("Se realizara la llamada al numero elegido...Gracias")
 
 # correo del carrito
 def enviar_correo(carrito_data, usuario):
@@ -692,20 +741,19 @@ def editarPerfilV(request):
     if request.method == 'POST':
 
         vendedor = Vendedores.objects.get(usuarioVendedor=request.user.username)
-
-        # Recorrer los campos del formulario
-        for field in request.POST:
+        for field in request.POST.keys():
             if field != 'csrfmiddlewaretoken' and field != 'username':
                 value = request.POST.get(field)
                 # Verificar si el campo tiene un valor
                 if value:
                     setattr(vendedor, field, value)  # Actualizar el campo con el valor del formulario
 
+        messages.success(request, 'Perfil actualizado exitosamente')
         # Guardar los cambios en la base de datos
         vendedor.save()
 
         # Redireccionar a una página de Miperfil
-        return render(request, 'perfil.html')
+        return redirect('perfil')
 
     else:
         # Obtener el objeto vendedor del usuario actual
@@ -725,6 +773,7 @@ def editarPerfilC(request):
                 if value:
                     setattr(cliente, field, value)  # Actualizar el campo con el valor del formulario
 
+        messages.success(request, 'Perfil actualizado exitosamente')
         # Guardar los cambios en la base de datos
         cliente.save()
 
@@ -750,14 +799,20 @@ def actualizarUbicacion(request):
             return JsonResponse({'message': 'No se encontró el vendedor.'})
     else:
         return JsonResponse({'message': 'Método no permitido.'})
-    
+
+@login_required
 def crear_producto(request):
     if request.method == 'POST':
         productForm = ProductoForm(request.POST, request.FILES)
         if productForm.is_valid():
-            productForm.save()
+            producto = productForm.save()
             print('producto agregado en la BD')
-            # Realizar alguna acción adicional después de guardar el producto
+
+            # Obtener el objeto vendedor del usuario actual
+            vendedor = Vendedores.objects.get(usuarioVendedor=request.user.username)
+            vendedor.productos.add(producto)
+
+
             return render(request, 'msjProductoRegistrado.html')
         else:
             print(productForm.errors)  # Muestra los errores en la consola
