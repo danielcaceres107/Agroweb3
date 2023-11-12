@@ -35,6 +35,7 @@ from datetime import datetime
 from django.db.models import Sum
 import time
 from twilio.rest import Client
+from decouple import config
 
 
 # Cargar las variables de entorno desde el archivo .env // el archivo .env no se sube a github
@@ -234,11 +235,11 @@ def enviar_carrito(request):
 
     return redirect('mapa')
 
-def sms_carrito(telefono) :
-    print("Enviando sms del SICC...")
+account_sid = config('ACCOUNT_SID')
+auth_token=config('AUTH_TOKEN')
 
-    account_sid="ACb00996a2f2fc7f7993b8e2d7ea8966c7"
-    auth_token="0b2f159f74cbc27e8b532fe0ab9c3509"
+def sms_carrito(telefono, account_sid, auth_token) :
+    print("Enviando sms del SICC...")
 
     client = Client(account_sid, auth_token)
     message = client.messages.create(to="+57"+telefono,
@@ -246,7 +247,7 @@ def sms_carrito(telefono) :
                                 body="Estimado Comprador agradecemos su compra en Agroweb ")
     print(message.sid)
 
-def llamada(telefono) :
+def llamada(telefono, account_sid, auth_token) :
     print("Realizando llamada - MOnitorizacion SICC - SIT LTDA, Colombia")
     #mensa=input("Escriba el mensaje que desea enviar: ")
     #numero=input("Escriba numero de telefono con el signo + codigo del pais y telefono: ")
@@ -399,9 +400,6 @@ def registroVendedor(request):
                 # Convierte la lista de productos a una cadena JSON
                 productos_json = json.dumps(productos_seleccionados)
 
-                print(productos_json)
-
-
                 # Obtener la ruta de la carpeta de archivos temporales
                 ruta_temporal = tempfile.gettempdir()
 
@@ -434,8 +432,6 @@ def registroVendedor(request):
 
                 # Guarda los datos en Redis con el token como clave
                 r.hmset(token, datos_vendedor)
-
-                print(datos_vendedor)
 
                 return render(request, 'msjValidarCorreo.html', {'mensaje': 'Estamos verificando la información proporcionada, al terminar esta validación podrás acceder a todos nuestros servicios.'})
             except IntegrityError:

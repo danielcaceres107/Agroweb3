@@ -16,7 +16,7 @@ class RegistroVendedorForm(forms.ModelForm):
     latitude = forms.CharField(label="Latitud")
     longitude = forms.CharField(label="Longitud")
     horario = forms.CharField(label="Horario de la tienda")
-    productos = forms.ModelMultipleChoiceField(queryset=Products.objects.all(), widget=forms.SelectMultiple)
+    productos = forms.ModelMultipleChoiceField(queryset=Products.objects.all(), widget=forms.CheckboxSelectMultiple)
 
     class Meta:
         model = User

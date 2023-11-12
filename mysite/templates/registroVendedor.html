@@ -86,7 +86,15 @@
     .password-field input{
         width: 150%;
     }
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* Crear 3 columnas con el mismo ancho */
+        gap: 20px; /* Espacio entre elementos */
+    }
 
+    .grid-item {
+        text-align: center; /* Alinear el texto al centro */
+    }
 </style>
 
 <form action="/registroVendedor/" method="POST" enctype="multipart/form-data">
@@ -112,13 +120,19 @@
 
     {{ register.horario.label_tag }} <input type="text" name="{{ register.horario.name }}"
     placeholder="Formato ej: [6:00-22:00] 24h">
-
-    <div class=" fieldWrapper">
-    {{ register.productos.errors }}
-    <label for="{{ register.productos.id_for_label }}">Productos:</label><br>
-    {{ register.productos }}
+    <label>Productos:</label>
+    <div class=" fieldWrapper grid-container">
+        {{ register.productos.errors }}
+        {% for product in register.productos.field.queryset %}
+        <div class="grid-item">
+            <label>
+                <img src="../static/media/{{ product.imagenProd }}" alt="{{ product.nombre }}" width="100" height="100">
+                <input type="checkbox" name="{{ register.productos.name }}" value="{{ product.id }}">
+                <p>{{ product.nombreProd }}</p>
+            </label>
+        </div>
+        {% endfor %}
     </div>
-    <p>Presionar ctrl para elegir varios productos</p>
     <strong><button type="submit" style="background-color: #ebad8d">Registrarse</button></strong>
 </form>
 
