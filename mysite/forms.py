@@ -55,3 +55,9 @@ class ProductoForm(forms.ModelForm):
     class Meta:
         model = Products
         fields = ['nombreProd', 'precioProd', 'descripcionProd', 'imagenProd']
+
+class EditProductForm(forms.ModelForm):
+    class Meta:
+        model = Products
+        fields = ['nombreProd', 'precioProd', 'descripcionProd', 'imagenProd']
+

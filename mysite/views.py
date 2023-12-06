@@ -12,7 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 import json
-from .forms import ProductoForm, RegistroVendedorForm, RegistroClientesForm
+from .forms import ProductoForm, RegistroVendedorForm, RegistroClientesForm, EditProductForm
 from decimal import Decimal
 from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.models import Group
@@ -156,7 +156,7 @@ def get_carrito(request):
     # Procesa tus datos y crea un HTML para las nuevas filas de la tabla del carrito 
     filas_html = ''
     for item_id, item_data in carrito_data.items():
-        fila_html = f'<tr><td>{item_data["nombre"]}</td><td>{item_data["acumulado"]}</td><td>{item_data["cantidad"]}<button type="button" class="btn-agregar" data-producto="{item_data["last_product_id"]}" data-vendedor="{item_data["last_vendedor_id"]}">+</button><button type="button" class="btn-restar" data-producto="{{ value.producto_id }}" data-vendedor="{{ value.vendedor_id }}">-</button></td><td>{item_data["tienda"]}</td></tr>'
+        fila_html = f'<tr><td>{item_data["nombre"]}</td><td>{item_data["acumulado"]}</td><td><center>{item_data["cantidad"]}</center></td><td>{item_data["tienda"]}</td></tr>'
         filas_html += fila_html
 
     # Retorna los datos como una respuesta JSON
@@ -807,10 +807,9 @@ def crear_producto(request):
             producto = productForm.save()
             print('producto agregado en la BD')
 
-            # Obtener el objeto vendedor del usuario actual
+            # agregar el producto al vendedor / usuario actual
             vendedor = Vendedores.objects.get(usuarioVendedor=request.user.username)
             vendedor.productos.add(producto)
-
 
             return render(request, 'msjProductoRegistrado.html')
         else:
@@ -819,3 +818,90 @@ def crear_producto(request):
         productForm = ProductoForm()
 
     return render(request, 'crear_producto.html', {'productForm': productForm})
+
+@login_required
+def editar_productos(request):
+     # vendedor del usuario actual
+    vendedor = Vendedores.objects.get(usuarioVendedor=request.user.username)
+
+    # productos relacionados con el vendedor
+    productos_relacionados = vendedor.productos.all()
+
+    return render(request, 'editar_productos.html', {'productos': productos_relacionados})
+
+@login_required
+def editProduct(request):
+    try:
+        if request.method == 'POST':
+            # Obtener el product_id desde el formulario
+            product_id = request.POST.get('product_id')
+            product = Products.objects.get(id=product_id)
+
+            # Procesar el formulario de edición si se ha enviado
+            form = EditProductForm(request.POST, instance=product)
+            
+            return render(request, 'edit_product.html', {'form': form, 'product': product})
+        else:
+            return redirect('editar_productos.html')       
+    except Products.DoesNotExist:
+        return render(request, 'error.html', {'error_message': 'Producto no encontrado'})
+
+@login_required
+def deleteProduct(request):
+    if request.method == 'POST':
+        # Obtener el product_id desde el formulario
+        product_id = request.POST.get('product_id')
+
+        try:
+            # Obtener el producto a eliminar
+            product = Products.objects.get(pk=product_id)
+            product.delete()
+            return redirect('editar_productos.html')
+
+        except Products.DoesNotExist:
+            # Manejar el caso en que el producto no exista
+            return render(request, 'error.html', {'error_message': 'Producto no encontrado'})
+        
+    else:
+        return render(request, 'error.html', {'error_message': 'Metodo no permitido'})
+
+@login_required
+def NewEditedProduct(request):
+    try:
+        if request.method == 'POST':
+            form = EditProductForm(request.POST, request.FILES)
+            if form.is_valid():
+                # Guardar el formulario para obtener el nuevo producto
+                new_product = form.save()
+
+                # Obtener el product_id desde el formulario
+                product_id = request.POST.get('product_id')
+                
+                try:
+                    # Obtener el producto antiguo
+                    old_product = Products.objects.get(pk=product_id)
+
+                    # vendedor del usuario actual
+                    vendedor = Vendedores.objects.get(usuarioVendedor=request.user.username)
+
+                    #añadir nuevo producto
+                    #vendedor.productos.add(new_product)
+
+                    # Desvincular el antiguo producto del vendedor
+                    vendedor.productos.remove(product_id)
+
+                    # Eliminar el producto antiguo si ya no está asociado a ningún vendedor
+                    # if .count() == 0:
+                    #   old_product.delete()
+                except Products.DoesNotExist:
+                    pass  # Manejar la excepción si el producto antiguo no existe
+
+                # Guardar el nuevo producto
+                new_product.save()
+
+                return redirect('editar_productos')
+        else:
+            return HttpResponse("Método no válido, se debe especificar el producto")
+
+    except Exception as e:
+        return HttpResponse(f"Error: {str(e)}")
