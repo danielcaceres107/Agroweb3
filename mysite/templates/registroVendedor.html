@@ -123,7 +123,7 @@
     <label>Productos:</label>
     <div class=" fieldWrapper grid-container">
         {{ register.productos.errors }}
-        {% for product in register.productos.field.queryset %}
+        {% for product in register.productos.field.queryset.all|slice:":5" %}
         <div class="grid-item">
             <label>
                 <img src="../static/media/{{ product.imagenProd }}" alt="{{ product.nombre }}" width="100" height="100">
