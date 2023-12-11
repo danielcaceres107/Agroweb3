@@ -16,7 +16,6 @@ from .forms import ProductoForm, RegistroVendedorForm, RegistroClientesForm, Edi
 from decimal import Decimal
 from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.models import Group
-from django.shortcuts import render, redirect
 from .forms import EditarPerfilForm
 from django.views.decorators.csrf import csrf_exempt
 import smtplib
@@ -32,15 +31,7 @@ import tempfile
 from django.core.files.base import ContentFile
 from datetime import datetime
 from django.db.models import Sum
-import time
 from twilio.rest import Client
-from decouple import config
-
-
-# Cargar las variables de entorno desde el archivo .env // el archivo .env no se sube a github
-CORREO = config('CORREO')
-CONTRASENA = config('CONTRASENA')
-
 
 
 def index(request):
@@ -234,8 +225,8 @@ def enviar_carrito(request):
 
     return redirect('mapa')
 
-account_sid = config('ACCOUNT_SID')
-auth_token=config('AUTH_TOKEN')
+account_sid = settings.ACCOUNT_SID
+auth_token= settings.AUTH_TOKEN
 
 def sms_carrito(telefono, account_sid, auth_token) :
     print("Enviando sms del SICC...")
@@ -264,7 +255,7 @@ def llamada(telefono, account_sid, auth_token) :
 # correo del carrito
 def enviar_correo(carrito_data, usuario):
     # Configurar los datos del correo
-    remitente = CORREO
+    remitente = settings.CORREO
     destinatario = ["danielcaceres107@gmail.com",
                     "fowxd7@gmail.com", usuario.email]
     asunto = 'Datos del carrito'
@@ -291,7 +282,7 @@ def enviar_correo(carrito_data, usuario):
     # Enviar el correo utilizando el servidor SMTP de Office 365
     servidor_smtp = smtplib.SMTP('smtp.office365.com', 587)
     servidor_smtp.starttls()
-    servidor_smtp.login(remitente, CONTRASENA)
+    servidor_smtp.login(remitente, settings.CONTRASENA)
     servidor_smtp.send_message(mensaje)
     servidor_smtp.quit()
 
@@ -532,9 +523,9 @@ def validarRegistro(request, token):
         # Enviar el correo electrónico de exito 
         smtp_host = 'smtp.office365.com'
         smtp_port = 587
-        smtp_username = CORREO
-        smtp_password = CONTRASENA
-        sender = CORREO
+        smtp_username = settings.CORREO
+        smtp_password = settings.CONTRASENA
+        sender = settings.CORREO
         recipient = 'danielcaceres107@gmail.com'
         subject = 'Registro de ' + \
             datos_vendedor['vendedor'] + ' como vendedor Agroweb'
@@ -621,9 +612,9 @@ def registroCliente(request):
                 # Código para enviar el correo electrónico
                 smtp_host = 'smtp.office365.com'
                 smtp_port = 587
-                smtp_username = CORREO
-                smtp_password = CONTRASENA
-                sender = CORREO
+                smtp_username = settings.CORREO
+                smtp_password = settings.CONTRASENA
+                sender = settings.CORREO
                 recipient = request.POST['correo']
                 subject = 'Registro de ' + \
                     request.POST['nombreCliente'] + ' como cliente Agroweb'
