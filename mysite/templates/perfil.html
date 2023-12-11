@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 30px auto;
+        max-width: 400px;
+        padding: 20px;
+    }
+
+    /* Estilo para los campos del formulario */
+    input {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        border: none;
+        background-color: #f2f2f2;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Estilo para el botón */
+    button {
+        background-color: #ebad8d;
+        color: white;
+        padding: 10px;
+        margin-top: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    /* Estilo para el mensaje de error */
+    #error {
+        color: red;
+        font-size: 14px;
+        margin-top: 10px;
+    }
+
+    /* Estilo para el campo de confirmación de contraseña */
+    #id_password2 {
+        width: 100%;
+    }
+
+    #espacio {
+        height: 50px;
+    }
+
+    .pantalla-perfil {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 40%;
+        border: solid;
+        padding: 5%;
+        margin: 3%;
+        margin: 0 auto;
+        margin-top: 50px;
+        justify-content: center;
+    }
+
+    .perfil-info {
+        justify-content: center;
+    }
+
+    .pantalla-movimientos {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 40%;
+        border: solid;
+        padding: 5%;
+        margin: 3%;
+        margin: 0 auto;
+        margin-top: 50px;
+        justify-content: center;
+    }
+
+    .pantalla-newproduct{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 40%;
+        border: solid;
+        padding: 5%;
+        margin: 3%;
+        margin: 0 auto;
+        margin-top: 50px;
+        justify-content: center;
+    }
+
+    #btn-newprod {
+        background-color: #ebad8d;
+        color: white;
+        padding: 10px;
+        margin-top: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    .ventas-info {
+        justify-content: center;
+    }
+
+    .compras-info {
+        justify-content: center;
+    }
+</style>
+<div class="pantalla-perfil">
+    <div class="perfil-info">
+        <h2>Mi perfil</h2>
+        {% if user.username == vendedor.usuarioVendedor %}
+        <p><strong>Nombre de usuario:</strong> {{ vendedor.nombreVendedor }}</p>
+        <p><strong>Nombre de la tienda:</strong> {{ vendedor.nombreTienda }}</p>
+        <p><strong>Teléfono:</strong> {{ vendedor.telefono }}</p>
+        <p><strong>Latitud:</strong> {{ vendedor.latitude }}</p>
+        <p><strong>Longitud:</strong> {{ vendedor.longitude }}</p>
+        <p><strong>Horario de la tienda:</strong> {{ vendedor.horario }}</p>
+        <button type="button" onclick="editProfileV()">Editar perfil</button>
+        <div class="update-ubicacion">
+            <form method="POST">
+                {% csrf_token %}
+
+                <button type="button" id="ubicacion-actual-btn" onclick="updateLocation()">Poner tienda en ubicacion
+                    actual</button>
+
+            </form>
+        </div>
+        {% elif user.username == cliente.usuarioCliente %}
+        <p><strong>Nombre Completo:</strong> {{ cliente.nombreCliente }}</p>
+        <p><strong>Nombre usuario:</strong> {{ cliente.usuarioCliente }}</p>
+        <p><strong>Correo:</strong> {{ cliente.correo }}</p>
+        <button type="button" onclick="editProfileC()">Editar perfil</button>
+        {% else %}
+        <p><strong>No se encontraron datos</strong></p>
+        {% endif %}
+    </div>
+</div>
+<div class="pantalla-movimientos">
+    {% if user.username == vendedor.usuarioVendedor %}
+    <div class="ventas-info">
+        <h2>Últimas Ventas</h2>
+        {% if productos_vendidos and ultimas_ventas %}
+        {% for pedido in ultimas_ventas %}
+        <ul>
+                <li>
+                    <strong>ID del Pedido:</strong> {{ pedido.id }}<br>
+                    <strong>Fecha:</strong> {{ pedido.fecha }}<br>
+                {% for producto, cantidad in productos_vendidos %}
+                    <ul>
+                        <li><strong>Producto:</strong>{{ producto.nombreProd }}</li>
+                        <li><strong>Cantidad:</strong> {{ cantidad }}</li>
+                        <li><strong>Precio:</strong> {{ producto.precioProd }}</li>
+                    </ul>
+                {% endfor %}    
+                    <strong>Total: </strong>{{ pedido.total }}<br>
+                </li>
+                <br>
+        </ul>
+        </hr>
+        {% endfor %}
+        <p><strong>Total Vendido:</strong> {{ productos_vendidos_total }}</p>
+        {% else %}
+        <p>No se han realizado ventas aún</p>
+        {% endif %}
+    </div>
+    {% elif user.username == cliente.usuarioCliente %}
+    <div class="compras-info">
+        <h2>Últimas Compras</h2>
+        {% if productos_comprados and ultimas_compras %}
+        <ul>
+            {% for pedido in ultimas_compras %}
+                <li>
+                    <strong>ID del Pedido:</strong> {{ pedido.id }}<br>
+                    <strong>Fecha:</strong> {{ pedido.fecha }}<br>
+                {% for producto, cantidad in productos_comprados %}
+                    <ul>
+                        <li><strong>Producto:</strong>{{ producto.nombreProd }}</li>
+                        <li><strong>Cantidad:</strong> {{ cantidad }}</li>
+                        <li><strong>Precio:</strong> {{ producto.precioProd }}</li>
+                    </ul>
+                {% endfor %}    
+                    <strong>Total: </strong>{{ pedido.total }}<br>
+                </li>
+                <br>
+        </ul>
+        </hr>
+        {% endfor %}
+        {% else %}
+        <p>No se han realizado compras aún</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% if user.username == vendedor.usuarioVendedor %}
+<div class="pantalla-newproduct">
+    <h2>Productos</h2>
+    <a id="btn-newprod" href="/editar_productos">Editar productos</a>
+    <a id="btn-newprod" href="/crear_producto">Añadir un producto</a>
+</div>
+{% endif %}
+<script>
+    function updateLocation() {
+        document.getElementById("ubicacion-actual-btn").addEventListener("click", function () {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    var latitude = position.coords.latitude;
+                    var longitude = position.coords.longitude;
+                    console.log("geolocation")
+                    console.log(latitude)
+                    console.log(longitude)
+
+                    // Actualizar los campos de latitud y longitud en la tabla DimVendedores
+                    fetch("/actualizarUbicacion/", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                            "X-CSRFToken": "{{ csrf_token }}",
+                        },
+                        body: `latitude=${latitude}&longitude=${longitude}`
+
+                    }).then(function (response) {
+                        console.log("then")
+                        console.log(latitude)
+                        console.log(longitude)
+                        if (response.ok) {
+                            console.log("actualizacion exitosa, refrescar la pagina")
+                            location.reload();
+                        } else {
+                            console.log("Error al actualizar la ubicación.");
+                        }
+                    }).catch(function (error) {
+                        console.log("Error al actualizar la ubicación:", error);
+                    });
+                });
+            } else {
+                console.log("Geolocalización no compatible en este navegador.");
+            }
+        });
+    }
+
+    function editProfileV() {
+        // Redirige al usuario a la página de edición de perfil
+        window.location.href = "/editarPerfilV/";
+    }
+
+    function editProfileC() {
+        // Redirige al usuario a la página de edición de perfil
+        window.location.href = "/editarPerfilC/";
+    }
+</script>
+
+<div id="espacio"></div>
+{% endblock %}

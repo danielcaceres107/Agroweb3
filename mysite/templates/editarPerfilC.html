@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 30px auto;
+    max-width: 400px;
+    padding: 20px;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+}
+
+/* Estilo para los campos del formulario */
+input {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: none;
+    background-color: #f2f2f2;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Estilo para el botón */
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Estilo para el mensaje de error */
+#error {
+    color: red;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+/* Estilo para el campo de confirmación de contraseña */
+#id_password2 {
+    width: 100%;
+}
+
+#espacio {
+    height: 50px;
+}
+
+.password-field input[type="password"] {
+    -webkit-text-security: disc;
+    -moz-text-security: disc;
+    -ms-text-security: disc;
+    align-items: center;
+}
+</style>
+<form action="/editarPerfilC/" method="POST">
+    {% csrf_token %}
+    <p><strong>Nombre Completo:</strong></p>
+    <input type="text" name="{{ register.nombreCliente.name }}" placeholder="{{ cliente.nombreCliente }}">
+    <p><strong>Nombre usuario:</strong></p>
+    <input type="text" name="{{ register.username }}" placeholder="{{ cliente.usuarioCliente }}">
+    <p><strong>Cedula:</strong></p>
+    <input type="text" name="{{ register.cedula.name }}" placeholder="{{ cliente.cedula }}">
+    <p><strong>Correo:</strong></p>
+    <input type="text" name="{{ register.correo.name }}" placeholder="{{ cliente.correo }}">
+    <div class="password-field">
+        <p><strong>Contraseña:</strong></p>
+        <input type="password" name="{{ register.password1.name }}" values="{{ vendedor.password }}">
+        <p><strong>Confirmar contraseña:</strong></p>
+        <input type="password" name="{{ register.password2.name }}">
+    </div>
+    <strong><button type="submit" style="background-color: #ebad8d">Actualizar Datos</button></strong>
+</form>
+{% endblock %}

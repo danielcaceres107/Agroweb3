@@ -1,0 +1,333 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agroweb</title>
+    <link rel="stylesheet" href="{% static '/styles/styles.css' %}">
+    <script src="https://code.jquery.com/jquery-3.6.0.js"
+        integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <!--<script defer src="{% static '/js/index.js' %}"></script>-->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+</head>
+
+<body>
+    <style>
+        #info-panel {
+            font-family: 'Poppins', sans-serif;
+            position: fixed;
+            bottom: -46.5em;
+            left: 0;
+            width: 100%;
+            height: 46.5em;
+            background-color: #F4F4F4;
+            box-shadow: 0 -10px 10px rgba(0, 0, 0, 0.3);
+            transition: bottom 0.3s ease-in-out;
+            overflow-y: scroll;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2em;
+            text-align: center;
+        }
+
+
+
+        #info-panel button #close-panel-button {
+            top: 1em;
+            right: 1em;
+            font-size: 1.5em;
+            background-color: #ebad8d;
+            border: none;
+            cursor: pointer;
+            text-decoration: solid;
+        }
+
+        #info-panel h3 {
+            margin: 40px 0 1em;
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #333333;
+        }
+
+        #info-panel h4 {
+            margin: 20px 0 1em;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333333;
+        }
+
+        #info-panel p {
+            margin: 1em 0;
+            font-size: 1.2em;
+            line-height: 1.5;
+            color: #666666;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #info-panel ul {
+            margin: 1em 0;
+            padding: 0;
+            list-style: none;
+            font-size: 1.2em;
+        }
+
+        #info-panel li {
+            margin: 0.5em 0;
+            color: #666666;
+            font-size: xx-small;
+        }
+
+        #add-to-cart-btn {
+            margin-top: 2em;
+            padding: 1em 2em;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease-in-out;
+        }
+
+        #add-to-cart-btn:hover {
+            background-color: #3E8E41;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        #cart {
+            margin-top: 2em;
+            border-top: 1px solid #ccc;
+            padding-top: 1em;
+            color: #666666;
+        }
+
+        #pagos {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #estado-tienda {
+            font-size: xx-large;
+        }
+
+        #preciooo {
+            font-size: 30px;
+            font-weight: 800;
+        }
+
+        #info-panel .btn-agregar {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #ebad8d;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+
+        #info-panel .btn-agregar:visited {
+            color: #333;
+        }
+
+        #info-header {
+            display: flex;
+            font-size: 70px;
+            justify-content: space-evenly;
+            height: 90px;
+            align-items: center;
+            padding: 70px;
+            border-bottom: 2px #333 dotted;
+        }
+
+        #estado-tienda strong {
+            font-size: 50px;
+            border: 3px #333 solid;
+            padding: 8px;
+            border-radius: 10px;
+
+        }
+
+        #estado-tienda p {
+            margin: 0 !important;
+        }
+
+        #mapholder {
+            display: flex;
+            justify-content: space-around;
+            padding: 30px;
+            border-bottom: 2px #333 dotted;
+        }
+
+        #mapholder p {
+            margin: 0 !important;
+            font-size: 25px;
+
+        }
+
+        .productos-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-evenly;
+            width: 100%;
+            padding: 30px;
+            gap: 20px;
+            align-content: flex-start;
+
+        }
+
+        .producto {
+            flex-basis: calc(33.33% - 135px);
+            min-width: 220px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            box-sizing: border-box;
+            background-color: #fff;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease-in-out;
+            align-items: center;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .producto h3 {
+            font-size: 2rem;
+            margin: 0 0 10px;
+        }
+
+        .producto img {
+            width: 100%;
+            max-height: 180px;
+            object-fit: contain;
+        }
+
+        .producto p {
+            font-size: 1.3rem;
+            margin: 0 !important;
+            padding: 15px;
+        }
+
+        .producto:hover {
+            transform: translateY(-5px);
+        }
+
+        .precio{
+            font-size: 30px;
+            font-weight: 300;
+            
+        }
+
+        .btn-agregar {
+            display: inline-block;
+            padding: 10px 20px; 
+            background-color: #ebad8d;
+            color: #333; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            text-decoration: none; 
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease-in-out; 
+        }
+
+        .btn-restar {
+            display: inline-block;
+            padding: 10px 20px; 
+            background-color: #ebad8d;
+            color: #333; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            text-decoration: none; 
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease-in-out; 
+        }
+
+        .btn-agregar:hover {
+            background-color: #d69175;
+        }
+
+
+    </style>
+
+    <header class="header">
+
+        <div class="menu container">
+            <a href="#" class="logo"><img src="../static/media/img/logo3.png"></a>
+            <input type="checkbox" id="menu">
+            <label for="menu">
+                <img src="../static/media/img/menu.png" alt="" class="menu-icono">
+            </label>
+
+            <nav class="navbar">
+                <ul>
+                    <li><a class="nav-link active" href="/">Inicio</a></li>
+                    <li><a class="nav-link" href="/mapa">Mapa</a></li>
+                    {% if user.is_authenticated %}
+                    <li><a class="nav-link" href="/perfil">Mi Perfil</a></li>
+                    <li><a class="nav-link" href="/logout">Logout</a></li>
+                    <div>{% include "carrito.html" %}</div>
+
+                    <style>
+                        #botonxd {
+                            display: none;
+                        }
+
+                        #cosa-texto {
+                            color: white;
+                            font-size: 35px;
+                        }
+                    </style>
+                    {% else %}
+
+                    <body>
+                        <li><a class="nav-link" href="/registro">Registro</a></li>
+                        <li><a class="nav-link" href="/login">Login</a></li>
+
+                    {%endif%}
+                </ul>
+            </nav>
+
+        </div>
+
+        <div class="header-content container">
+
+            <h1>AgroWeb</h1>
+            {% if user.is_authenticated %}
+            <h2 id="cosa-texto">Bienvenido <span style="color: #ebad8d">{{ user.username }}</span></h2>
+            {% else %}
+            <p id="textazzzo">LA MEJOR APLICACIÓN PARA LA COMPRA Y VENTA DE PRODUCTOS AGRICOLAS, DIRECTAMENTE CON EL
+                PRODUCTOR Y SIN
+                INTERMEDIARIOS</p>
+            {%endif%}
+            <!-- {% if user.is_authenticated %}
+                
+                {% else %}
+                <li><a class="nav-link" href="/login">Login</a></li>
+                <a href="/registro" class="btn-1" style="display: none;">Registrate ya</a>
+                {% endif %} -->
+
+
+
+        </div>
+    </header>
+
+    {% block content %}
+    {% endblock %}
+</body>
+
+</html>

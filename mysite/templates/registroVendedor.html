@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+     form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 30px auto;
+        max-width: 400px;
+        padding: 20px;
+        border: 2px solid #ccc;
+        border-radius: 10px;
+    }
+
+    input {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        border: none;
+        background-color: #f2f2f2;
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+    }
+
+    button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px;
+        margin-top: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    #error {
+        color: red;
+        font-size: 14px;
+        margin-top: 10px;
+    }
+
+    #id_password2 {
+        width: 100%;
+    }
+
+    #espacio {
+        height: 50px;
+    }
+
+    select#id_productos {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        border: none;
+        background-color: #f2f2f2;
+        width: 100%;
+        box-sizing: border-box;
+        appearance: none; 
+        background-image: url("../../static/media/img/flecha-select.png"); 
+        background-position: right center; 
+        background-repeat: no-repeat; 
+        background-size: 20px; 
+        padding-right: 30px; 
+        }
+    h5{
+        font-size: 20px;
+        padding: 10px;
+    }    
+    .password-field input[type="password"] {
+        -webkit-text-security: disc;
+        -moz-text-security: disc;
+        -ms-text-security: disc;
+        text-align: center;
+    }
+    h4{
+        font-size: 10px;
+        padding-bottom: 12px;
+        font-weight: normal;
+    } 
+    .password-field{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .password-field input{
+        width: 150%;
+    }
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* Crear 3 columnas con el mismo ancho */
+        gap: 20px; /* Espacio entre elementos */
+    }
+
+    .grid-item {
+        text-align: center; /* Alinear el texto al centro */
+    }
+</style>
+
+<form action="/registroVendedor/" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ register.nombreVendedor.label_tag }} <input type="text" name="{{ register.nombreVendedor.name }}">
+    {{ register.username.label_tag }} <input type="text" name="{{ register.username.name }}">
+    {{ register.cedula.label_tag }} <input type="text" name="{{ register.cedula.name }}">
+    <div class="password-field">
+    {{ register.password1.label_tag }} <input type="password" name="{{ register.password1.name }}">
+    {{ register.password2.label_tag }} <input type="password" name="{{ register.password2.name }}">
+    </div>
+    {{ register.telefono.label_tag }} <input type="text" name="{{ register.telefono.name }}">
+    {{ register.documentoMercantil.label_tag }} <input type="file" name="{{ register.documentoMercantil.name }}">
+    {{ register.nombreTienda.label_tag }} <input type="text" name="{{ register.nombreTienda.name }}">
+    <br>
+    <h5>Ubicacion exacta de la tienda</h5>
+    <h4>**La latitud y longitud predefinidas representan su ubicación actual**</h4>
+    {{ register.latitude.label_tag }} <input type="text" id="id_latitude" name="{{ register.latitude.name }}"
+        placeholder="Asegurese de ingresar la latidud correcta">
+    {{ register.longitude.label_tag }} <input type="text" id="id_longitude" name="{{ register.longitude.name }}"
+        placeholder="Asegurese de ingresar la longitud correcta">
+    <br>
+
+    {{ register.horario.label_tag }} <input type="text" name="{{ register.horario.name }}"
+    placeholder="Formato ej: [6:00-22:00] 24h">
+    <label>Productos:</label>
+    <div class=" fieldWrapper grid-container">
+        {{ register.productos.errors }}
+        {% for product in register.productos.field.queryset.all|slice:":5" %}
+        <div class="grid-item">
+            <label>
+                <img src="../static/media/{{ product.imagenProd }}" alt="{{ product.nombre }}" width="100" height="100">
+                <input type="checkbox" name="{{ register.productos.name }}" value="{{ product.id }}">
+                <p>{{ product.nombreProd }}</p>
+            </label>
+        </div>
+        {% endfor %}
+    </div>
+    <strong><button type="submit" style="background-color: #ebad8d">Registrarse</button></strong>
+</form>
+
+<script>
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(function (position) {
+            document.getElementById("id_latitude").value = position.coords.latitude;
+            document.getElementById("id_longitude").value = position.coords.longitude;
+        });
+    }
+</script>
+
+<div id="espacio"></div>
+
+{{ error }}
+{% endblock %}

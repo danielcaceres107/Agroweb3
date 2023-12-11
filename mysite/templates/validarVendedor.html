@@ -1,0 +1,133 @@
+{% extends 'base_validador.html' %}
+{% block content %}
+    <style>
+        .card-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .card {
+            list-style: none;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            padding: 10px;
+            max-width: 300px; /* Ajustar el ancho máximo */
+        }
+
+        .card li {
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .document-button {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        button.download-pdf-button,
+        button.aprobar-vendedor-button,
+        button.denegar-vendedor-button {
+            width: 100%;
+            padding: 12px;
+            margin: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        button.download-pdf-button {
+            background-color: #323b41;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .botones {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button.aprobar-vendedor-button,
+        button.denegar-vendedor-button {
+            width: 45%;
+            border: none;
+            border-radius: 5px;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+        button.aprobar-vendedor-button {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        button.denegar-vendedor-button {
+            background-color: #ff4747;
+            color: white;
+        }
+
+        button.aprobar-vendedor-button:hover {
+            background-color: #45a049;
+        }
+
+        button.denegar-vendedor-button:hover {
+            background-color: #ff0000;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
+
+    <h1>Validar Vendedores</h1>
+
+    <div class="card-container">
+        {% for registro in registros_pendientes %}
+            <ul class="card">
+                <li>
+                    <strong>Nombre de Usuario:</strong> {{ registro.username }}
+                </li>
+                <li>
+                    <strong>Nombre del Vendedor:</strong> {{ registro.vendedor }}
+                </li>
+                <li>
+                    <strong>Cédula:</strong> {{ registro.cedula }}
+                </li>
+                <li>
+                    <strong>Nombre de la Tienda:</strong> {{ registro.nombreTienda }}
+                </li>
+                <li>
+                    <strong>Teléfono:</strong> {{ registro.telefono }}
+                </li>
+                <li>
+                    <strong>Horario de Trabajo:</strong> {{ registro.horario }}
+                </li>
+                <li>
+                    <strong>Documento Mercantil:</strong>
+                    <button class="download-pdf-button" onclick="window.location='{{ registro.documentoMercantil.url }}'">Descargar PDF</button>
+                </li>
+                <li>
+                    <form method="post" style="width: 100%;">
+                        {% csrf_token %}
+                        <div class="botones">
+                            <button type="submit" name="aprobar" class="aprobar-vendedor-button" onclick="location.href='{% url 'validarRegistro' registro.token %}'">Aprobar Vendedor</button>
+                            <button type="submit" name="denegar" class="denegar-vendedor-button">Denegar Vendedor</button>
+                        </div>
+                    </form>
+                </li>
+            </ul>
+        {% endfor %}
+    </div>
+{% endblock %}

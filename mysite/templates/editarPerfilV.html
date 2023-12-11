@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    form {
+       display: flex;
+       flex-direction: column;
+       align-items: center;
+       margin: 30px auto;
+       max-width: 400px;
+       padding: 20px;
+       border: 2px solid #ccc;
+       border-radius: 10px;
+   }
+
+   input {
+       padding: 10px;
+       margin: 10px 0;
+       border-radius: 5px;
+       border: none;
+       background-color: #f2f2f2;
+       width: 100%;
+       box-sizing: border-box;
+       text-align: center; 
+   }
+
+   button {
+       background-color: #4CAF50;
+       color: white;
+       padding: 10px;
+       margin-top: 10px;
+       border: none;
+       border-radius: 5px;
+       cursor: pointer;
+   }
+
+   #error {
+       color: red;
+       font-size: 14px;
+       margin-top: 10px;
+   }
+
+   #id_password2 {
+       width: 100%;
+   }
+
+   #espacio {
+       height: 50px;
+   }
+
+   select#id_productos {
+       padding: 10px;
+       margin: 10px 0;
+       border-radius: 5px;
+       border: none;
+       background-color: #f2f2f2;
+       width: 100%;
+       box-sizing: border-box;
+       appearance: none; 
+       background-image: url("../../static/media/img/flecha-select.png"); 
+       background-position: right center; 
+       background-repeat: no-repeat; 
+       background-size: 20px; 
+       padding-right: 30px; 
+       }
+   h5{
+       font-size: 20px;
+       padding: 10px;
+   }    
+   .password-field input[type="password"] {
+       -webkit-text-security: disc;
+       -moz-text-security: disc;
+       -ms-text-security: disc;
+       text-align: center;
+   }
+   h4{
+       font-size: 10px;
+       padding-bottom: 12px;
+       font-weight: normal;
+   } 
+   .password-field{
+       display: flex;
+       flex-direction: column;
+       justify-content: center;
+       align-items: center;
+   }
+   .password-field input{
+       width: 150%;
+   }
+
+</style>
+<form action="/editarPerfilV/" method="POST">
+    {% csrf_token %}
+    <p>
+        <strong>Nombre del vendedor:</strong>
+    </p>
+    <input type="text" name="nombreVendedor" value="{{ vendedor.nombreVendedor }}">
+
+    <p>
+        <strong>Cedula:</strong>
+    </p>
+    <input type="text" name="cedula" value="{{ vendedor.cedula }}">
+    
+    <p>
+        <strong>Nombre de la tienda:</strong>
+    </p>
+    <input type="text" name="nombreTienda" value="{{ vendedor.nombreTienda }}">
+
+    <p>
+        <strong>Telefono:</strong>
+    </p>
+    <input type="text" name="telefono" value="{{ vendedor.telefono }}">
+
+    <p>
+        <strong>Horario:</strong>
+    </p>
+    <input type="text" name="horario" value="{{ vendedor.horario }}">
+    <br>
+
+    <h5>Ubicacion exacta de la tienda</h5>
+    <p>
+        <strong>latitud:</strong>
+    </p>
+    <input type="text" id="id_latitude" name="latitude" value="{{ vendedor.latitude }}">
+    <p>
+        <strong>longitud:</strong>
+    </p>
+    <input type="text" id="id_longitude" name="longitude" value="{{ vendedor.longitude }}">
+    <br>
+
+    <div class="fieldWrapper">
+        {{ register.productos.errors }}
+        <label for="{{ register.productos.id_for_label }}">Productos:</label><br>
+        <p>{{ register.productos }}</p>
+    </div>
+    <h5>Cambiar contraseña</h5>
+    <div class="password-field">
+        <p>
+            <strong>Contraseña:</strong>
+        </p>
+        <input type="password" name="password1" placeholder="********">
+        <p>
+            <strong>Confirmar contraseña:</strong>
+        </p>
+        <input type="password" name="password2" placeholder="********">
+    </div>
+    <strong>
+        <button type="submit" style="background-color: #ebad8d">Actualizar Información</button>
+    </strong>
+</form>
+{% endblock %}

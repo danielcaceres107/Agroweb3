@@ -1,0 +1,83 @@
+{% extends 'base_validador.html' %}
+{% block content %}
+<style>
+    .tabla-pedidos {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    list-style: none;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    margin: 10px;
+    margin-bottom: -20px;
+}
+
+.tabla-pedidos-header {
+    font-weight: bold;
+    margin-bottom: 10px; 
+    font-size: 30px;
+}
+
+.tabla-pedidos li {
+    flex: 1;
+    text-align: center; 
+}
+
+.tabla-pedidos form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+button {
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+    transition: background-color 0.3s ease;
+    width: 100%;
+}
+
+button.denegar {
+    background-color: #ff4747;
+}
+
+
+</style>
+
+<h1>Validación de Pedidos</h1>
+<ul class="tabla-pedidos tabla-pedidos-header">
+    <li>Id del Pedido</li>
+    <li>Fecha</li>
+    <li>Total</li>
+    <li>Acciones</li>
+</ul>
+{% for pedido in pedidos %}
+    <ul class="tabla-pedidos">
+        <li>{{ pedido.id }}</li>
+        <li>{{ pedido.fecha }}</li>
+        <li>{{ pedido.total }}</li>
+        <li>
+            <form method="post" action="{% url 'aprobarPedido' pedido.id %}">
+                {% csrf_token %}
+                <button type="submit">Aprobar Pedido</button>
+            </form>
+            <form method="post" action="{% url 'denegarPedido' pedido.id %}">
+                {% csrf_token %}
+                <button type="submit" class="denegar">Denegar Pedido</button>
+            </form>
+        </li>
+    </ul>
+    <br>
+{% endfor %}
+{% endblock %}

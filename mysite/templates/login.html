@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block content %}
+	<!--<header>
+        <div class="inner">
+			<nav class="nav-masthead">
+				<h1><a class="nav-link active" href="index.html">Home</a>
+				<a class="nav-link" href="login.html">Login</a>
+                <a class="nav-link" href="registro.html">Registrarse</a></h1>
+			</nav>
+		   
+    </div>
+    </header>-->
+	<style>
+		/* Estilos para el formulario de login */
+
+	input[type="text"], input[type="password"] {
+    max-width: 400px;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: none;
+    background-color: #f2f2f2;
+    box-sizing: border-box;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 30px auto;
+    max-width: 400px;
+    padding: 20px;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: none;
+    background-color: #f2f2f2;
+    box-sizing: border-box;
+}
+
+.login-form button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.login-form #error {
+    color: red;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+#id_username, #id_password {
+	display: flex;
+	width: 101%;
+	max-width: 400px;
+	padding: 10px;
+	margin: 10px 0;
+	border-radius: 5px;
+	border: none;
+	background-color: #f2f2f2;
+	box-sizing: border-box;
+}
+#espacio{
+	height: 50px;
+}
+
+.msg-error{
+    font-size: 18px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+	</style>
+
+<form method="POST" class="login-form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <strong><button type="submit" style="background-color: #ebad8d">Iniciar sesión</button></strong>
+  </form>
+    <div class="msg-error">
+  {{ error }}
+    </div>
+  <div id="espacio"></div>
+{% endblock %}
