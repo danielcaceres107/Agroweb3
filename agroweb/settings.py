@@ -67,6 +67,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+#CSRF_TRUSTED_ORIGINS = ['https://...']
+
 ROOT_URLCONF = 'agroweb.urls'
 
 TEMPLATES = [

@@ -116,7 +116,9 @@
                 </li>
                 <li>
                     <strong>Documento Mercantil:</strong>
-                    <button class="download-pdf-button" onclick="window.location='{{ registro.documentoMercantil.url }}'">Descargar PDF</button>
+                    <a href="data:application/pdf;base64,{{ documentoMercantil }}" download="documentoMercantil.pdf">
+                        Descargar PDF
+                    </a>
                 </li>
                 <li>
                     <form method="post" style="width: 100%;">
