@@ -116,8 +116,6 @@ def agregar_producto(request, producto_id, vendedor_id):
 
     return JsonResponse({'message': 'Producto agregado al carrito'})
 
-
-
 @csrf_exempt 
 def eliminar_producto(request, producto_id):
     carrito = Carrito(request)
@@ -391,13 +389,16 @@ def registroVendedor(request):
                 productos_json = json.dumps(productos_seleccionados)
 
                 # Obtener la ruta de la carpeta de archivos temporales
-                ruta_temporal = tempfile.gettempdir()
+                ruta_temporal = settings.TEMP_DIR
+
+                if not os.path.exists(ruta_temporal):
+                    os.makedirs(ruta_temporal)
 
                 # Obtener el archivo adjunto
                 documento_adjunto = request.FILES.get('documentoMercantil')
 
                 if documento_adjunto:
-                    # Generar una ruta única para guardar el archivo
+                    # Generar una ruta única para guardar el archivo (Ej: tmp/midocumento)
                     archivo_path = os.path.join(ruta_temporal, documento_adjunto.name)
                     with open(archivo_path, 'wb') as file:
                         for chunk in documento_adjunto.chunks():
@@ -405,6 +406,8 @@ def registroVendedor(request):
                 else:
                     archivo_path = None
 
+                os.chmod(archivo_path, 0o400)
+                
                 # Obtén los datos del formulario
                 datos_vendedor = {
                     'username': request.POST['username'],
@@ -431,6 +434,22 @@ def registroVendedor(request):
                 'register': RegistroVendedorForm(),
                 "error": 'Contraseñas no coinciden'
             })
+        
+def descargar_archivo(request, url_archivo):
+    
+    # Verificar si el archivo existe
+    if os.path.exists(url_archivo):
+        # Abrir y leer el archivo
+        with open(url_archivo, 'rb') as archivo:
+            contenido = archivo.read()
+        # Crear una respuesta HTTP con el contenido del archivo
+        response = HttpResponse(contenido, content_type='application/pdf')
+        # Establecer encabezados para forzar la descarga del archivo
+        response['Content-Disposition'] = 'attachment; filename="documentoMercantil.pdf"'
+        return response
+    else:
+        # Devolver una respuesta 404 si el archivo no existe
+        return HttpResponse("Archivo no encontrado", status=404)
 
 def validarVendedor(request):
     if request.user.is_authenticated:
@@ -526,7 +545,7 @@ def validarRegistro(request, token):
         smtp_username = settings.CORREO
         smtp_password = settings.CONTRASENA
         sender = settings.CORREO
-        recipient = 'danielcaceres107@gmail.com'
+        recipient = settings.CORREO
         subject = 'Registro de ' + \
             datos_vendedor['vendedor'] + ' como vendedor Agroweb'
         message = '''
@@ -571,12 +590,26 @@ def validarRegistro(request, token):
         # Eliminar los datos de la caché después de la validación
         r.delete(token)
 
-        # Redirigir a una página de confirmación o mostrar un mensaje al usuario
-        return HttpResponse(render(request, 'registroExitosoV.html'))
+        # Eliminar documento pdf de tmp
+        if documento_adjunto:
+            os.remove(documento_adjunto)
+        else:
+            print("documento ya no existe")
+
+
+        return redirect('validarVendedor')
     else:
         # Redirigir a una página de error o mostrar un mensaje de token inválido
         return HttpResponse('Token inválido')
 
+def denegarRegistro(request, token):
+    # Conectarse a Redis
+    r = redis.Redis(host='localhost', port=6379, db=0)
+    
+    # Eliminar los datos asociados al token
+    r.delete(token)
+    
+    return redirect('validarVendedor')
 
 def registroExitosoVendedor(request):
     return HttpResponse(render(request, 'registroExitosoV.html'))

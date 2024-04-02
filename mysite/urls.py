@@ -41,6 +41,7 @@ urlpatterns = [
     path('registro-exitoso-vendedor/', views.registroExitosoVendedor, name='registroExitosoV'),
     path('validarVendedor/', views.validarVendedor, name="validarVendedores"),
     path('validar/<str:token>/', views.validarRegistro, name='validarRegistro'),
+    path('denegar/<str:token>/', views.denegarRegistro, name='denegarRegistro'),
     path('crear_producto/', views.crear_producto, name='crear_producto'),
     path('aprobar_pedido/<int:pedido_id>/', views.aprobar_pedido, name='aprobarPedido'),
     path('denegar_pedido/<int:pedido_id>/', views.denegar_pedido, name='denegarPedido'),
@@ -49,5 +50,6 @@ urlpatterns = [
     path('editar_productos/', views.editar_productos, name='editar_productos'),
     path('edit_product/', views.editProduct, name='edit_product'),
     path('delete_product/', views.deleteProduct, name='delete_product'),
-    path('new_edited_product/', views.NewEditedProduct, name='new_edited_product')
+    path('new_edited_product/', views.NewEditedProduct, name='new_edited_product'),
+    path('descargar/<str:url_archivo>/', views.descargar_archivo, name='descargar_archivo')
 ]

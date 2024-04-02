@@ -45,6 +45,8 @@ ALLOWED_HOSTS = []
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
+TEMP_DIR = os.path.join(BASE_DIR, 'tmp')
+
 # Application definition
 
 INSTALLED_APPS = [

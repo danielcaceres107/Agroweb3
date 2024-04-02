@@ -95,7 +95,7 @@
 
     <div class="card-container">
         {% for registro in registros_pendientes %}
-            <ul class="card">
+            <ul class="card" id="card-{{ registro.token }}">
                 <li>
                     <strong>Nombre de Usuario:</strong> {{ registro.username }}
                 </li>
@@ -116,7 +116,7 @@
                 </li>
                 <li>
                     <strong>Documento Mercantil:</strong>
-                    <a href="data:application/pdf;base64,{{ documentoMercantil }}" download="documentoMercantil.pdf">
+                    <a href="{% url 'descargar_archivo' url_archivo=registro.documentoMercantil %}" download>
                         Descargar PDF
                     </a>
                 </li>
@@ -125,7 +125,7 @@
                         {% csrf_token %}
                         <div class="botones">
                             <button type="submit" name="aprobar" class="aprobar-vendedor-button" onclick="location.href='{% url 'validarRegistro' registro.token %}'">Aprobar Vendedor</button>
-                            <button type="submit" name="denegar" class="denegar-vendedor-button">Denegar Vendedor</button>
+                            <button type="submit" name="denegar" class="denegar-vendedor-button" onclick="location.href='{% url 'denegarRegistro' registro.token %}'">Denegar Vendedor</button>
                         </div>
                     </form>
                 </li>
