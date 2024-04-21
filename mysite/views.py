@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, HttpResponseServerError
 import redis
 from agroweb import settings
 from mysite.my_context_processor import total_carrito
@@ -76,6 +76,43 @@ def cambiar_estado_pedido(request, pedido_id):
             pedido = Pedidos.objects.get(pk=pedido_id)
             pedido.estado = nuevo_estado
             pedido.save()
+
+            try:
+                # Enviar correo de cambio de estado del pedido
+                smtp_host = 'smtp.office365.com'
+                smtp_port = 587
+                smtp_username = settings.CORREO
+                smtp_password = settings.CONTRASENA
+                sender = settings.CORREO
+                recipient = request.user.email
+                subject = 'Informacion de su pedido en Agroweb'
+                message = '''
+                <html>
+                <head></head>
+                <body>
+                    <h2>Cambio de estado en su pedido</h2>
+                    <p>Buenas noticias,</p>
+                    <p>El estado de su pedido ahora es: %s</p>
+                    <p></p>
+                    <p>Equipo de Agroweb</p>
+                </body>
+                </html>
+                '''% nuevo_estado
+
+                msg = MIMEMultipart('alternative')
+                msg['Subject'] = subject
+                msg['From'] = sender
+                msg['To'] = recipient
+                html_part = MIMEText(message, 'html')
+                msg.attach(html_part)
+
+                with smtplib.SMTP(smtp_host, smtp_port) as smtp:
+                    smtp.starttls()
+                    smtp.login(smtp_username, smtp_password)
+                    smtp.sendmail(sender, recipient, msg.as_string())
+            except:
+                print("no se pudo enviar el correo de actualizacion de estado")
+
             return redirect('estadoPedidos')
         except Pedidos.DoesNotExist:
             # caso en que no se encuentre el pedido
@@ -83,6 +120,16 @@ def cambiar_estado_pedido(request, pedido_id):
     
     # caso en que no sea una solicitud POST
     return redirect('estadoPedidos')
+
+def detallePedido(request, pedido_id) :
+    if request.method == "POST":
+        pedido = Pedidos.objects.get(id=pedido_id)
+        print(pedido)
+        productos_pedidos_conn = ProductosPedidosConexion.objects.filter(pedido_id=pedido_id)
+        total = pedido.total
+        products = Products.objects.all
+
+    return render(request, 'detalle_pedido.html', {'pedido_id': pedido_id, 'productos_pedidos_conn': productos_pedidos_conn, 'products': products, 'total': total })
 
 
 def mapa(request):
@@ -101,13 +148,14 @@ def agregar_producto(request, producto_id, vendedor_id):
         # desde el vendedor obtener la tienda
         tienda = vendedor.nombreTienda
     except Vendedores.DoesNotExist:
+        print("vendedor no encontrado")
         return redirect('mapa')
 
     try:
         # Obtener el producto específico del vendedor
         producto = vendedor.productos.get(id=producto_id)
     except Products.DoesNotExist:
-        # Producto no encontrado en la tienda del vendedor
+        print("Producto no encontrado en la tienda del vendedor")
         return redirect('mapa')
 
     # Agregar el producto al carrito
@@ -205,26 +253,26 @@ def enviar_carrito(request):
         try:
             usuario = Vendedores.objects.get(usuarioVendedor=request.user.username)
         except ObjectDoesNotExist:
-            # El usuario no se encuentra en ninguna de las dos tablas, maneja este caso aquí
+            # El usuario no se encuentra en ninguna de las dos tablas
             error_message = "Usuario inválido"
-            return HttpResponse(error_message, status=400)  # O muestra un mensaje de error, como prefieras
+            return HttpResponse(error_message, status=400)
+
+    account_sid = settings.ACCOUNT_SID
+    auth_token= settings.AUTH_TOKEN
 
     if usuario:
         try:
-            sms_carrito(usuario.telefono)
+            sms_carrito(usuario.telefono, account_sid, auth_token)
         except:
             print("no se pudo enviar el sms")
         try:
-            llamada(usuario.telefono)
+            llamada(usuario.telefono, account_sid, auth_token)
         except:
             print("no se pudo realizar la llamada")
 
     carrito.limpiar()
 
-    return redirect('mapa')
-
-account_sid = settings.ACCOUNT_SID
-auth_token= settings.AUTH_TOKEN
+    return redirect('https://paga.nequi.com.co/bdigitalpsp/login')
 
 def sms_carrito(telefono, account_sid, auth_token) :
     print("Enviando sms del SICC...")
@@ -239,8 +287,6 @@ def llamada(telefono, account_sid, auth_token) :
     print("Realizando llamada - MOnitorizacion SICC - SIT LTDA, Colombia")
     #mensa=input("Escriba el mensaje que desea enviar: ")
     #numero=input("Escriba numero de telefono con el signo + codigo del pais y telefono: ")
-    account_sid="ACb00996a2f2fc7f7993b8e2d7ea8966c7"
-    auth_token="0b2f159f74cbc27e8b532fe0ab9c3509"
     
     client = Client(account_sid, auth_token)
     call = client.calls.create(url='https://handler.twilio.com/twiml/EH5bda876424d95b012cf33d73d3a90896',
@@ -289,8 +335,7 @@ def ingreso(request):
     if request.method == 'GET':
         return render(request, 'login.html', {"form": AuthenticationForm})
     else:
-        user = authenticate(
-            request, username=request.POST['username'], password=request.POST['password'])
+        user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
         if user is not None:
             login(request, user)
             return redirect('index')
@@ -365,6 +410,89 @@ def decimal_default(obj):
         return float(obj)
     raise TypeError("Object of type '%s' is not JSON serializable" %
                     type(obj)._name_)
+
+
+def registroCliente(request):
+    if request.method == 'GET':
+        return render(request, 'registroCliente.html', {
+            # utiliza la instancia del formulario personalizado
+            'register': RegistroClientesForm()
+        })
+    else:
+        form = RegistroClientesForm(request.POST)
+        if form.is_valid():
+            user = User.objects.create_user(
+                    username=request.POST['username'], password=request.POST['password1'], email=request.POST['correo'])
+            user.save()
+
+
+            # Crear un nuevo registro en la tabla DimClientes
+            cliente = Clientes(
+                usuarioCliente=user.username,
+                nombreCliente=form.cleaned_data['nombreCliente'],
+                correo=form.cleaned_data['correo']
+            )
+
+            cliente.save()
+
+            # Autenticar y realizar el inicio de sesión con el backend predeterminado
+            user = authenticate(
+                request, username=user.username, password=request.POST['password1'])
+            login(request, user)
+
+            # Código para enviar el correo electrónico
+            smtp_host = 'smtp.office365.com'
+            smtp_port = 587
+            smtp_username = settings.CORREO
+            smtp_password = settings.CONTRASENA
+            sender = settings.CORREO
+            recipient = form.cleaned_data['correo']
+            subject = 'Registro de ' + form.cleaned_data['nombreCliente'] + ' como cliente Agroweb'
+            message = '''
+            <html>
+            <head></head>
+            <body>
+                <h2>¡Registro exitoso!</h2>
+                <p>Hola,</p>
+                <p>Tu registro como cliente Agroweb ha sido exitoso.</p>
+                <p>¡Gracias por unirte a nuestro sitio!</p>
+            </body>
+            </html>
+            '''
+
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = subject
+            msg['From'] = sender
+            msg['To'] = recipient
+            html_part = MIMEText(message, 'html')
+            msg.attach(html_part)
+
+            with smtplib.SMTP(smtp_host, smtp_port) as smtp:
+                smtp.starttls()
+                smtp.login(smtp_username, smtp_password)
+                smtp.sendmail(sender, recipient, msg.as_string())
+
+            print('Usuario creado satisfactoriamente')
+            return redirect('mapa')
+        else:
+            # Logica para mostrar los errores
+            errors_dict = form.errors.as_data()
+            username_error = ""
+            email_error = ""
+            password_error = ""
+
+            # Itera sobre los errores del form
+            for field, error_list in errors_dict.items():
+                for error in error_list:
+                    if 'username' in field:
+                        username_error += error.message + ". "
+                    elif 'correo' in field:
+                        email_error += error.message + ". "
+                    elif '__all__' in field:
+                        password_error += error.message + ". "
+
+            # Renderiza el formulario con los mensajes de error personalizados
+            return render(request, 'registroCliente.html', {"register": form, "username_error": username_error, "email_error": email_error, "password_error": password_error})
 
 
 def registroVendedor(request):
@@ -614,76 +742,6 @@ def denegarRegistro(request, token):
 def registroExitosoVendedor(request):
     return HttpResponse(render(request, 'registroExitosoV.html'))
 
-
-def registroCliente(request):
-    if request.method == 'GET':
-        return render(request, 'registroCliente.html', {
-            # utiliza la instancia del formulario personalizado
-            'register': RegistroClientesForm()
-        })
-    else:
-        if request.POST['password1'] == request.POST['password2']:
-            try:
-                user = User.objects.create_user(
-                    username=request.POST['username'], password=request.POST['password1'], email=request.POST['correo'])
-                user.save()
-
-                # Crear un nuevo registro en la tabla DimClientes
-                cliente = Clientes(
-                    usuarioCliente=request.POST['username'],
-                    nombreCliente=request.POST['nombreCliente'],
-                    correo=request.POST['correo']
-                )
-
-                cliente.save()
-
-                # Autenticar y realizar el inicio de sesión con el backend predeterminado
-                user = authenticate(
-                    request, username=request.POST['username'], password=request.POST['password1'])
-                login(request, user)
-
-                # Código para enviar el correo electrónico
-                smtp_host = 'smtp.office365.com'
-                smtp_port = 587
-                smtp_username = settings.CORREO
-                smtp_password = settings.CONTRASENA
-                sender = settings.CORREO
-                recipient = request.POST['correo']
-                subject = 'Registro de ' + \
-                    request.POST['nombreCliente'] + ' como cliente Agroweb'
-                message = '''
-                <html>
-                <head></head>
-                <body>
-                    <h2>¡Registro exitoso!</h2>
-                    <p>Hola,</p>
-                    <p>Tu registro como cliente Agroweb ha sido exitoso.</p>
-                    <p>¡Gracias por unirte a nuestro sitio!</p>
-                </body>
-                </html>
-                '''
-
-                msg = MIMEMultipart('alternative')
-                msg['Subject'] = subject
-                msg['From'] = sender
-                msg['To'] = recipient
-                html_part = MIMEText(message, 'html')
-                msg.attach(html_part)
-
-                with smtplib.SMTP(smtp_host, smtp_port) as smtp:
-                    smtp.starttls()
-                    smtp.login(smtp_username, smtp_password)
-                    smtp.sendmail(sender, recipient, msg.as_string())
-
-                print('usuario creado satisfactoriamente')
-                return redirect('mapa')
-            except IntegrityError:
-                return render(request, 'registroCliente.html', {"register": RegistroClientesForm(), "error": "Username already exists."})
-        else:
-            return render(request, 'registroCliente.html', {
-                'register': RegistroClientesForm(),
-                "error": 'Contraseñas no coinciden'
-            })
 
 def perfil(request):
     if request.user.is_authenticated:

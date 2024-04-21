@@ -51,5 +51,6 @@ urlpatterns = [
     path('edit_product/', views.editProduct, name='edit_product'),
     path('delete_product/', views.deleteProduct, name='delete_product'),
     path('new_edited_product/', views.NewEditedProduct, name='new_edited_product'),
-    path('descargar/<str:url_archivo>/', views.descargar_archivo, name='descargar_archivo')
+    path('descargar/<str:url_archivo>/', views.descargar_archivo, name='descargar_archivo'),
+    path('detalle_pedido/<int:pedido_id>/', views.detallePedido, name='detalle_pedido')
 ]

@@ -70,7 +70,11 @@
     <strong><button type="submit" style="background-color: #ebad8d">Registrarse</button></strong>
 </form>
 
-<div id="espacio"></div>
+<div id="errors">
+    <p>{{ username_error }}</p>
+    <p>{{ password_error }}</p>
+    <p>{{ email_error }}</p>
+</div>
 
-{{ error }}
+
 {% endblock %}

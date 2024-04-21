@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+{% load static %}
 <style>
     form {
         display: flex;
@@ -108,6 +109,18 @@
     .compras-info {
         justify-content: center;
     }
+
+    .img-container img {
+        width: 35px;
+        height: 35px;
+    }
+
+    .img-container {
+        display: flex;
+        align-content: center;
+        flex-wrap: wrap;
+        flex-direction: column-reverse;
+    }
 </style>
 <div class="pantalla-perfil">
     <div class="perfil-info">
@@ -159,6 +172,18 @@
                     <strong>Total: </strong>{{ pedido.total }}<br>
                 </li>
                 <br>
+                <div class="img-container">
+                    <img src="{% static 'media/img/' %}{% if pedido.estado == 'pendiente' %}pendiente.png{% elif pedido.estado == 'en_camino' %}enproceso.png{% elif pedido.estado == 'entregado' %}entregado.png{% endif %}" alt="{{ pedido.estado }}">
+                </div>
+                <form method="post" action="{% url 'cambiarEstadoPedido' pedido.id %}">
+                    {% csrf_token %}
+                    <select name="nuevo_estado">
+                        <option value="pendiente" {% if pedido.estado == "pendiente" %}selected{% endif %}>Pendiente</option>
+                        <option value="en_camino" {% if pedido.estado == "en_camino" %}selected{% endif %}>En Camino</option>
+                        <option value="entregado" {% if pedido.estado == "entregado" %}selected{% endif %}>Entregado</option>
+                    </select>
+                    <button type="submit">Cambiar Estado</button>
+                </form>
         </ul>
         </hr>
         {% endfor %}

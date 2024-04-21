@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.core.validators import EmailValidator
 from .models import Vendedores, Products, Clientes
 
 
@@ -25,9 +26,25 @@ class RegistroVendedorForm(forms.ModelForm):
 class RegistroClientesForm(forms.ModelForm):
     nombreCliente = forms.CharField(label="Nombre Completo")
     username = forms.CharField(label="Nombre de usuario")
-    correo = forms.CharField(label="Correo")
+    correo = forms.EmailField(validators=[EmailValidator(message='')])
     password1 = forms.CharField(widget=forms.PasswordInput, label="Contraseña")
     password2 = forms.CharField(widget=forms.PasswordInput, label="Confirmación de contraseña")
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get("password1")
+        password2 = cleaned_data.get("password2")
+        if password1 != password2:
+            raise forms.ValidationError(
+                "Las contraseñas no coinciden"
+            )
+        return cleaned_data
+
+    def clean_username(self):
+        username = self.cleaned_data['username']
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError("El nombre de usuario ya está en uso.")
+        return username
 
     class Meta:
         model = User

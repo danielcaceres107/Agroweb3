@@ -41,7 +41,7 @@ class Vendedores(models.Model):
         vendedor.delete()
     
 class Clientes(models.Model):
-    nombreCliente = models.CharField(max_length=200, unique=True)
+    nombreCliente = models.CharField(max_length=200, unique=False)
     usuarioCliente = models.CharField(max_length=200, unique=True)
     correo = models.CharField(max_length=200, unique=True)
 
@@ -64,14 +64,14 @@ class Pedidos(models.Model):
     estado = models.CharField(max_length=20, choices=[('pendiente', 'Pendiente'), ('en_camino', 'En Camino'), ('entregado', 'Entregado')], default='pendiente')
 
     def __str__(self):
-        return f'Pedido {self.pk} por {self.usuario_compra.username}'
+        return f'Pedido {self.pk} por {self.usuario_compra_id.username}'
     
 class VendedoresPedidosConexion(models.Model):
     pedido = models.ForeignKey(Pedidos, related_name='pedidos_ids', on_delete=models.CASCADE)
     vendedor = models.ForeignKey(Vendedores, related_name='vendedores_ids', on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'Vendedor: {self.vendedor.username}, Pedido: {self.pedido.pk}'
+        return f'Vendedor: {self.vendedor.usuarioVendedor}, Pedido: {self.pedido.pk}'
     
 class ProductosPedidosConexion(models.Model):
     pedido = models.ForeignKey(Pedidos, on_delete=models.CASCADE)
@@ -79,4 +79,4 @@ class ProductosPedidosConexion(models.Model):
     cantidad = models.PositiveIntegerField() 
 
     def __str__(self):
-        return f'Pedido: {self.pedido.pk}, Producto: {self.producto.nombre}'
+        return f'Pedido: {self.pedido.pk}, Producto: {self.producto.nombreProd}'

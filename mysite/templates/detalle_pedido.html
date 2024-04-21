@@ -1,0 +1,22 @@
+{% extends 'base_validador.html' %}
+{% block content %}
+{% load static %}
+
+<h1>Detalle del Pedido</h1>
+<div class="products-container">
+    Productos:
+    <ul>
+        {% for pedidosconn in productos_pedidos_conn %}
+            {% for producto in products %}
+                {% if pedidosconn.producto_id == producto.id %}
+                    <li>{{ producto.nombreProd }}</li>
+                    <li>{{ producto.precioProd }}</li>
+                    <li>{{ pedidosconn.cantidad }}</li>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+        <li> Total: </li>
+        <li>{{ total }}</li>
+    </ul>
+</div>
+{% endblock %}

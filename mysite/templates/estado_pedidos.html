@@ -100,6 +100,10 @@
                 <div class="id-container">
                     Pedido ID: {{ pedido.id }}
                 </div>
+                <form method="post" action="{% url 'detalle_pedido' pedido.id %}">
+                    {% csrf_token %}
+                    <button type="submit">Ver Detalles</button>
+                </form>
                 <div class="state-container">
                     Estado: {{ pedido.estado }}
                 </div>
