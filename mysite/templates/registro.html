@@ -42,6 +42,11 @@
         background-color: #3E8E41;
     }
 
+    #validador {
+        display: flex;
+        justify-content: flex-end;
+    }
+
     @media screen and (max-width: 319px) {
         .elegir-registro{
             display: flex;
@@ -77,6 +82,8 @@
         </button>
     </a>
 </div>
+<br>
+<div id="validador"><a href="/login">entrar como validador?</a></div>
 
 {{ error }}
 {% endblock %}

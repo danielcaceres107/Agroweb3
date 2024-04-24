@@ -100,10 +100,12 @@
                     // La tienda está abierta
                     document.getElementById("estado-tienda").innerHTML +=
                         '<p style="color:green" font-size="30px"><strong> Abierto</strong></p>'
+                    $('.btn-agregar').show();
                 } else {
                     // La tienda aún no abre
                     document.getElementById("estado-tienda").innerHTML +=
                         '<p style="color:red;" font-size="30px"> <strong> Cerrado</strong></p>'
+                    $('.btn-agregar').hide();
                 }
 
                 // Agrega un evento de click a los botones "Agregar al carrito"
@@ -149,6 +151,25 @@
                     });
                 });
 
+                $('.btn-eliminar').on('click', function(event) {
+                    event.preventDefault(); // Evita el comportamiento predeterminado de la etiqueta <a>
+
+                    const productoId = $(this).data('producto');
+                    const vendedorId = $(this).data('vendedor');
+
+                    $.ajax({
+                        type: 'POST', // Utiliza el método POST para modificar datos en el servidor
+                        url: '/eliminar/' + productoId + '/' + vendedorId,                 dataType: 'json',
+                        success: function(data) {
+                        alert(data.message);
+                        actualizarCarrito();
+                        },
+                        error: function() {
+                        alert('Error al eliminar el producto del carrito.');
+                        }
+                    });
+                });
+
                 function actualizarCarrito() {
                     // Realiza una solicitud Ajax para obtener la información actualizada del carrito desde el servidor
                     $.ajax({
@@ -186,7 +207,9 @@
     <div id="map" style="height: 70vh;"></div>
 </div>
 
-<a href="https://www.dane.gov.co/index.php/estadisticas-por-tema/agropecuario/sistema-de-informacion-de-precios-sipsa/mayoristas-boletin-semanal-1" target="_blank">Compara los precios con los boletines del DANE aqui </a>
+{% if user.is_authenticated %}
+<a href="https://www.dane.gov.co/files/operaciones/SIPSA/bol-SIPSASemanal-06abr-12abr-2024.pdf" target="_blank">Compara los precios con los boletines del DANE aqui </a>
+{% endif %}
 
 <!-- Agrega un contenedor para mostrar la información de la tienda -->
 <div id="store-info-container">

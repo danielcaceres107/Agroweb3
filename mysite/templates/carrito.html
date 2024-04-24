@@ -178,11 +178,10 @@
 
     carrito.style.display = 'none';
     overlay.style.display = 'none';
+
+    console.log("se activa ocultarCarrito")
   }
-
-
 </script>
-<div class="overlay"></div>
 
 <div class="contenedor-carrito">
   <div class="boton-ocultar-carrito"><button onclick="ocultarCarrito()">X</button></div>
@@ -190,46 +189,50 @@
     <table class="table table-bordered">
       <thead>
         <tr>
-          <th scope="row" colspan="3" class="text-center">CESTA DE PRODUCTOS</th>
+          <th scope="row" colspan="5" class="text-center">CESTA DE PRODUCTOS</th>
         </tr>
         <tr>
           <th scope="col">NOMBRE</th>
           <th scope="col">PRECIO</th>
           <th scope="col">CANTIDAD</th>
           <th scope="col">TIENDA</th>
+          <th scope="col">Borrar</th>
         </tr>
       </thead>
       <tbody id="contenidoCarrito">
-        {% if request.session.carrito.items %}
-          {% for key, value in request.session.carrito.items %}
-          <tr>
-            <td id="nombre">{{ value.nombre }}</td>
-            <td id="acumulado">{{ value.acumulado }}</td>
-            <td id="cantidad"><center>{{ value.cantidad }}</center>
-              <!-- <button type="submit" name="add" class="btn-agregar" onclick="location.href='{% url 'Add' value.producto_id  value.vendedor_id %}'">+</button>
-              <button type="submit" name="sub" class="btn-restar" data-producto="{{ value.producto_id }}" data-vendedor="{{ value.vendedor_id }}">-</button> -->
-            </td>
-            <td id="tienda">{{ value.tienda }}</td>
-          </tr>
-          {% endfor %}
-        {% else %}
+        {% for key, value in request.session.carrito.items %}
         <tr>
-          <td colspan="3">
+          <td id="nombre">{{ value.nombre }}</td>
+          <td id="acumulado">{{ value.acumulado }}</td>
+          <td id="cantidad"><center>{{ value.cantidad }}</center>
+            <!-- <button type="submit" name="add" class="btn-agregar" onclick="location.href='{% url 'Add' value.producto_id  value.vendedor_id %}'">+</button>
+            <button type="submit" name="sub" class="btn-restar" data-producto="{{ value.producto_id }}" data-vendedor="{{ value.vendedor_id }}">-</button> -->
+          </td>
+          <td id="tienda">{{ value.tienda }}</td>
+          <td id="borrar-a">
+            <a href="{% url 'Del' value.producto_id value.vendedor_id %}" class="btn-eliminar" data-producto="{{ value.producto_id }}" data-vendedor="{{ value.vendedor_id }}">Eliminar</a>
+          </td>  
+        </tr>
+        {% empty %}
+        <!-- Muestra esta fila solo si el carrito está vacío -->
+        <tr>
+          <td colspan="5">
             <div class="alert alert-danger text-center"> Sin Productos </div>
           </td>
         </tr>
-        {% endif %}
-        <tr>
-          <th scope="row">Total:</th>
-          <td colspan="2">$ {{total_carrito}}</td>
-        </tr>
+        {% endfor %}
       </tbody>
+       <!-- Esta fila siempre muestra el total del carrito -->
+       <tr>
+        <th scope="row">Total:</th>
+        <td colspan="4">$ {{total_carrito}}</td>
+      </tr>
     </table>
     <hr>
   </div>
   <div class="botones-env-lim">
     <div class="col-6"><a href="{% url 'Clean' %}">Limpiar</a></div>
-    <div class="col-6"><a href="{% url 'SendCart' %}" onclick="alert('Se enviarán los datos de compra al vendedor, puedes revisarlos en tu correo')">Comprar</a></div>
+    <div class="col-6"><a href="{% url 'pago' %}">Siguiente</a></div>
   </div>
 </div>
 <div class="boton-mostrar-carrito">

@@ -24,6 +24,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 from django.utils.crypto import get_random_string
 from django.core.cache import cache
+from django.core.files import File
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib import messages
 from django.urls import reverse
 import os
@@ -32,6 +34,8 @@ from django.core.files.base import ContentFile
 from datetime import datetime
 from django.db.models import Sum
 from twilio.rest import Client
+import subprocess
+import io
 
 
 def index(request):
@@ -77,6 +81,9 @@ def cambiar_estado_pedido(request, pedido_id):
             pedido.estado = nuevo_estado
             pedido.save()
 
+            comprador = Clientes.objects.get(id=pedido.usuario_compra_id)
+            email_comprador = pedido.usuario_compra_id.email
+
             try:
                 # Enviar correo de cambio de estado del pedido
                 smtp_host = 'smtp.office365.com'
@@ -84,7 +91,7 @@ def cambiar_estado_pedido(request, pedido_id):
                 smtp_username = settings.CORREO
                 smtp_password = settings.CONTRASENA
                 sender = settings.CORREO
-                recipient = request.user.email
+                recipient = [request.user.email, email_comprador]
                 subject = 'Informacion de su pedido en Agroweb'
                 message = '''
                 <html>
@@ -112,19 +119,26 @@ def cambiar_estado_pedido(request, pedido_id):
                     smtp.sendmail(sender, recipient, msg.as_string())
             except:
                 print("no se pudo enviar el correo de actualizacion de estado")
-
-            return redirect('estadoPedidos')
+            if request.user.username == "validador":
+                return redirect('estadoPedidos')
+            else:
+                return redirect('perfil')
         except Pedidos.DoesNotExist:
-            # caso en que no se encuentre el pedido
-            return redirect('estadoPedidos')
+            print("no se encuentra el pedido")
+            if request.user.username == "validador":
+                return redirect('estadoPedidos')
+            else:
+                return redirect('perfil')
     
-    # caso en que no sea una solicitud POST
-    return redirect('estadoPedidos')
+    if request.user.username == "validador": 
+        return redirect('estadoPedidos')
+    else:
+        return redirect('perfil')
+    
 
 def detallePedido(request, pedido_id) :
     if request.method == "POST":
         pedido = Pedidos.objects.get(id=pedido_id)
-        print(pedido)
         productos_pedidos_conn = ProductosPedidosConexion.objects.filter(pedido_id=pedido_id)
         total = pedido.total
         products = Products.objects.all
@@ -165,11 +179,12 @@ def agregar_producto(request, producto_id, vendedor_id):
     return JsonResponse({'message': 'Producto agregado al carrito'})
 
 @csrf_exempt 
-def eliminar_producto(request, producto_id):
+def eliminar_producto(request, producto_id, vendedor_id):
     carrito = Carrito(request)
     producto = Products.objects.get(id=producto_id)
-    carrito.eliminar(producto)
+    carrito.eliminar(producto, vendedor_id)
     return redirect('mapa')
+
 
 @csrf_exempt 
 def restar_producto(request, producto_id, vendedor_id):
@@ -192,7 +207,12 @@ def get_carrito(request):
     # Procesa tus datos y crea un HTML para las nuevas filas de la tabla del carrito 
     filas_html = ''
     for item_id, item_data in carrito_data.items():
-        fila_html = f'<tr><td>{item_data["nombre"]}</td><td>{item_data["acumulado"]}</td><td><center>{item_data["cantidad"]}</center></td><td>{item_data["tienda"]}</td></tr>'
+        # Obtén la URL dinámicamente utilizando reverse
+        url = reverse('Del', args=[item_data["producto_id"], item_data["vendedor_id"]])
+
+        fila_html = f'<tr><td>{item_data["nombre"]}</td><td>{item_data["acumulado"]}</td><td><center>{item_data["cantidad"]}</center></td><td>{item_data["tienda"]}</td><td id="borrar-a">' + \
+            f'<a href="{url}" class="btn-eliminar" data-producto="{item_data["producto_id"]}" data-vendedor="{item_data["vendedor_id"]}">Eliminar</a>' + \
+            '</td></tr>'
         filas_html += fila_html
 
     # Retorna los datos como una respuesta JSON
@@ -272,7 +292,7 @@ def enviar_carrito(request):
 
     carrito.limpiar()
 
-    return redirect('https://paga.nequi.com.co/bdigitalpsp/login')
+    return redirect('pago')
 
 def sms_carrito(telefono, account_sid, auth_token) :
     print("Enviando sms del SICC...")
@@ -502,66 +522,97 @@ def registroVendedor(request):
             'register': RegistroVendedorForm()
         })
     else:
-        if request.POST['password1'] == request.POST['password2']:
-            try:
+        form = RegistroVendedorForm(request.POST)
+        if form.is_valid():
+            username = request.POST['username']
 
-                r = redis.Redis(host='localhost', port=6379, db=0)
+            r = redis.Redis(host='localhost', port=6379, db=0)
 
-                # Genera un token único
-                token = get_random_string(length=32)
+            # Genera un token único
+            token = get_random_string(length=32)
 
-                # Obtener los productos seleccionados del formulario
-                productos_seleccionados = request.POST.getlist('productos')
+            # Obtener los productos seleccionados del formulario
+            productos_seleccionados = request.POST.getlist('productos')
 
-                # Convierte la lista de productos a una cadena JSON
-                productos_json = json.dumps(productos_seleccionados)
+            # Convierte la lista de productos a una cadena JSON
+            productos_json = json.dumps(productos_seleccionados)
 
-                # Obtener la ruta de la carpeta de archivos temporales
-                ruta_temporal = settings.TEMP_DIR
+            # Obtener la ruta de la carpeta de archivos temporales
+            ruta_temporal = settings.TEMP_DIR
 
-                if not os.path.exists(ruta_temporal):
-                    os.makedirs(ruta_temporal)
+            if not os.path.exists(ruta_temporal):
+                os.makedirs(ruta_temporal)
 
-                # Obtener el archivo adjunto
-                documento_adjunto = request.FILES.get('documentoMercantil')
+            # Obtener los archivos adjuntos
+            documento_adjunto = request.FILES.get('documentoMercantil')
+            qr_adjunto = request.FILES.get('imagen_qr')
 
-                if documento_adjunto:
-                    # Generar una ruta única para guardar el archivo (Ej: tmp/midocumento)
-                    archivo_path = os.path.join(ruta_temporal, documento_adjunto.name)
-                    with open(archivo_path, 'wb') as file:
-                        for chunk in documento_adjunto.chunks():
-                            file.write(chunk)
-                else:
-                    archivo_path = None
+            if documento_adjunto:
+                # Generar una ruta única para guardar el archivo (Ej: tmp/midocumento)
+                archivo_name = username + documento_adjunto.name
+                archivo_path = os.path.join(ruta_temporal, archivo_name)
+                with open(archivo_path, 'wb') as file:
+                    for chunk in documento_adjunto.chunks():
+                        file.write(chunk)
+            else:
+                archivo_path = None
 
+             # Guardar el archivo adjunto de la imagen QR
+            if qr_adjunto:
+                img_name = username + qr_adjunto.name
+                qr_path = os.path.join(ruta_temporal, img_name)
+                if os.path.exists(qr_path):
+                    os.chmod(qr_path, 0o400) #Linux
+                    comando = f"attrib +w {qr_path}" #Windows
+                    # Ejecutar el comando en el cmd
+                    subprocess.run(comando, shell=True)
+                with open(qr_path, 'wb') as file:
+                    for chunk in qr_adjunto.chunks():
+                        file.write(chunk)
+            else:
+                qr_path = None
+
+            if os.path.exists(archivo_path):
                 os.chmod(archivo_path, 0o400)
-                
-                # Obtén los datos del formulario
-                datos_vendedor = {
-                    'username': request.POST['username'],
-                    'vendedor': request.POST['nombreVendedor'],
-                    'password': request.POST['password1'],
-                    'cedula': request.POST['cedula'],
-                    'nombreTienda': request.POST['nombreTienda'],
-                    'telefono': request.POST['telefono'],
-                    'documentoMercantil': archivo_path,
-                    'latitude': request.POST['latitude'],
-                    'longitude': request.POST['longitude'],
-                    'horario': request.POST['horario'],
-                    'productos': productos_json
-                }
+            
+            # Obtén los datos del formulario
+            datos_vendedor = {
+                'username': request.POST['username'],
+                'vendedor': request.POST['nombreVendedor'],
+                'password': request.POST['password1'],
+                'cedula': request.POST['cedula'],
+                'nombreTienda': request.POST['nombreTienda'],
+                'telefono': request.POST['telefono'],
+                'documentoMercantil': archivo_path,
+                'latitude': request.POST['latitude'],
+                'longitude': request.POST['longitude'],
+                'horario': request.POST['horario'],
+                'productos': productos_json,
+                'imagen_qr' : qr_path
+            }
 
-                # Guarda los datos en Redis con el token como clave
-                r.hmset(token, datos_vendedor)
+            # Guarda los datos en Redis con el token como clave
+            r.hmset(token, datos_vendedor)
 
-                return render(request, 'msjValidarCorreo.html', {'mensaje': 'Estamos verificando la información proporcionada, al terminar esta validación podrás acceder a todos nuestros servicios.'})
-            except IntegrityError:
-                return render(request, 'registroVendedor.html', {"register": RegistroVendedorForm(), "error": "El nombre de usuario ya esta en uso, intente nuevamente."})
+            return render(request, 'msjValidarCorreo.html', {'mensaje': 'Estamos verificando la información proporcionada, al terminar esta validación podrás acceder a todos nuestros servicios.'})
         else:
-            return render(request, 'registroVendedor.html', {
-                'register': RegistroVendedorForm(),
-                "error": 'Contraseñas no coinciden'
-            })
+            errors_dict = form.errors.as_data()
+            username_error = ""
+            telefono_error = ""
+            password_error = ""
+
+            # Itera sobre los errores del form
+            for field, error_list in errors_dict.items():
+                for error in error_list:
+                    if 'username' in field:
+                        username_error += error.message + ". "
+                    elif 'telefono' in field:
+                        telefono_error += error.message + ". "
+                    elif '__all__' in field:
+                        password_error += error.message + ". "
+
+            # Renderiza el formulario con los mensajes de error personalizados
+            return render(request, 'registroVendedor.html', {"register": form, "username_error": username_error, "telefono_error" : telefono_error ,"password_error": password_error})
         
 def descargar_archivo(request, url_archivo):
     
@@ -591,6 +642,7 @@ def validarVendedor(request):
 
             for token in tokens:
                 datos = r.hgetall(token)
+                imagen_qr = datos.get(b'imagen_qr', b'') #el qr es opcional
                 registros_pendientes.append({
                     'token': token.decode('utf-8'),
                     'username': datos[b'username'].decode('utf-8'),
@@ -603,6 +655,7 @@ def validarVendedor(request):
                     'longitude': datos[b'longitude'].decode('utf-8'),
                     'horario': datos[b'horario'].decode('utf-8'),
                     'productos': datos[b'productos'].decode('utf-8'),
+                    'imagen_qr': imagen_qr.decode('utf-8')
                 })
             return render(request, 'validarVendedor.html', {'registros_pendientes': registros_pendientes})
         else:
@@ -613,6 +666,7 @@ def validarVendedor(request):
 
 
 def validarRegistro(request, token):
+
     r = redis.Redis(host='localhost', port=6379, db=0)
 
     datos_vendedor_redis = r.hgetall(token)
@@ -631,6 +685,7 @@ def validarRegistro(request, token):
             'longitude': datos_vendedor_redis[b'longitude'].decode('utf-8'),
             'horario': datos_vendedor_redis[b'horario'].decode('utf-8'),
             'productos': datos_vendedor_redis[b'productos'].decode('utf-8'),
+            'imagen_qr': datos_vendedor_redis[b'imagen_qr'].decode('utf-8')
         }
         
         # Guardar los datos del vendedor en la base de datos
@@ -657,7 +712,17 @@ def validarRegistro(request, token):
             with open(documento_adjunto, 'rb') as file:
                 archivo_pdf = file.read()
             archivo_pdf_data = ContentFile(archivo_pdf)
-            vendedor.documentoMercantil.save('registroMercantil.pdf', archivo_pdf_data, save=True)
+            nombre_archivo = 'registroMercantil_%s.pdf' % datos_vendedor['username']
+            vendedor.documentoMercantil.save(nombre_archivo, archivo_pdf_data, save=True)
+
+        # Guardar la imagen QR en el campo imagen_qr
+        imagen_qr_adjunta = datos_vendedor['imagen_qr']
+        if imagen_qr_adjunta:
+            with open(imagen_qr_adjunta, 'rb') as f:
+                imagen_qr_content = f.read()
+            imagen_qr_file = io.BytesIO(imagen_qr_content)
+            nombre_imagen = 'imagen_qr_%s.jpg' % datos_vendedor['username']
+            vendedor.imagen_qr.save(nombre_imagen, imagen_qr_file, save=True) 
 
         # Convertir json en lista
         productos_lista = json.loads(datos_vendedor['productos'])
@@ -718,14 +783,7 @@ def validarRegistro(request, token):
         # Eliminar los datos de la caché después de la validación
         r.delete(token)
 
-        # Eliminar documento pdf de tmp
-        if documento_adjunto:
-            os.remove(documento_adjunto)
-        else:
-            print("documento ya no existe")
-
-
-        return redirect('validarVendedor')
+        return redirect('validarVendedores')
     else:
         # Redirigir a una página de error o mostrar un mensaje de token inválido
         return HttpResponse('Token inválido')
@@ -737,7 +795,7 @@ def denegarRegistro(request, token):
     # Eliminar los datos asociados al token
     r.delete(token)
     
-    return redirect('validarVendedor')
+    return redirect('validarVendedores')
 
 def registroExitosoVendedor(request):
     return HttpResponse(render(request, 'registroExitosoV.html'))
@@ -747,20 +805,26 @@ def perfil(request):
     if request.user.is_authenticated:
         try:
             cliente = Clientes.objects.get(usuarioCliente=request.user)
-            # Obtener los últimos 5 pedidos del usuario vendedor
-            ultimas_compras = Pedidos.objects.filter(usuario_compra_id=request.user).order_by('-fecha')[:5]
-            
-            # Crear una lista para almacenar los productos relacionados con los pedidos del cliente
-            productos_comprados = []
-
-            for pedido in ultimas_compras:
-                productos_pedido = ProductosPedidosConexion.objects.filter(pedido=pedido)
-                for producto_pedido in productos_pedido:
-                    producto = producto_pedido.producto
-                    cantidad = producto_pedido.cantidad
-                    productos_comprados.append((producto, cantidad))
-
-            return render(request, 'perfil.html', {'cliente': cliente, 'productos_comprados': productos_comprados, 'ultimas_compras': ultimas_compras})
+            # Obtener los últimos 5 pedidos del usuario
+            ultimos_pedidos = Pedidos.objects.filter(usuario_compra_id=request.user).order_by('-fecha')[:5]
+            datos_pedidos = []
+            for pedido in ultimos_pedidos:
+                productos_pedido_conn = ProductosPedidosConexion.objects.filter(pedido_id=pedido.id)
+                productos_en_pedido = []
+                for pedidoprod in productos_pedido_conn:
+                    producto = Products.objects.get(id=pedidoprod.producto_id)
+                    productos_en_pedido.append({
+                        'nombre': producto.nombreProd,
+                        'cantidad': pedidoprod.cantidad,
+                        'precio': producto.precioProd
+                    })
+                datos_pedidos.append({
+                    'id': pedido.id,
+                    'fecha': pedido.fecha,
+                    'total': pedido.total,
+                    'productos': productos_en_pedido
+                })
+            return render(request, 'perfil.html', {'cliente': cliente, 'ultimos_pedidos': datos_pedidos})
         except Clientes.DoesNotExist:
             try:
                 vendedor = Vendedores.objects.get(usuarioVendedor=request.user)
@@ -769,7 +833,7 @@ def perfil(request):
                 ultimas_ventas = Pedidos.objects.filter(vendedor_pedido_id=vendedor).order_by('-fecha')[:5]
 
                 # Crear una lista para almacenar los productos relacionados con los pedidos del cliente
-                productos_vendidos = []
+                datos_pedidos = []
 
                 productos_vendidos_total = 0
 
@@ -779,13 +843,23 @@ def perfil(request):
                     productos_vendidos_total += cantidad
 
                 for pedido in ultimas_ventas:
-                    productos_pedido = ProductosPedidosConexion.objects.filter(pedido=pedido)
-                    for producto_pedido in productos_pedido:
-                        producto = producto_pedido.producto
-                        cantidad = producto_pedido.cantidad
-                        productos_vendidos.append((producto, cantidad))
-
-                return render(request, 'perfil.html', {'vendedor': vendedor, 'productos_vendidos': productos_vendidos, 'ultimas_ventas': ultimas_ventas, 'productos_vendidos_total': productos_vendidos_total })
+                    productos_pedido_conn = ProductosPedidosConexion.objects.filter(pedido_id=pedido.id)
+                    productos_en_pedido = []
+                    for pedidoprod in productos_pedido_conn:
+                        producto = Products.objects.get(id=pedidoprod.producto_id)
+                        productos_en_pedido.append({
+                            'nombre': producto.nombreProd,
+                            'cantidad': pedidoprod.cantidad,
+                            'precio': producto.precioProd
+                        })
+                    datos_pedidos.append({
+                        'id': pedido.id,
+                        'fecha': pedido.fecha,
+                        'total': pedido.total,
+                        'estado': pedido.estado,
+                        'productos': productos_en_pedido
+                    })
+                return render(request, 'perfil.html', {'vendedor': vendedor, 'ultimas_ventas': datos_pedidos, 'productos_vendidos_total': productos_vendidos_total})
             except Vendedores.DoesNotExist:
                     return render(request, 'perfil.html', {})
     else:
@@ -796,19 +870,19 @@ def calcular_productos_vendidos(vendedor):
     # Inicializa un diccionario para rastrear la cantidad de productos vendidos por cada producto
     productos_vendidos_total = {}
 
-    # Obtén todos los pedidos relacionados con este vendedor
+    # Obtener todos los pedidos relacionados con este vendedor
     pedidos_vendedor = Pedidos.objects.filter(vendedor_pedido_id=vendedor)
 
-    # Recorre cada pedido
+    # Recorrer cada pedido
     for pedido in pedidos_vendedor:
         productos_pedido = ProductosPedidosConexion.objects.filter(pedido=pedido)
 
-        # Recorre cada producto en el pedido
+        # Recorrer cada producto en el pedido
         for producto_pedido in productos_pedido:
             producto = producto_pedido.producto
             cantidad = producto_pedido.cantidad
 
-            # Actualiza el contador de productos vendidos para este producto
+            # Actualizar el contador de productos vendidos para este producto
             if producto.pk in productos_vendidos_total:
                 productos_vendidos_total[producto.pk] += cantidad
             else:
@@ -986,3 +1060,26 @@ def NewEditedProduct(request):
 
     except Exception as e:
         return HttpResponse(f"Error: {str(e)}")
+    
+def pago(request):
+    return render(request, 'pago.html')
+
+def efectivo(request):
+    return render(request, 'efectivo.html')
+
+def nequi(request):
+
+    carrito = Carrito(request)
+    carrito_data = carrito.obtener_carrito()
+
+     # Inicializa una lista para almacenar los QR de los vendedores
+    vendedores_qr = set()
+
+    # Itera sobre los elementos del carrito para obtener los IDs de los vendedores
+    for item in carrito_data.values():
+        vendedor_id = item.get('vendedor_id')
+        vendedor = Vendedores.objects.get(id=vendedor_id)
+        vendedores_qr.add(vendedor.imagen_qr)
+    
+
+    return render(request, 'nequi.html', {"vendedores_qr" : vendedores_qr})

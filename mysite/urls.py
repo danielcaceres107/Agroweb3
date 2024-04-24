@@ -16,6 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.views.static import serve
+from django.conf import settings
+from django.conf.urls.static import static
 from . import views
 
 urlpatterns = [
@@ -52,5 +55,8 @@ urlpatterns = [
     path('delete_product/', views.deleteProduct, name='delete_product'),
     path('new_edited_product/', views.NewEditedProduct, name='new_edited_product'),
     path('descargar/<str:url_archivo>/', views.descargar_archivo, name='descargar_archivo'),
-    path('detalle_pedido/<int:pedido_id>/', views.detallePedido, name='detalle_pedido')
+    path('detalle_pedido/<int:pedido_id>/', views.detallePedido, name='detalle_pedido'),
+    path('pago/', views.pago, name='pago'),
+    path('efectivo/', views.efectivo, name='efectivo'),
+    path('nequi/', views.nequi, name='nequi')
 ]

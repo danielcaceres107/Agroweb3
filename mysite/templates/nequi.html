@@ -1,0 +1,73 @@
+{% load static %}
+{% get_media_prefix %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+        }
+
+        .bar {
+            background-color: #0a2d8b;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        .bar p {
+            color: white;
+            text-align: center;
+            padding: 10px 16px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #000000;
+            margin: 100px 10px 35px;
+            font-size: 50px;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        h1 {
+            color: #000;
+        }
+
+        p {
+            color: #000;
+        }
+
+        .container img{
+            width: 400px;
+            height: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bar">
+        <p class="nav-title">Portal de Pago Agroweb</p>
+    </div>
+    <div class="container">
+        <h1>Paga con Nequi</h1>
+        {% for vendedor_qr in vendedores_qr %}
+            <img src="{{ vendedor_qr.url }}" alt="QR">
+        {% endfor %}
+    </div>
+</body>
+
+</html>
