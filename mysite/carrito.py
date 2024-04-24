@@ -55,3 +55,14 @@ class Carrito:
 
     def obtener_carrito(self):
         return self.carrito
+    
+    def obtener_total_por_vendedor(self):
+        total_por_vendedor = {}
+        for item in self.carrito.values():
+            vendedor_id = item.get('vendedor_id')
+            acumulado = item.get('acumulado', 0)
+            if vendedor_id in total_por_vendedor:
+                total_por_vendedor[vendedor_id] += acumulado
+            else:
+                total_por_vendedor[vendedor_id] = acumulado
+        return total_por_vendedor

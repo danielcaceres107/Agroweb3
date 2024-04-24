@@ -1072,14 +1072,23 @@ def nequi(request):
     carrito = Carrito(request)
     carrito_data = carrito.obtener_carrito()
 
+    print('carrito_data: ', carrito_data)
+
+    total_por_vendedor = {}
+
      # Inicializa una lista para almacenar los QR de los vendedores
-    vendedores_qr = set()
+    vendedores = set()
 
     # Itera sobre los elementos del carrito para obtener los IDs de los vendedores
     for item in carrito_data.values():
         vendedor_id = item.get('vendedor_id')
+        total_acumulado = item.get('acumulado')
+        print('total_acumulado ', total_acumulado)
         vendedor = Vendedores.objects.get(id=vendedor_id)
-        vendedores_qr.add(vendedor.imagen_qr)
-    
+        vendedores.add(vendedor)
+        print('vendedores: ', vendedores)
+        total_por_vendedor[vendedor] = total_acumulado
 
-    return render(request, 'nequi.html', {"vendedores_qr" : vendedores_qr})
+    print('totalxvendedor: ', total_por_vendedor)
+
+    return render(request, 'nequi.html', {"total_por_vendedor" : total_por_vendedor})

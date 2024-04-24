@@ -64,9 +64,15 @@
     </div>
     <div class="container">
         <h1>Paga con Nequi</h1>
-        {% for vendedor_qr in vendedores_qr %}
-            <img src="{{ vendedor_qr.url }}" alt="QR">
-        {% endfor %}
+        <ul>        
+            {% for vendedor, total_acumulado in total_por_vendedor.items %}
+                <li><img src="{{ vendedor.imagen_qr.url }}" alt="QR"></li>       
+                <li>Vendedor: {{ vendedor.nombreVendedor }} - Total acumulado: {{ total_acumulado }}</li>
+            {% endfor %}
+        </ul>
+        <p>Mensaje de "Paga con los qrs y al terminar pulsa terminar compra para que se verifiquen los datos de tu compra y se haga efectiva, te va a llegar la informacion al correo"</p>
+        <div><a href="{% url 'SendCart' %}" onclick="alert('Se enviarán los datos de compra al vendedor, puedes revisarlos en tu correo')">Terminar Compra</a></div>
+
     </div>
 </body>
 
