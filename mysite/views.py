@@ -521,11 +521,10 @@ def registroCliente(request):
 def registroVendedor(request):
     if request.method == 'GET':
         return render(request, 'registroVendedor.html', {
-            # utiliza la instancia del formulario personalizado
             'register': RegistroVendedorForm()
         })
     else:
-        form = RegistroVendedorForm(request.POST)
+        form = RegistroVendedorForm(request.POST, request.FILES)
         if form.is_valid():
             username = request.POST['username']
 
@@ -599,12 +598,14 @@ def registroVendedor(request):
 
             return render(request, 'msjValidarCorreo.html', {'mensaje': 'Estamos verificando la información proporcionada, al terminar esta validación podrás acceder a todos nuestros servicios.'})
         else:
+            # Captura los errores del formulario y los pasa a la plantilla
             errors_dict = form.errors.as_data()
             username_error = ""
             telefono_error = ""
             password_error = ""
+            documento_error = ""
+            qr_error = ""
 
-            # Itera sobre los errores del form
             for field, error_list in errors_dict.items():
                 for error in error_list:
                     if 'username' in field:
@@ -613,10 +614,13 @@ def registroVendedor(request):
                         telefono_error += error.message + ". "
                     elif '__all__' in field:
                         password_error += error.message + ". "
+                    elif 'documentoMercantil' in field:
+                        documento_error += error.message + ". "
+                    elif 'imagen_qr' in field:
+                        qr_error += error.message + ". "
 
-            # Renderiza el formulario con los mensajes de error personalizados
-            return render(request, 'registroVendedor.html', {"register": form, "username_error": username_error, "telefono_error" : telefono_error ,"password_error": password_error})
-        
+            return render(request, 'registroVendedor.html', {"register": form, "username_error": username_error, "telefono_error" : telefono_error ,"password_error": password_error, "documento_error": documento_error, "qr_error": qr_error})
+
 def descargar_archivo(request, url_archivo):
     
     # Verificar si el archivo existe
