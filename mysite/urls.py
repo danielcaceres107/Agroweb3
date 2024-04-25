@@ -55,5 +55,6 @@ urlpatterns = [
     path('detalle_pedido/<int:pedido_id>/', views.detallePedido, name='detalle_pedido'),
     path('pago/', views.pago, name='pago'),
     path('efectivo/', views.efectivo, name='efectivo'),
-    path('nequi/', views.nequi, name='nequi')
+    path('nequi/', views.nequi, name='nequi'),
+    path('registroValidador/', views.registroValidador, name= 'registroValidador'),
 ]

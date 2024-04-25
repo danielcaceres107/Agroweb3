@@ -107,9 +107,9 @@
     {{ register.password2.label_tag }} <input type="password" name="{{ register.password2.name }}">
     </div>
     {{ register.telefono.label_tag }} <input type="text" name="{{ register.telefono.name }}">
-    {{ register.documentoMercantil.label_tag }} <input type="file" name="{{ register.documentoMercantil.name }}">
+    {{ register.documentoMercantil.label_tag }} <h6>(pdf)</h6> <input type="file" name="{{ register.documentoMercantil.name }}">
     {{ register.nombreTienda.label_tag }} <input type="text" name="{{ register.nombreTienda.name }}">
-    {{ register.imagen_qr.label_tag }} <h6>(opcional)</h6> <input type="file" name="{{ register.imagen_qr.name }}">    <br>
+    {{ register.imagen_qr.label_tag }} <h6>(png)</h6> <input type="file" name="{{ register.imagen_qr.name }}">    <br>
     <h5>Ubicacion exacta de la tienda</h5>
     <h4>**La latitud y longitud predefinidas representan su ubicación actual**</h4>
     {{ register.latitude.label_tag }} <input type="text" id="id_latitude" name="{{ register.latitude.name }}"

@@ -12,7 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 import json
-from .forms import ProductoForm, RegistroVendedorForm, RegistroClientesForm, EditProductForm
+from .forms import ProductoForm, RegistroVendedorForm, RegistroClientesForm, EditProductForm, RegistroValidadorForm
 from decimal import Decimal
 from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.models import Group
@@ -52,7 +52,7 @@ def aprobar_pedido(request, pedido_id):
 
     pedido.proceso_validado = True
     pedido.aprobado = True
-    pedido.estado = 'en_camino'
+    pedido.estado = 'pagado'
     usuario = pedido.usuario_compra_id
     pedido.save()
     return redirect('index')
@@ -81,7 +81,6 @@ def cambiar_estado_pedido(request, pedido_id):
             pedido.estado = nuevo_estado
             pedido.save()
 
-            comprador = Clientes.objects.get(id=pedido.usuario_compra_id)
             email_comprador = pedido.usuario_compra_id.email
 
             try:
@@ -292,7 +291,7 @@ def enviar_carrito(request):
 
     carrito.limpiar()
 
-    return redirect('pago')
+    return redirect('mapa')
 
 def sms_carrito(telefono, account_sid, auth_token) :
     print("Enviando sms del SICC...")
@@ -450,7 +449,8 @@ def registroCliente(request):
             cliente = Clientes(
                 usuarioCliente=user.username,
                 nombreCliente=form.cleaned_data['nombreCliente'],
-                correo=form.cleaned_data['correo']
+                correo=form.cleaned_data['correo'],
+                telefono=form.cleaned_data['telefono']
             )
 
             cliente.save()
@@ -499,6 +499,7 @@ def registroCliente(request):
             errors_dict = form.errors.as_data()
             username_error = ""
             email_error = ""
+            telefono_error = ""
             password_error = ""
 
             # Itera sobre los errores del form
@@ -508,11 +509,13 @@ def registroCliente(request):
                         username_error += error.message + ". "
                     elif 'correo' in field:
                         email_error += error.message + ". "
+                    elif 'telefono' in field:
+                        telefono_error += error.message + ". "
                     elif '__all__' in field:
                         password_error += error.message + ". "
 
             # Renderiza el formulario con los mensajes de error personalizados
-            return render(request, 'registroCliente.html', {"register": form, "username_error": username_error, "email_error": email_error, "password_error": password_error})
+            return render(request, 'registroCliente.html', {"register": form, "username_error": username_error, "email_error": email_error, "telefono_error" : telefono_error, "password_error": password_error})
 
 
 def registroVendedor(request):
@@ -721,7 +724,7 @@ def validarRegistro(request, token):
             with open(imagen_qr_adjunta, 'rb') as f:
                 imagen_qr_content = f.read()
             imagen_qr_file = io.BytesIO(imagen_qr_content)
-            nombre_imagen = 'imagen_qr_%s.jpg' % datos_vendedor['username']
+            nombre_imagen = 'imagen_qr_%s.png' % datos_vendedor['username']
             vendedor.imagen_qr.save(nombre_imagen, imagen_qr_file, save=True) 
 
         # Convertir json en lista
@@ -732,53 +735,56 @@ def validarRegistro(request, token):
 
         vendedor.save()
 
-        # Enviar el correo electrónico de exito 
-        smtp_host = 'smtp.office365.com'
-        smtp_port = 587
-        smtp_username = settings.CORREO
-        smtp_password = settings.CONTRASENA
-        sender = settings.CORREO
-        recipient = settings.CORREO
-        subject = 'Registro de ' + \
-            datos_vendedor['vendedor'] + ' como vendedor Agroweb'
-        message = '''
-        <html>
-        <head></head>
-        <body>
-            Estimado usuario, gracias por hacer parte de la comunidad de vendedores Agroweb, se realizara la validacion de los siguientes datos registrados:
+        try:
+            # Enviar el correo electrónico de exito 
+            smtp_host = 'smtp.office365.com'
+            smtp_port = 587
+            smtp_username = settings.CORREO
+            smtp_password = settings.CONTRASENA
+            sender = settings.CORREO
+            recipient = settings.CORREO
+            subject = 'Registro de ' + \
+                datos_vendedor['vendedor'] + ' como vendedor Agroweb'
+            message = '''
+            <html>
+            <head></head>
+            <body>
+                Estimado usuario, gracias por hacer parte de la comunidad de vendedores Agroweb, se realizara la validacion de los siguientes datos registrados:
 
-            <h2>Registro del usuario ''' + datos_vendedor['vendedor'] + ''':</h2>
-            <p><strong>Usuario: </strong> ''' + datos_vendedor['username'] + ''' </p>
-            <p><strong>Nombre Completo: </strong> ''' + datos_vendedor['vendedor'] + ''' </p>
-            <p><strong>Cedula: </strong> ''' + datos_vendedor['cedula'] + ''' </p>
-            <p><strong>Nombre de la Tienda: </strong> ''' + datos_vendedor['nombreTienda'] + ''' </p>
-            <p><strong>Celular: </strong> ''' + datos_vendedor['telefono'] + ''' </p>
-            <p><strong>Horario de trabajo: </strong> ''' + datos_vendedor['horario'] + ''' </p> <br>
+                <h2>Registro del usuario ''' + datos_vendedor['vendedor'] + ''':</h2>
+                <p><strong>Usuario: </strong> ''' + datos_vendedor['username'] + ''' </p>
+                <p><strong>Nombre Completo: </strong> ''' + datos_vendedor['vendedor'] + ''' </p>
+                <p><strong>Cedula: </strong> ''' + datos_vendedor['cedula'] + ''' </p>
+                <p><strong>Nombre de la Tienda: </strong> ''' + datos_vendedor['nombreTienda'] + ''' </p>
+                <p><strong>Celular: </strong> ''' + datos_vendedor['telefono'] + ''' </p>
+                <p><strong>Horario de trabajo: </strong> ''' + datos_vendedor['horario'] + ''' </p> <br>
 
-        </body>
-        </html>
-        '''
+            </body>
+            </html>
+            '''
 
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = subject
-        msg['From'] = sender
-        msg['To'] = recipient
-        html_part = MIMEText(message, 'html')
-        msg.attach(html_part)
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = subject
+            msg['From'] = sender
+            msg['To'] = recipient
+            html_part = MIMEText(message, 'html')
+            msg.attach(html_part)
 
-        # Adjuntar el archivo PDF al mensaje
-        if documento_adjunto:
-            with open(documento_adjunto, 'rb') as pdf_file:
-                pdf_data = pdf_file.read()
-                pdf_part = MIMEApplication(pdf_data, 'pdf')
-                pdf_part.add_header('Content-Disposition', 'attachment',
-                                    filename="registroMercantil_" + datos_vendedor['username'] + ".pdf")
-                msg.attach(pdf_part)
+            # Adjuntar el archivo PDF al mensaje
+            if documento_adjunto:
+                with open(documento_adjunto, 'rb') as pdf_file:
+                    pdf_data = pdf_file.read()
+                    pdf_part = MIMEApplication(pdf_data, 'pdf')
+                    pdf_part.add_header('Content-Disposition', 'attachment',
+                                        filename="registroMercantil_" + datos_vendedor['username'] + ".pdf")
+                    msg.attach(pdf_part)
 
-        with smtplib.SMTP(smtp_host, smtp_port) as smtp:
-            smtp.starttls()
-            smtp.login(smtp_username, smtp_password)
-            smtp.sendmail(sender, recipient, msg.as_string())
+            with smtplib.SMTP(smtp_host, smtp_port) as smtp:
+                smtp.starttls()
+                smtp.login(smtp_username, smtp_password)
+                smtp.sendmail(sender, recipient, msg.as_string())
+        except:
+            print("no se pudo enviar el correo de registro usuario exitoso")
 
         # Eliminar los datos de la caché después de la validación
         r.delete(token)
@@ -1065,14 +1071,18 @@ def pago(request):
     return render(request, 'pago.html')
 
 def efectivo(request):
-    return render(request, 'efectivo.html')
+    carrito = Carrito(request)
+    carrito_data = carrito.obtener_carrito()  # Obtener datos del carrito
+
+    # Calcular el total del carrito sumando los precios acumulados de todos los productos
+    total_carrito = sum(item_data['acumulado'] for item_data in carrito_data.values())
+
+    return render(request, 'efectivo.html', {'carrito_data': carrito_data, 'total_carrito': total_carrito})
 
 def nequi(request):
 
     carrito = Carrito(request)
     carrito_data = carrito.obtener_carrito()
-
-    print('carrito_data: ', carrito_data)
 
     total_por_vendedor = {}
 
@@ -1083,12 +1093,73 @@ def nequi(request):
     for item in carrito_data.values():
         vendedor_id = item.get('vendedor_id')
         total_acumulado = item.get('acumulado')
-        print('total_acumulado ', total_acumulado)
         vendedor = Vendedores.objects.get(id=vendedor_id)
         vendedores.add(vendedor)
-        print('vendedores: ', vendedores)
         total_por_vendedor[vendedor] = total_acumulado
 
-    print('totalxvendedor: ', total_por_vendedor)
-
     return render(request, 'nequi.html', {"total_por_vendedor" : total_por_vendedor})
+
+def registroValidador(request):
+    if request.method == 'GET':
+        return render(request, 'registroValidador.html', {
+            # utiliza la instancia del formulario personalizado
+            'register': RegistroValidadorForm()
+        })
+    else:
+        form = RegistroValidadorForm(request.POST)
+        if form.is_valid():
+
+            nombre=form.cleaned_data['first_name']
+            apellido=form.cleaned_data['last_name']
+            correo=form.cleaned_data['email']
+
+            try:
+                # Código para enviar el correo electrónico
+                smtp_host = 'smtp.office365.com'
+                smtp_port = 587
+                smtp_username = settings.CORREO
+                smtp_password = settings.CONTRASENA
+                sender = settings.CORREO
+                recipient = settings.CORREO
+                subject = 'Solicitud de ' + nombre + apellido + ' para validador Agroweb'
+                message = '''
+                <html>
+                <head></head>
+                <body>
+                    <h2>Solicitud de validador</h2>
+                    <p>Buenos dias,</p>
+                    <p>Quisiera registrarme en Agroweb con el rol de validador.</p>
+                    <p> mi correo es '''+ correo + '''</p> 
+                    <p>Espero su respuesta</p>
+                </body>
+                </html>
+                ''' 
+
+                msg = MIMEMultipart('alternative')
+                msg['Subject'] = subject
+                msg['From'] = sender
+                msg['To'] = recipient
+                html_part = MIMEText(message, 'html')
+                msg.attach(html_part)
+
+                with smtplib.SMTP(smtp_host, smtp_port) as smtp:
+                    smtp.starttls()
+                    smtp.login(smtp_username, smtp_password)
+                    smtp.sendmail(sender, recipient, msg.as_string())
+            except:
+                print("no se pudo enviar el correo de solicitud validador")
+
+            return redirect('mapa')
+        else:
+            # Logica para mostrar los errores
+            errors_dict = form.errors.as_data()
+            email_error = ""
+
+            # Itera sobre los errores del form
+            for field, error_list in errors_dict.items():
+                for error in error_list:
+                    if 'correo' in field:
+                        email_error += error.message + ". "
+
+            # Renderiza el formulario con los mensajes de error personalizados
+            return render(request, 'registroValidador.html', {"register": form, "email_error": email_error})

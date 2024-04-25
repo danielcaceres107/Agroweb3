@@ -194,10 +194,27 @@
                         }
                     });
                 }
-
             });
         });
     }
+
+    $('#search-input').on('input', function() {
+        var searchText = $(this).val();
+        $.ajax({
+            url: '/buscar_productos/',
+            method: 'GET',
+            data: { search_text: searchText },
+            success: function(data) {
+                // Procesa los resultados y muestra los productos sobre el mapa
+                // Puedes llamar a una función existente para manejar esto
+                mostrarProductosEnMapa(data);
+            },
+            error: function() {
+                // Maneja los errores de la solicitud AJAX
+                alert('Error al buscar productos.');
+            }
+        });
+    });
 
     window.initMap = initMap;
 </script>

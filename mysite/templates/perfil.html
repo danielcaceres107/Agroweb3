@@ -175,13 +175,13 @@
                         </li>
                         <br>
                         <div class="img-container">
-                            <img src="{% static 'media/img/' %}{% if pedido.estado == 'pendiente' %}pendiente.png{% elif pedido.estado == 'en_camino' %}enproceso.png{% elif pedido.estado == 'entregado' %}entregado.png{% endif %}" alt="{{ pedido.estado }}">
+                            <img src="{% static 'media/img/' %}{% if pedido.estado == 'pendiente_de_pago' %}pendiente.png{% elif pedido.estado == 'pagado' %}pagado.png{% elif pedido.estado == 'entregado' %}entregado.png{% endif %}" alt="{{ pedido.estado }}">
                         </div>
                         <form method="post" action="{% url 'cambiarEstadoPedido' pedido.id %}">
                             {% csrf_token %}
                             <select name="nuevo_estado">
-                                <option value="pendiente" {% if pedido.estado == "pendiente" %}selected{% endif %}>Pendiente</option>
-                                <option value="en_camino" {% if pedido.estado == "en_camino" %}selected{% endif %}>En Camino</option>
+                                <option value="pendiente_de_pago" {% if pedido.estado == "pendiente_de_pago" %}selected{% endif %}>Pendiente de pago</option>
+                                <option value="pagado" {% if pedido.estado == "pagado" %}selected{% endif %}>Pagado</option>
                                 <option value="entregado" {% if pedido.estado == "entregado" %}selected{% endif %}>Entregado</option>
                             </select>
                             <button type="submit">Cambiar Estado</button>

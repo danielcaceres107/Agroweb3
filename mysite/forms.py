@@ -41,6 +41,20 @@ class RegistroVendedorForm(forms.ModelForm):
         if not telefono.isdigit() or len(telefono) != 10:
             raise forms.ValidationError('Ingresa un numero de telefono valido (ej: 3154043021)')
         return telefono
+    
+    def clean_documentoMercantil(self):
+        documentoMercantil = self.cleaned_data.get('documentoMercantil', False)
+        if documentoMercantil:
+            if not documentoMercantil.name.endswith('.pdf'):
+                raise forms.ValidationError('El documento mercantil debe ser un archivo PDF.')
+        return documentoMercantil
+
+    def clean_imagen_qr(self):
+        imagen_qr = self.cleaned_data.get('imagen_qr', False)
+        if imagen_qr:
+            if not imagen_qr.name.endswith('.png'):
+                raise forms.ValidationError('La imagen QR debe ser un archivo PNG.')
+        return imagen_qr
 
     class Meta:
         model = User
@@ -50,6 +64,7 @@ class RegistroClientesForm(forms.ModelForm):
     nombreCliente = forms.CharField(label="Nombre Completo")
     username = forms.CharField(label="Nombre de usuario")
     correo = forms.EmailField(validators=[EmailValidator(message='')])
+    telefono = forms.CharField(label="Telefono")
     password1 = forms.CharField(widget=forms.PasswordInput, label="Contraseña")
     password2 = forms.CharField(widget=forms.PasswordInput, label="Confirmación de contraseña")
 
@@ -68,6 +83,18 @@ class RegistroClientesForm(forms.ModelForm):
         if User.objects.filter(username=username).exists():
             raise forms.ValidationError("El nombre de usuario ya está en uso.")
         return username
+    
+    def clean_correo(self):
+        correo = self.cleaned_data['correo']
+        if User.objects.filter(email=correo).exists():
+            raise forms.ValidationError("Este correo electrónico ya está registrado.")
+        return correo
+
+    def clean_telefono(self):
+        telefono = self.cleaned_data['telefono']
+        if not telefono.isdigit() or len(telefono) != 10:
+            raise forms.ValidationError('Ingresa un numero de telefono valido (ej: 3154043021)')
+        return telefono
 
     class Meta:
         model = User
@@ -101,3 +128,10 @@ class EditProductForm(forms.ModelForm):
         model = Products
         fields = ['nombreProd', 'precioProd', 'descripcionProd', 'imagenProd']
 
+class RegistroValidadorForm(forms.ModelForm):
+    first_name = forms.CharField(label="Nombre")
+    last_name = forms.CharField(label="Apellido")
+    email = forms.EmailField(validators=[EmailValidator(message='')])
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'email')
