@@ -2,21 +2,88 @@
 {% block content %}
 {% load static %}
 
+<style>
+    /* Estilos generales */
+    .products-container {
+        margin-top: 50px;
+    }
+
+    /* Estilos para la lista de productos */
+    .products-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    /* Estilos para cada elemento de la lista de productos */
+    .product-item {
+        margin-bottom: 20px;
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Estilos para el nombre del producto */
+    .product-name {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    /* Estilos para el precio del producto */
+    .product-price {
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    /* Estilos para la cantidad del producto */
+    .product-quantity {
+        font-size: 16px;
+        color: #555;
+    }
+
+    /* Estilos para el total */
+    .total-container {
+        margin-top: 30px;
+        text-align: center;
+    }
+
+    .total-label {
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    .total-amount {
+        font-size: 24px;
+        color: #27ae60;
+    }
+
+    h2{
+        margin-left: 50px;
+    }
+</style>
+
 <h1>Detalle del Pedido</h1>
 <div class="products-container">
-    Productos:
-    <ul>
+    <h2>Productos:</h2>
+    <ul class="products-list">
         {% for pedidosconn in productos_pedidos_conn %}
             {% for producto in products %}
                 {% if pedidosconn.producto_id == producto.id %}
-                    <li>{{ producto.nombreProd }}</li>
-                    <li>{{ producto.precioProd }}</li>
-                    <li>{{ pedidosconn.cantidad }}</li>
+                    <li class="product-item">
+                        <div class="product-name">{{ producto.nombreProd }}</div>
+                        <div class="product-price">${{ producto.precioProd }}</div>
+                        <div class="product-quantity">Cantidad: {{ pedidosconn.cantidad }}</div>
+                    </li>
                 {% endif %}
             {% endfor %}
         {% endfor %}
-        <li> Total: </li>
-        <li>{{ total }}</li>
     </ul>
 </div>
+
+<div class="total-container">
+    <div class="total-label">Total:</div>
+    <div class="total-amount">{{ total }}</div>
+</div>
+
 {% endblock %}

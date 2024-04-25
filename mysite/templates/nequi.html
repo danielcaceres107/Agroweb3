@@ -5,72 +5,96 @@
 
 <head>
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f5f5f5;
-            margin: 0;
-        }
+       body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+}
 
-        .bar {
-            background-color: #0a2d8b;
-            overflow: hidden;
-            display: flex;
-            justify-content: space-around;
-            width: 100%;
-            position: fixed;
-            top: 0;
-            left: 0;
-        }
+/* Barra de navegación */
+.bar {
+    background-color: #ecc1d8;
+    overflow: hidden;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000; /* Asegura que la barra esté sobre otros elementos */
+}
 
-        .bar p {
-            color: white;
-            text-align: center;
-            padding: 10px 16px;
-            text-decoration: none;
-            transition: background-color 0.3s;
-            font-weight: bold;
-            font-size: 20px;
-        }
+/* Estilos para el texto dentro de la barra */
+.bar h1 {
+    color: rgb(0, 0, 0);
+    text-align: center;
+    padding: 10px 16px;
+    margin: 0; /* Elimina el margen por defecto */
+    font-weight: bold;
+    font-size: 25px;
+    line-height: 1; /* Ajusta el espaciado entre líneas */
+}
+h2 {
+    color: rgb(7, 7, 7);
+    text-align: center;
+    padding: 10px 16px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+    font-weight: bold;
+    font-size: 15px;
+}
 
-        h1 {
-            text-align: center;
-            color: #000000;
-            margin: 100px 10px 35px;
-            font-size: 50px;
-        }
+/* Títulos */
+h1 {
+    text-align: center;
+    color: #000000;
+    margin: 100px 10px 35px;
+    font-size: 50px;
+}
 
-        .container {
-            text-align: center;
-        }
+/* Contenedor general */
+.container {
+    text-align: center;
+    margin-top: 50px;
+}
 
-        h1 {
-            color: #000;
-        }
+/* Estilos adicionales para texto */
+h1, p {
+    color: #000;
+}
 
-        p {
-            color: #000;
-        }
+/* Imágenes */
+.container img {
+    width: 400px;
+    height: auto;
+}
 
-        .container img{
-            width: 400px;
-            height: auto;
-        }
+a{
+    border: #000 solid;
+    padding: 7px;
+    text-decoration: none;
+    color: #000;
+    font-weight: bold;
+    background-color: #ecc1d8;
+
+}
+
     </style>
 </head>
 
 <body>
     <div class="bar">
-        <p class="nav-title">Portal de Pago Agroweb</p>
+    <h1>Portal de Pago Agroweb - Paga con Nequi</h1>
     </div>
+
     <div class="container">
-        <h1>Paga con Nequi</h1>
+    
+        
         <ul>        
             {% for vendedor, total_acumulado in total_por_vendedor.items %}
                 <li><img src="{{ vendedor.imagen_qr.url }}" alt="QR"></li>       
                 <li>Vendedor: {{ vendedor.nombreVendedor }} - Total acumulado: {{ total_acumulado }}</li>
             {% endfor %}
         </ul>
-        <p>Mensaje de "Paga con los qrs y al terminar pulsa terminar compra para que se verifiquen los datos de tu compra y se haga efectiva, te va a llegar la informacion al correo"</p>
+        <h2>Al terminar la compra via QR, presiona el boton de terminar para validar la compra y confirmarla a traves de tu correo electronico</h2>
         <div><a href="{% url 'SendCart' %}" onclick="alert('Se enviarán los datos de compra al vendedor, puedes revisarlos en tu correo')">Terminar Compra</a></div>
 
     </div>
