@@ -14,23 +14,26 @@
 /* Barra de navegación */
 .bar {
     background-color: #ecc1d8;
-    overflow: hidden;
     width: 100%;
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 1000; /* Asegura que la barra esté sobre otros elementos */
+    z-index: 1000; /* Asegura que la barra esté sobre otros elementos */         
+     display: flex;
+     justify-content: space-around;
+    width: 100%;
+
 }
 
 /* Estilos para el texto dentro de la barra */
 .bar h1 {
     color: rgb(0, 0, 0);
-    text-align: center;
-    padding: 10px 16px;
-    margin: 0; /* Elimina el margen por defecto */
-    font-weight: bold;
-    font-size: 25px;
-    line-height: 1; /* Ajusta el espaciado entre líneas */
+            text-align: center;
+            text-decoration: none;
+            transition: background-color 0.3s;
+            font-size: 50px;
+            font-weight: bolder;
+            margin: 25px;
 }
 h2 {
     color: rgb(7, 7, 7);
@@ -54,6 +57,11 @@ h1 {
 .container {
     text-align: center;
     margin-top: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding-top: 70px;
 }
 
 /* Estilos adicionales para texto */
@@ -65,6 +73,7 @@ h1, p {
 .container img {
     width: 400px;
     height: auto;
+
 }
 
 a{
@@ -77,6 +86,18 @@ a{
 
 }
 
+h3{
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+.perro{
+    margin: 20px;
+    border-bottom: 5px solid;
+    padding: 10px;
+    width: 400px;
+}
+
     </style>
 </head>
 
@@ -85,18 +106,18 @@ a{
     <h1>Portal de Pago Agroweb - Paga con Nequi</h1>
     </div>
 
-    <div class="container">
-    
-        
-        <ul>        
+    <div class="container">   
             {% for vendedor, total_acumulado in total_por_vendedor.items %}
-                <li><img src="{{ vendedor.imagen_qr.url }}" alt="QR"></li>       
-                <li>Vendedor: {{ vendedor.nombreVendedor }} - Total acumulado: {{ total_acumulado }}</li>
+                <img src="{{ vendedor.imagen_qr.url }}" alt="QR"/>    
+                <div class="perro"><h3>Vendedor: {{ vendedor.nombreVendedor }}</h3>
+                 <h3>Telefono {{ vendedor.telefono }}</h3>
+                 <h3>Total acumulado: {{ total_acumulado }}</h3></div>
+                 
             {% endfor %}
-        </ul>
         <h2>Al terminar la compra via QR, presiona el boton de terminar para validar la compra y confirmarla a traves de tu correo electronico</h2>
         <div><a href="{% url 'SendCart' %}" onclick="alert('Se enviarán los datos de compra al vendedor, puedes revisarlos en tu correo')">Terminar Compra</a></div>
-
+        <br>
+        <a href="{% url 'mapa' %}">Volver</a>
     </div>
 </body>
 
