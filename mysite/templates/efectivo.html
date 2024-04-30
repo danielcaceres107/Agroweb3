@@ -1,0 +1,121 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5fafd;
+            margin: 0;
+
+        }
+
+        .bar {
+            background-color: #0a2d8b;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            /* Asegura que la barra esté sobre otros elementos */
+        }
+
+        .bar p {
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            transition: background-color 0.3s;
+            font-size: 50px;
+            font-weight: bolder;
+            margin: 25px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #000000;
+            margin: 100px 10px 35px;
+            font-size: 50px;
+            padding: 30px;
+            margin-bottom: 0;
+        }
+
+
+        .container h1 {
+            text-align: center;
+            color: #000000;
+            margin: 0;
+            font-size: 50px;
+            padding: 30px;
+        }
+
+        .container {
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+
+        }
+
+        h1 {
+            color: #000;
+        }
+
+        p {
+            color: #000;
+        }
+
+        h3 {
+            font-weight: bolder;
+        }
+
+        img {
+            width: 400px;
+        }
+
+        a {
+            border: #000 solid;
+            padding: 7px;
+            text-decoration: none;
+            color: #ffffff;
+            font-weight: bold;
+            background-color: #0a2d8b;
+
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bar">
+        <p class="nav-title">Portal de Pago Agroweb</p>
+    </div>
+    <h1>Pago en efectivo</h1>
+    <div class="container">
+
+        <h1>Acércate al vendedor para completar el pago.</h1>
+        <hr>
+        <h2>Productos en el carrito:
+            <BR>
+            {% for item_id, item_data in carrito_data.items %} <br>
+            {{ item_data.nombre }} -
+            ${{ item_data.acumulado }}
+            {% endfor %}
+        </h2>
+
+        <h2>Valor a pagar: ${{ total_carrito }}</h2>
+        <img src="{% static 'media/img/trato.jpg' %}" />
+
+<hr>
+        <a href="{% url 'landingPago' %}">Terminar</a>
+        <a href="{% url 'mapa' %}">Volver</a>
+    </div>
+
+
+
+</body>
+
+</html>

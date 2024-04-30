@@ -1,0 +1,118 @@
+{% extends 'base_validador.html' %}
+{% block content %}
+{% load static %}
+
+<style>
+   
+    .usuarios-container {
+        margin-top: 50px;
+        margin-left: 50px; 
+        font-size: 18px; 
+    }
+
+    .usuario-item {
+        margin-bottom: 10px;
+    }
+
+    .usuario-label {
+        font-weight: bold;
+    }
+
+    .vendedor-label {
+        font-weight: bold;
+    }
+
+    .tienda-label {
+        font-style: italic;
+        color: #27ae60; 
+    }
+
+    .products-container {
+        margin-top: 20px;
+        margin-left: 50px; 
+    }
+
+    .products-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .product-item {
+        margin-bottom: 20px;
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        width: 90%;
+    }
+
+    .product-name {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+   
+    .product-price {
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    .product-quantity {
+        font-size: 16px;
+        color: #555;
+    }
+
+    .total-container {
+        margin-top: 30px;
+        text-align: center;
+    }
+
+    .total-label {
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    .total-amount {
+    font-size: 35px;
+    color: #27ae60;
+    font-weight: 700;   
+    }
+    h2 {
+        margin-left: 50px;
+    }
+</style>
+
+<h1>Detalle del Pedido</h1>
+<div class="usuarios-container">
+    <div class="usuario-item">
+        <span class="usuario-label">Comprado por:</span> {{ pedido.usuario_compra_id }}
+    </div>
+    <div class="usuario-item">
+        <span class="vendedor-label">Vendido por:</span> {% for v in vendedores %}
+            <span>{{ v.nombreVendedor }}</span> (<span class="tienda-label">{{ v.nombreTienda }}</span>) {% endfor %}
+    </div>
+</div>
+<div class="products-container">
+    <h2>Productos:</h2>
+    <ul class="products-list">
+        {% for pedidosconn in productos_pedidos_conn %}
+            {% for producto in products %}
+                {% if pedidosconn.producto_id == producto.id %}
+                    <li class="product-item">
+                        <div class="product-name">{{ producto.nombreProd }}</div>
+                        <div class="product-price">${{ producto.precioProd }}</div>
+                        <div class="product-quantity">Cantidad: {{ pedidosconn.cantidad }}</div>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="total-container">
+    <div class="total-label">Total:</div>
+    <div class="total-amount">{{ pedido.total }}</div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 30px auto;
+        max-width: 400px;
+        padding: 20px;
+        border: 2px solid #ccc;
+        border-radius: 10px;
+    }
+
+    input {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        border: none;
+        background-color: #f2f2f2;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px;
+        margin-top: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    #error {
+        color: red;
+        font-size: 14px;
+        margin-top: 10px;
+    }
+
+</style>
+
+<form action="/registroValidador/" method="POST">
+    {% csrf_token %}
+    {{ register.first_name.label_tag }}<input type="text" name="{{ register.first_name.name }}">
+    {{ register.last_name.label_tag }} <input type="text" name="{{ register.last_name.name }}">
+    {{ register.email.label_tag }} <input type="text" name="{{ register.email.name }}">
+    <strong><button type="submit" onClick="alert('se enviara la solicitud de usuario validador') " href="/mapa" style="background-color: #ebad8d">Solicitar usuario validador</button></strong>
+</form>
+
+<div id="errors">
+    <p>{{ email_error }}</p>
+</div>
+
+
+{% endblock %}

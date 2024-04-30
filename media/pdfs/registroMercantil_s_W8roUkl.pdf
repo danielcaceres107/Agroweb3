@@ -1,0 +1,271 @@
+
+<!DOCTYPE html>
+<html>
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f5f5f5;
+        margin: 0;
+    }
+
+    .navbar {
+        background-color: #1f4020;
+        overflow: hidden;
+        display: flex;
+        justify-content: space-around;
+        width: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+    }
+
+    .navbar a {
+        color: white;
+        text-align: center;
+        padding: 20px 16px;
+        text-decoration: none;
+        transition: background-color 0.3s;
+        font-weight: bold;
+    }
+
+    .navbar .nav-button {
+        color: white;
+        background-color: #4CAF50;
+        border: none;
+        padding: 20px 16px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        width: 100%;
+        font-size: 20px;
+    }
+
+    .navbar .nav-button:hover {
+        background-color: #45a049;
+    }
+
+    h1 {
+        text-align: center;
+        color: #000000;
+        margin: 100px 0px 35px;
+        font-size: 50px;
+    }
+</style>
+</head>
+
+<body>
+    <div class="navbar">
+        <a href="/" class="nav-button">Validar Pedidos</a>
+        <a href="/validarVendedor" class="nav-button">Validar Vendedores</a>
+        <a href="/estado_pedidos" class="nav-button">Estado de los Pedidos</a>
+        <br> <a href="/logout" class="nav-button">Logout</a><br>
+    </div>
+    
+    <style>
+        .card-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .card {
+            list-style: none;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            padding: 10px;
+            max-width: 300px; /* Ajustar el ancho máximo */
+        }
+
+        .card li {
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .document-button {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        button.download-pdf-button,
+        button.aprobar-vendedor-button,
+        button.denegar-vendedor-button {
+            width: 100%;
+            padding: 12px;
+            margin: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        button.download-pdf-button {
+            background-color: #323b41;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .botones {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button.aprobar-vendedor-button,
+        button.denegar-vendedor-button {
+            width: 45%;
+            border: none;
+            border-radius: 5px;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+        button.aprobar-vendedor-button {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        button.denegar-vendedor-button {
+            background-color: #ff4747;
+            color: white;
+        }
+
+        button.aprobar-vendedor-button:hover {
+            background-color: #45a049;
+        }
+
+        button.denegar-vendedor-button:hover {
+            background-color: #ff0000;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
+
+    <h1>Validar Vendedores</h1>
+
+    <div class="card-container">
+        
+            <ul class="card" id="card-ENm6gxgEAO8S2NvL7gitHts8Xx61FVOA">
+                <li>
+                    <strong>Nombre de Usuario:</strong> Martinn9
+                </li>
+                <li>
+                    <strong>Nombre del Vendedor:</strong> Martin Palermo
+                </li>
+                <li>
+                    <strong>Cédula:</strong> 944184102
+                </li>
+                <li>
+                    <strong>Nombre de la Tienda:</strong> Mercado Martin
+                </li>
+                <li>
+                    <strong>Teléfono:</strong> 3146543214
+                </li>
+                <li>
+                    <strong>Horario de Trabajo:</strong> 
+                </li>
+                <li>
+                    <strong>Documento Mercantil:</strong>
+                    <a href="" download="documentoMercantil.pdf">
+                        Descargar PDF
+                    </a>
+                </li>
+                <li>
+                    <form method="post" style="width: 100%;">
+                        <input type="hidden" name="csrfmiddlewaretoken" value="1I4iQtiBGoKR39sb8HnxxRrdRRksdR4l8xH7sdKWrhMjX62NaniVdp6CSmSO7oLB">
+                        <div class="botones">
+                            <button type="submit" name="aprobar" class="aprobar-vendedor-button" onclick="location.href='/validar/ENm6gxgEAO8S2NvL7gitHts8Xx61FVOA/'">Aprobar Vendedor</button>
+                            <button type="submit" name="denegar" class="denegar-vendedor-button">Denegar Vendedor</button>
+                        </div>
+                    </form>
+                </li>
+            </ul>
+        
+            <ul class="card" id="card-4z3gpiH1Prd3VYd5TrQiOEEG1qQd2AE4">
+                <li>
+                    <strong>Nombre de Usuario:</strong> Juli123
+                </li>
+                <li>
+                    <strong>Nombre del Vendedor:</strong> Juliana Quintero
+                </li>
+                <li>
+                    <strong>Cédula:</strong> 1345435313
+                </li>
+                <li>
+                    <strong>Nombre de la Tienda:</strong> Juli Products
+                </li>
+                <li>
+                    <strong>Teléfono:</strong> 3145468765
+                </li>
+                <li>
+                    <strong>Horario de Trabajo:</strong> 9:00-18:00
+                </li>
+                <li>
+                    <strong>Documento Mercantil:</strong>
+                    <a href="" download="documentoMercantil.pdf">
+                        Descargar PDF
+                    </a>
+                </li>
+                <li>
+                    <form method="post" style="width: 100%;">
+                        <input type="hidden" name="csrfmiddlewaretoken" value="1I4iQtiBGoKR39sb8HnxxRrdRRksdR4l8xH7sdKWrhMjX62NaniVdp6CSmSO7oLB">
+                        <div class="botones">
+                            <button type="submit" name="aprobar" class="aprobar-vendedor-button" onclick="location.href='/validar/4z3gpiH1Prd3VYd5TrQiOEEG1qQd2AE4/'">Aprobar Vendedor</button>
+                            <button type="submit" name="denegar" class="denegar-vendedor-button">Denegar Vendedor</button>
+                        </div>
+                    </form>
+                </li>
+            </ul>
+        
+            <ul class="card" id="card-Vy6ZK3736AKf0tv3IZMNcv8VP5oFqSOD">
+                <li>
+                    <strong>Nombre de Usuario:</strong> killer999
+                </li>
+                <li>
+                    <strong>Nombre del Vendedor:</strong> John Wick
+                </li>
+                <li>
+                    <strong>Cédula:</strong> 24531453613
+                </li>
+                <li>
+                    <strong>Nombre de la Tienda:</strong> John Market
+                </li>
+                <li>
+                    <strong>Teléfono:</strong> 39561461431
+                </li>
+                <li>
+                    <strong>Horario de Trabajo:</strong> 
+                </li>
+                <li>
+                    <strong>Documento Mercantil:</strong>
+                    <a href="" download="documentoMercantil.pdf">
+                        Descargar PDF
+                    </a>
+                </li>
+                <li>
+                    <form method="post" style="width: 100%;">
+                        <input type="hidden" name="csrfmiddlewaretoken" value="1I4iQtiBGoKR39sb8HnxxRrdRRksdR4l8xH7sdKWrhMjX62NaniVdp6CSmSO7oLB">
+                        <div class="botones">
+                            <button type="submit" name="aprobar" class="aprobar-vendedor-button" onclick="location.href='/validar/Vy6ZK3736AKf0tv3IZMNcv8VP5oFqSOD/'">Aprobar Vendedor</button>
+                            <button type="submit" name="denegar" class="denegar-vendedor-button">Denegar Vendedor</button>
+                        </div>
+                    </form>
+                </li>
+            </ul>
+        
+    </div>
+
+</body>
+
+</html>

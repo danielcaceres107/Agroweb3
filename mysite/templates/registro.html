@@ -42,6 +42,13 @@
         background-color: #3E8E41;
     }
 
+    #validador {
+        display: flex;
+        justify-content: center;
+        font-size: 35px;
+        padding: 10px;
+    }
+
     @media screen and (max-width: 319px) {
         .elegir-registro{
             display: flex;
@@ -53,6 +60,13 @@
         }
     }
 
+    @media screen and (max-width: 590px){
+        .elegir-registro button  {
+            width: 230px;
+            height: 165px;
+        }
+    }
+    
 </style>
 <br>
 <center><h3>Bienvenido, para empezar puedes registrarte como....</h3></center>
@@ -70,6 +84,9 @@
         </button>
     </a>
 </div>
+<br>
+<div id="validador"><a href="/registroValidador">¿Eres validador? presiona aquí</a></div>
+<br>
 
 {{ error }}
 {% endblock %}

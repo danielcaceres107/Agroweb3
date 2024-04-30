@@ -73,7 +73,7 @@
             panelProducts += '</div></div>'; 
 
 
-            // Agrega un evento de click al marcador para mostrar el panel lateral
+            // Agrega un evento de click al marcador para mostrar el panel
             marker.addListener('click', function () {
             // Muestra la información de la tienda en el contenedor
             const storeInfoContainer = document.getElementById("store-info-container");
@@ -100,10 +100,12 @@
                     // La tienda está abierta
                     document.getElementById("estado-tienda").innerHTML +=
                         '<p style="color:green" font-size="30px"><strong> Abierto</strong></p>'
+                    $('.btn-agregar').show();
                 } else {
                     // La tienda aún no abre
                     document.getElementById("estado-tienda").innerHTML +=
                         '<p style="color:red;" font-size="30px"> <strong> Cerrado</strong></p>'
+                    $('.btn-agregar').hide();
                 }
 
                 // Agrega un evento de click a los botones "Agregar al carrito"
@@ -149,6 +151,25 @@
                     });
                 });
 
+                $('.btn-eliminar').on('click', function(event) {
+                    event.preventDefault(); // Evita el comportamiento predeterminado de la etiqueta <a>
+
+                    const productoId = $(this).data('producto');
+                    const vendedorId = $(this).data('vendedor');
+
+                    $.ajax({
+                        type: 'POST', // Utiliza el método POST para modificar datos en el servidor
+                        url: '/eliminar/' + productoId + '/' + vendedorId,                 dataType: 'json',
+                        success: function(data) {
+                        alert(data.message);
+                        actualizarCarrito();
+                        },
+                        error: function() {
+                        alert('Error al eliminar el producto del carrito.');
+                        }
+                    });
+                });
+
                 function actualizarCarrito() {
                     // Realiza una solicitud Ajax para obtener la información actualizada del carrito desde el servidor
                     $.ajax({
@@ -173,10 +194,27 @@
                         }
                     });
                 }
-
             });
         });
     }
+
+    $('#search-input').on('input', function() {
+        var searchText = $(this).val();
+        $.ajax({
+            url: '/buscar_productos/',
+            method: 'GET',
+            data: { search_text: searchText },
+            success: function(data) {
+                // Procesa los resultados y muestra los productos sobre el mapa
+                // Puedes llamar a una función existente para manejar esto
+                mostrarProductosEnMapa(data);
+            },
+            error: function() {
+                // Maneja los errores de la solicitud AJAX
+                alert('Error al buscar productos.');
+            }
+        });
+    });
 
     window.initMap = initMap;
 </script>
@@ -185,6 +223,10 @@
     <!-- Agrega un contenedor para el mapa -->
     <div id="map" style="height: 70vh;"></div>
 </div>
+
+{% if user.is_authenticated %}
+<a href="https://www.dane.gov.co/files/operaciones/SIPSA/bol-SIPSASemanal-06abr-12abr-2024.pdf" target="_blank" style="padding: 15px; text-decoration: none;"><center>Compara los precios con los boletines del DANE aqui</center></a>
+{% endif %}
 
 <!-- Agrega un contenedor para mostrar la información de la tienda -->
 <div id="store-info-container">

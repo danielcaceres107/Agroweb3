@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+{% load static %}
 <style>
     form {
         display: flex;
@@ -108,6 +109,18 @@
     .compras-info {
         justify-content: center;
     }
+
+    .img-container img {
+        width: 35px;
+        height: 35px;
+    }
+
+    .img-container {
+        display: flex;
+        align-content: center;
+        flex-wrap: wrap;
+        flex-direction: column-reverse;
+    }
 </style>
 <div class="pantalla-perfil">
     <div class="perfil-info">
@@ -141,58 +154,74 @@
 </div>
 <div class="pantalla-movimientos">
     {% if user.username == vendedor.usuarioVendedor %}
-    <div class="ventas-info">
-        <h2>Últimas Ventas</h2>
-        {% if productos_vendidos and ultimas_ventas %}
-        {% for pedido in ultimas_ventas %}
-        <ul>
-                <li>
-                    <strong>ID del Pedido:</strong> {{ pedido.id }}<br>
-                    <strong>Fecha:</strong> {{ pedido.fecha }}<br>
-                {% for producto, cantidad in productos_vendidos %}
-                    <ul>
-                        <li><strong>Producto:</strong>{{ producto.nombreProd }}</li>
-                        <li><strong>Cantidad:</strong> {{ cantidad }}</li>
-                        <li><strong>Precio:</strong> {{ producto.precioProd }}</li>
-                    </ul>
-                {% endfor %}    
-                    <strong>Total: </strong>{{ pedido.total }}<br>
-                </li>
-                <br>
-        </ul>
-        </hr>
-        {% endfor %}
-        <p><strong>Total Vendido:</strong> {{ productos_vendidos_total }}</p>
-        {% else %}
-        <p>No se han realizado ventas aún</p>
-        {% endif %}
-    </div>
+        <div class="ventas-info">
+            <h2>Últimas Ventas</h2>
+            {% if ultimas_ventas %}
+                <ul>
+                    {% for pedido in ultimas_ventas %}
+                        <li>
+                            <strong>ID del Pedido:</strong> {{ pedido.id }}<br>
+                            <strong>Fecha:</strong> {{ pedido.fecha }}<br>
+                            <ul>
+                                {% for producto in pedido.productos %}
+                                    <li>
+                                        <strong>Producto:</strong> {{ producto.nombre }}<br>
+                                        <strong>Cantidad:</strong> {{ producto.cantidad }}<br>
+                                        <strong>Precio:</strong> {{ producto.precio }}<br>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                            <strong>Total: </strong>{{ pedido.total }}<br>
+                        </li>
+                        <br>
+                        <div class="img-container">
+                            <img src="{% static 'media/img/' %}{% if pedido.estado == 'pendiente_de_pago' %}pendiente.png{% elif pedido.estado == 'pagado' %}pagado.png{% elif pedido.estado == 'entregado' %}entregado.png{% endif %}" alt="{{ pedido.estado }}">
+                        </div>
+                        <form method="post" action="{% url 'cambiarEstadoPedido' pedido.id %}">
+                            {% csrf_token %}
+                            <select name="nuevo_estado">
+                                <option value="pendiente_de_pago" {% if pedido.estado == "pendiente_de_pago" %}selected{% endif %}>Pendiente de pago</option>
+                                <option value="pagado" {% if pedido.estado == "pagado" %}selected{% endif %}>Pagado</option>
+                                <option value="entregado" {% if pedido.estado == "entregado" %}selected{% endif %}>Entregado</option>
+                            </select>
+                            <button type="submit">Cambiar Estado</button>
+                        </form>
+                    {% endfor %}
+                </ul>
+                </hr>
+                <p><strong>Total Vendido:</strong> {{ productos_vendidos_total }}</p>
+            {% else %}
+            <p>No se han realizado ventas aún</p>
+            {% endif %}
+        </div>
     {% elif user.username == cliente.usuarioCliente %}
-    <div class="compras-info">
-        <h2>Últimas Compras</h2>
-        {% if productos_comprados and ultimas_compras %}
-        <ul>
-            {% for pedido in ultimas_compras %}
+        <div class="compras-info">
+            <h2>Últimas Compras</h2>
+            {% if ultimos_pedidos %}
+            <ul>
+                {% for pedido in ultimos_pedidos %}
                 <li>
                     <strong>ID del Pedido:</strong> {{ pedido.id }}<br>
                     <strong>Fecha:</strong> {{ pedido.fecha }}<br>
-                {% for producto, cantidad in productos_comprados %}
                     <ul>
-                        <li><strong>Producto:</strong>{{ producto.nombreProd }}</li>
-                        <li><strong>Cantidad:</strong> {{ cantidad }}</li>
-                        <li><strong>Precio:</strong> {{ producto.precioProd }}</li>
+                        {% for producto in pedido.productos %}
+                        <li>
+                            <strong>Producto:</strong> {{ producto.nombre }}<br>
+                            <strong>Cantidad:</strong> {{ producto.cantidad }}<br>
+                            <strong>Precio:</strong> {{ producto.precio }}<br>
+                        </li>
+                        {% endfor %}
                     </ul>
-                {% endfor %}    
                     <strong>Total: </strong>{{ pedido.total }}<br>
                 </li>
                 <br>
-        </ul>
-        </hr>
-        {% endfor %}
-        {% else %}
-        <p>No se han realizado compras aún</p>
-        {% endif %}
-    </div>
+                {% endfor %}
+            </ul>
+            </div>
+            {% else %}
+            <p>No se han realizado compras aún</p>
+            {% endif %}
+        </div>
     {% endif %}
 </div>
 {% if user.username == vendedor.usuarioVendedor %}

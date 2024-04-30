@@ -1,19 +1,8 @@
 {% extends 'base.html' %}
 {% block content %}
-	<!--<header>
-        <div class="inner">
-			<nav class="nav-masthead">
-				<h1><a class="nav-link active" href="index.html">Home</a>
-				<a class="nav-link" href="login.html">Login</a>
-                <a class="nav-link" href="registro.html">Registrarse</a></h1>
-			</nav>
-		   
-    </div>
-    </header>-->
-	<style>
-		/* Estilos para el formulario de login */
+<style>
 
-	input[type="text"], input[type="password"] {
+input[type="text"], input[type="password"] {
     max-width: 400px;
     padding: 10px;
     margin: 10px 0;
@@ -83,15 +72,15 @@
     justify-content: center;
 }
 
-	</style>
+</style>
 
 <form method="POST" class="login-form">
     {% csrf_token %}
     {{ form.as_p }}
     <strong><button type="submit" style="background-color: #ebad8d">Iniciar sesión</button></strong>
-  </form>
-    <div class="msg-error">
+</form>
+<div class="msg-error">
   {{ error }}
-    </div>
-  <div id="espacio"></div>
+</div>
+<div id="espacio"></div>
 {% endblock %}
