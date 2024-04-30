@@ -272,8 +272,11 @@ def enviar_carrito(request):
         # Crear relaciones con los vendedores
         for vendedor_i in vendedores_list:
             VendedoresPedidosConexion.objects.create(pedido=nuevo_pedido, vendedor = Vendedores.objects.get(id=vendedor_i))
+    try:
+        enviar_correo_carrito(carrito_data, usuario_compra)
+    except:
+        print("no se pudo enviar el correo del carrito")
 
-    enviar_correo_carrito(carrito_data, usuario_compra)
     try:
         usuario = Clientes.objects.get(usuarioCliente=request.user.username)
     except ObjectDoesNotExist:
@@ -328,8 +331,7 @@ def llamada(telefono, account_sid, auth_token) :
 def enviar_correo_carrito(carrito_data, usuario):
     # Configurar los datos del correo
     remitente = settings.CORREO
-    destinatario = ["danielcaceres107@gmail.com",
-                    "fowxd7@gmail.com", usuario.email]
+    destinatario = ['danielcaceres98@hotmail.com', usuario.email]
     asunto = 'Datos del carrito'
 
     # Crear el cuerpo del mensaje
@@ -832,6 +834,9 @@ def perfil(request):
             cliente = Clientes.objects.get(usuarioCliente=request.user)
             # Obtener los últimos 5 pedidos del usuario
             ultimos_pedidos = Pedidos.objects.filter(usuario_compra_id=request.user).order_by('-fecha')[:5]
+
+            print(ultimos_pedidos)
+
             datos_pedidos = []
             for pedido in ultimos_pedidos:
                 productos_pedido_conn = ProductosPedidosConexion.objects.filter(pedido_id=pedido.id)
@@ -856,6 +861,8 @@ def perfil(request):
 
                 # Obtener los últimos 5 pedidos del usuario vendedor
                 ultimas_ventas = Pedidos.objects.filter(vendedor_pedido_id=vendedor).order_by('-fecha')[:5]
+
+                print(ultimas_ventas)
 
                 # Crear una lista para almacenar los productos relacionados con los pedidos del cliente
                 datos_pedidos = []
@@ -1169,4 +1176,5 @@ def registroValidador(request):
             return render(request, 'registroValidador.html', {"register": form, "email_error": email_error})
         
 def landingPago(request):
+    enviar_correos(request.user.email, "Pago en efectivo de tu compra", "<h2>Hola!<h2><br><p>Has escogido pagar por efectivo en tu compra agroweb, por favor dirigete hacia el vendedor de la tienda</p><br><p>Saludos,</p><br><h4>Equipo de Agroweb</h4>")
     return render(request, 'landing_pago.html')

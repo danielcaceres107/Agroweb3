@@ -123,10 +123,41 @@ class EditarPerfilForm(forms.ModelForm):
     longitude = forms.CharField(label="Longitud")
     horario = forms.CharField(label="Horario de la tienda")
     productos = forms.ModelMultipleChoiceField(queryset=Products.objects.all(), widget=forms.SelectMultiple)
+    correo = forms.EmailField(validators=[EmailValidator(message='')])
+    imagen_qr = forms.ImageField(label="QR_Nequi", required=False)
 
+    def clean_username(self):
+        username = self.cleaned_data['username']
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError("El nombre de usuario ya está en uso.")
+        return username
+
+    def clean_correo(self):
+        correo = self.cleaned_data['correo']
+        if User.objects.filter(email=correo).exists():
+            raise forms.ValidationError("Este correo electrónico ya está registrado.")
+        return correo
+    
+    def clean_telefono(self):
+        telefono = self.cleaned_data['telefono']
+        if not telefono.isdigit() or len(telefono) != 10:
+            raise forms.ValidationError('Ingresa un numero de telefono valido (ej: 3154043021)')
+        return telefono
+    
+    def clean_imagen_qr(self):
+        imagen_qr = self.cleaned_data.get('imagen_qr')
+        if imagen_qr:
+            try:
+                if not imagen_qr.name.endswith('.png'):
+                    raise forms.ValidationError('La imagen QR debe ser un archivo PNG.')
+            except AttributeError:
+                raise forms.ValidationError('El archivo adjunto no es válido.')
+        else:
+            raise forms.ValidationError('Es obligatorio adjuntar la imagen QR.')
     class Meta:
         model = User
-        fields = ('username', 'nombreTienda', 'telefono', 'latitude', 'longitude', 'horario', 'productos')
+        fields = ('username', 'nombreTienda', 'telefono', 'latitude', 'longitude', 'horario', 'productos', 'correo', 'imagen_qr')
+
 
 
 class ProductoForm(forms.ModelForm):
