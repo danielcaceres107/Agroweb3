@@ -64,6 +64,15 @@
 </style>
 
 <h1>Detalle del Pedido</h1>
+<div class="usuarios-container">
+    <li>
+        Comprado por:
+        {{ pedido.usuario_compra_id }}
+    </li>
+    <li>
+        Vendido por: {% for v in vendedores %} - {{ v.nombreVendedor }} ({{ v.nombreTienda }}) {% endfor %}
+    </li>
+</div>
 <div class="products-container">
     <h2>Productos:</h2>
     <ul class="products-list">
@@ -83,7 +92,7 @@
 
 <div class="total-container">
     <div class="total-label">Total:</div>
-    <div class="total-amount">{{ total }}</div>
+    <div class="total-amount">{{ pedido.total }}</div>
 </div>
 
 {% endblock %}

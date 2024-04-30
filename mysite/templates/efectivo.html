@@ -96,8 +96,7 @@
     <h1>Pago en efectivo</h1>
     <div class="container">
 
-        <h1>Acércate al vendedor para completar el pago. Se verificará tu compra y se informará anticipadamente al
-            vendedor.</h1>
+        <h1>Acércate al vendedor para completar el pago.</h1>
         <hr>
         <h2>Productos en el carrito:
             <BR>
@@ -111,6 +110,7 @@
         <img src="{% static 'media/img/trato.jpg' %}" />
 
 <hr>
+        <a href="{% url 'landingPago' %}">Terminar</a>
         <a href="{% url 'mapa' %}">Volver</a>
     </div>
 

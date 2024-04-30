@@ -72,6 +72,24 @@ def estado_pedidos(request):
 
     return render(request, 'estado_pedidos.html', {'pedidos': pedidos})
 
+def enviar_correos(usuario_email, asunto, cuerpo):
+
+    # Crear el objeto del mensaje
+    mensaje = MIMEMultipart()
+    mensaje['From'] = settings.CORREO
+    mensaje['To'] = usuario_email
+    mensaje['Subject'] = asunto
+
+    # Agregar el cuerpo del mensaje
+    mensaje.attach(MIMEText(cuerpo, 'html'))
+
+    # Enviar el correo utilizando el servidor SMTP de Office 365
+    servidor_smtp = smtplib.SMTP('smtp.office365.com', 587)
+    servidor_smtp.starttls()
+    servidor_smtp.login(settings.CORREO, settings.CONTRASENA)
+    servidor_smtp.send_message(mensaje)
+    servidor_smtp.quit()
+
 def cambiar_estado_pedido(request, pedido_id):
     if request.method == "POST":
         nuevo_estado = request.POST.get("nuevo_estado")
@@ -82,15 +100,11 @@ def cambiar_estado_pedido(request, pedido_id):
             pedido.save()
 
             email_comprador = pedido.usuario_compra_id.email
+            print('email:', email_comprador)
 
             try:
                 # Enviar correo de cambio de estado del pedido
-                smtp_host = 'smtp.office365.com'
-                smtp_port = 587
-                smtp_username = settings.CORREO
-                smtp_password = settings.CONTRASENA
-                sender = settings.CORREO
-                recipient = [request.user.email, email_comprador]
+                recipient = email_comprador
                 subject = 'Informacion de su pedido en Agroweb'
                 message = '''
                 <html>
@@ -105,17 +119,8 @@ def cambiar_estado_pedido(request, pedido_id):
                 </html>
                 '''% nuevo_estado
 
-                msg = MIMEMultipart('alternative')
-                msg['Subject'] = subject
-                msg['From'] = sender
-                msg['To'] = recipient
-                html_part = MIMEText(message, 'html')
-                msg.attach(html_part)
-
-                with smtplib.SMTP(smtp_host, smtp_port) as smtp:
-                    smtp.starttls()
-                    smtp.login(smtp_username, smtp_password)
-                    smtp.sendmail(sender, recipient, msg.as_string())
+                enviar_correos(recipient, subject, message)
+                print("correo de cambio de estado enviado con exito")
             except:
                 print("no se pudo enviar el correo de actualizacion de estado")
             if request.user.username == "validador":
@@ -139,10 +144,14 @@ def detallePedido(request, pedido_id) :
     if request.method == "POST":
         pedido = Pedidos.objects.get(id=pedido_id)
         productos_pedidos_conn = ProductosPedidosConexion.objects.filter(pedido_id=pedido_id)
-        total = pedido.total
+        # Obtener vendedores únicos asociados al pedido usando distinct()
+        vendedores_pedidos_conn = VendedoresPedidosConexion.objects.filter(pedido_id=pedido_id).values('vendedor_id').distinct()
+        # Obtener los objetos de vendedores correspondientes a los IDs
+        vendedores_ids = [vendedor['vendedor_id'] for vendedor in vendedores_pedidos_conn]
+        vendedores = Vendedores.objects.filter(id__in=vendedores_ids)
         products = Products.objects.all
 
-    return render(request, 'detalle_pedido.html', {'pedido_id': pedido_id, 'productos_pedidos_conn': productos_pedidos_conn, 'products': products, 'total': total })
+    return render(request, 'detalle_pedido.html', {'pedido_id': pedido_id, 'productos_pedidos_conn': productos_pedidos_conn, 'products': products, 'pedido': pedido , 'vendedores' : vendedores})
 
 
 def mapa(request):
@@ -264,7 +273,7 @@ def enviar_carrito(request):
         for vendedor_i in vendedores_list:
             VendedoresPedidosConexion.objects.create(pedido=nuevo_pedido, vendedor = Vendedores.objects.get(id=vendedor_i))
 
-    enviar_correo(carrito_data, usuario_compra)
+    enviar_correo_carrito(carrito_data, usuario_compra)
     try:
         usuario = Clientes.objects.get(usuarioCliente=request.user.username)
     except ObjectDoesNotExist:
@@ -316,7 +325,7 @@ def llamada(telefono, account_sid, auth_token) :
     print("Se realizara la llamada al numero elegido...Gracias")
 
 # correo del carrito
-def enviar_correo(carrito_data, usuario):
+def enviar_correo_carrito(carrito_data, usuario):
     # Configurar los datos del correo
     remitente = settings.CORREO
     destinatario = ["danielcaceres107@gmail.com",
@@ -460,12 +469,7 @@ def registroCliente(request):
                 request, username=user.username, password=request.POST['password1'])
             login(request, user)
 
-            # Código para enviar el correo electrónico
-            smtp_host = 'smtp.office365.com'
-            smtp_port = 587
-            smtp_username = settings.CORREO
-            smtp_password = settings.CONTRASENA
-            sender = settings.CORREO
+            # Enviar correo
             recipient = form.cleaned_data['correo']
             subject = 'Registro de ' + form.cleaned_data['nombreCliente'] + ' como cliente Agroweb'
             message = '''
@@ -479,18 +483,7 @@ def registroCliente(request):
             </body>
             </html>
             '''
-
-            msg = MIMEMultipart('alternative')
-            msg['Subject'] = subject
-            msg['From'] = sender
-            msg['To'] = recipient
-            html_part = MIMEText(message, 'html')
-            msg.attach(html_part)
-
-            with smtplib.SMTP(smtp_host, smtp_port) as smtp:
-                smtp.starttls()
-                smtp.login(smtp_username, smtp_password)
-                smtp.sendmail(sender, recipient, msg.as_string())
+            enviar_correos(recipient, subject, message)
 
             print('Usuario creado satisfactoriamente')
             return redirect('mapa')
@@ -553,29 +546,39 @@ def registroVendedor(request):
                 # Generar una ruta única para guardar el archivo (Ej: tmp/midocumento)
                 archivo_name = username + documento_adjunto.name
                 archivo_path = os.path.join(ruta_temporal, archivo_name)
-                with open(archivo_path, 'wb') as file:
-                    for chunk in documento_adjunto.chunks():
-                        file.write(chunk)
+                try:
+                    with open(archivo_path, 'wb') as file:
+                        for chunk in documento_adjunto.chunks():
+                            file.write(chunk)
+                except Exception as e:
+                    print("Error al guardar el archivo pdf:", e)
+                    return render(request, 'registroVendedor.html', {"register": form, "otro_error": "Error, por favor cambiar el nombre del archivo"})
             else:
                 archivo_path = None
 
              # Guardar el archivo adjunto de la imagen QR
             if qr_adjunto:
-                img_name = username + qr_adjunto.name
-                qr_path = os.path.join(ruta_temporal, img_name)
-                if os.path.exists(qr_path):
-                    os.chmod(qr_path, 0o400) #Linux
-                    comando = f"attrib +w {qr_path}" #Windows
-                    # Ejecutar el comando en el cmd
-                    subprocess.run(comando, shell=True)
-                with open(qr_path, 'wb') as file:
-                    for chunk in qr_adjunto.chunks():
-                        file.write(chunk)
+                try:
+                    img_name = username + qr_adjunto.name
+                    qr_path = os.path.join(ruta_temporal, img_name)
+                    if os.path.exists(qr_path):
+                        os.chmod(qr_path, 0o400) #Linux
+                        comando = f"attrib +w {qr_path}" #Windows
+                        # Ejecutar el comando en el cmd
+                        subprocess.run(comando, shell=True)
+                    with open(qr_path, 'wb') as file:
+                        for chunk in qr_adjunto.chunks():
+                            file.write(chunk)
+                except Exception as e:
+                    print("Error al guardar el archivo qr:", e)
+                    return render(request, 'registroVendedor.html', {"register": form, "otro_error": "Error, por favor cambiar el nombre del archivo"})
+                    
             else:
                 qr_path = None
 
-            if os.path.exists(archivo_path):
-                os.chmod(archivo_path, 0o400)
+            if documento_adjunto is not None and qr_adjunto is not None:
+                if os.path.exists(archivo_path):
+                    os.chmod(archivo_path, 0o400)
             
             # Obtén los datos del formulario
             datos_vendedor = {
@@ -584,6 +587,7 @@ def registroVendedor(request):
                 'password': request.POST['password1'],
                 'cedula': request.POST['cedula'],
                 'nombreTienda': request.POST['nombreTienda'],
+                'correo': request.POST['correo'],
                 'telefono': request.POST['telefono'],
                 'documentoMercantil': archivo_path,
                 'latitude': request.POST['latitude'],
@@ -596,15 +600,19 @@ def registroVendedor(request):
             # Guarda los datos en Redis con el token como clave
             r.hmset(token, datos_vendedor)
 
+            enviar_correos(request.POST['correo'], "Registro en agroweb", "<h2>Gracias por inscribirte a nuestra plataforma</h2><br><p>El siguiente paso es revisar tusa datos y se te enviará un correo cuando ya puedas ingresar en la plataforma</p>")
+
             return render(request, 'msjValidarCorreo.html', {'mensaje': 'Estamos verificando la información proporcionada, al terminar esta validación podrás acceder a todos nuestros servicios.'})
         else:
             # Captura los errores del formulario y los pasa a la plantilla
             errors_dict = form.errors.as_data()
             username_error = ""
             telefono_error = ""
+            correo_error = ""
             password_error = ""
             documento_error = ""
             qr_error = ""
+            otro_error = "por favor verifica los datos ingresados "
 
             for field, error_list in errors_dict.items():
                 for error in error_list:
@@ -612,14 +620,18 @@ def registroVendedor(request):
                         username_error += error.message + ". "
                     elif 'telefono' in field:
                         telefono_error += error.message + ". "
+                    elif 'correo' in field:
+                        correo_error += error.message + ". "
                     elif '__all__' in field:
                         password_error += error.message + ". "
                     elif 'documentoMercantil' in field:
                         documento_error += error.message + ". "
                     elif 'imagen_qr' in field:
                         qr_error += error.message + ". "
+                    else:
+                        otro_error += error.message + ". "
 
-            return render(request, 'registroVendedor.html', {"register": form, "username_error": username_error, "telefono_error" : telefono_error ,"password_error": password_error, "documento_error": documento_error, "qr_error": qr_error})
+            return render(request, 'registroVendedor.html', {"register": form, "username_error": username_error, "telefono_error" : telefono_error ,"password_error": password_error, "documento_error": documento_error, "correo_error": correo_error, "qr_error": qr_error, "otro_error": otro_error})
 
 def descargar_archivo(request, url_archivo):
     
@@ -656,6 +668,7 @@ def validarVendedor(request):
                     'vendedor': datos[b'vendedor'].decode('utf-8'),
                     'cedula': datos[b'cedula'].decode('utf-8'),
                     'nombreTienda': datos[b'nombreTienda'].decode('utf-8'),
+                    'correo': datos[b'correo'].decode('utf-8'),
                     'telefono': datos[b'telefono'].decode('utf-8'),
                     'documentoMercantil': datos[b'documentoMercantil'].decode('utf-8'),
                     'latitude': datos[b'latitude'].decode('utf-8'),
@@ -686,6 +699,7 @@ def validarRegistro(request, token):
             'vendedor': datos_vendedor_redis[b'vendedor'].decode('utf-8'),
             'cedula': datos_vendedor_redis[b'cedula'].decode('utf-8'),
             'nombreTienda': datos_vendedor_redis[b'nombreTienda'].decode('utf-8'),
+            'correo': datos_vendedor_redis[b'correo'].decode('utf-8'),
             'telefono': datos_vendedor_redis[b'telefono'].decode('utf-8'),
             'documentoMercantil': datos_vendedor_redis[b'documentoMercantil'].decode('utf-8'),
             'latitude': datos_vendedor_redis[b'latitude'].decode('utf-8'),
@@ -697,7 +711,7 @@ def validarRegistro(request, token):
         
         # Guardar los datos del vendedor en la base de datos
         user = User.objects.create_user(
-            username=datos_vendedor['username'], password=datos_vendedor['password'])
+            username=datos_vendedor['username'], password=datos_vendedor['password'], email=datos_vendedor['correo'])
         user.save()
 
 
@@ -707,6 +721,7 @@ def validarRegistro(request, token):
             usuarioVendedor=datos_vendedor['username'],
             nombreTienda=datos_vendedor['nombreTienda'],
             cedula=datos_vendedor['cedula'],
+            correo=datos_vendedor['correo'],
             telefono=datos_vendedor['telefono'],
             latitude=datos_vendedor['latitude'],
             longitude=datos_vendedor['longitude'],
@@ -1119,12 +1134,6 @@ def registroValidador(request):
 
             try:
                 # Código para enviar el correo electrónico
-                smtp_host = 'smtp.office365.com'
-                smtp_port = 587
-                smtp_username = settings.CORREO
-                smtp_password = settings.CONTRASENA
-                sender = settings.CORREO
-                recipient = settings.CORREO
                 subject = 'Solicitud de ' + nombre + apellido + ' para validador Agroweb'
                 message = '''
                 <html>
@@ -1138,18 +1147,9 @@ def registroValidador(request):
                 </body>
                 </html>
                 ''' 
+                enviar_correos(settings.CORREO, subject, message)
 
-                msg = MIMEMultipart('alternative')
-                msg['Subject'] = subject
-                msg['From'] = sender
-                msg['To'] = recipient
-                html_part = MIMEText(message, 'html')
-                msg.attach(html_part)
-
-                with smtplib.SMTP(smtp_host, smtp_port) as smtp:
-                    smtp.starttls()
-                    smtp.login(smtp_username, smtp_password)
-                    smtp.sendmail(sender, recipient, msg.as_string())
+                print("solicitud de validador enviada")
             except:
                 print("no se pudo enviar el correo de solicitud validador")
 
@@ -1167,3 +1167,6 @@ def registroValidador(request):
 
             # Renderiza el formulario con los mensajes de error personalizados
             return render(request, 'registroValidador.html', {"register": form, "email_error": email_error})
+        
+def landingPago(request):
+    return render(request, 'landing_pago.html')

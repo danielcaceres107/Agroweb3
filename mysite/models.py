@@ -26,6 +26,7 @@ class Vendedores(models.Model):
     horario = models.CharField(max_length=200,blank=True, null=True)
     productos = models.ManyToManyField(Products, related_name='productos_venta')
     imagen_qr = models.ImageField(upload_to='imgs/', blank=True, null=True)
+    correo = models.CharField(max_length=200, unique=False, null=True)
 
 
     def set_password(self, password):

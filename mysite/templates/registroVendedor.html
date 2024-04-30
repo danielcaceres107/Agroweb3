@@ -88,12 +88,12 @@
     }
     .grid-container {
         display: grid;
-        grid-template-columns: repeat(3, 1fr); /* Crear 3 columnas con el mismo ancho */
-        gap: 20px; /* Espacio entre elementos */
+        grid-template-columns: repeat(3, 1fr); 
+        gap: 20px; 
     }
 
     .grid-item {
-        text-align: center; /* Alinear el texto al centro */
+        text-align: center;
     }
 
     #errors{
@@ -124,6 +124,8 @@
     <p>{{ password_error }}</p>
     <p>{{ documento_error }}</p>
     <p>{{ qr_error }}</p>
+    <p>{{ correo_error }}</p>
+    <p>{{ otro_error }}</p>
 </div>
 
 <form action="/registroVendedor/" method="POST" enctype="multipart/form-data">
@@ -135,6 +137,7 @@
     {{ register.password1.label_tag }} <input type="password" name="{{ register.password1.name }}">
     {{ register.password2.label_tag }} <input type="password" name="{{ register.password2.name }}">
     </div>
+    {{ register.correo.label_tag }} <input type="text" name="{{ register.correo.name }}">
     {{ register.telefono.label_tag }} <input type="text" name="{{ register.telefono.name }}">
     {{ register.documentoMercantil.label_tag }} <h6>(pdf)</h6> <input type="file" name="{{ register.documentoMercantil.name }}">
     {{ register.nombreTienda.label_tag }} <input type="text" name="{{ register.nombreTienda.name }}">

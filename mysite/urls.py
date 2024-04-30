@@ -57,4 +57,5 @@ urlpatterns = [
     path('efectivo/', views.efectivo, name='efectivo'),
     path('nequi/', views.nequi, name='nequi'),
     path('registroValidador/', views.registroValidador, name= 'registroValidador'),
+    path('landingPago/', views.landingPago, name= 'landingPago'),
 ]
