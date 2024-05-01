@@ -103,7 +103,7 @@ def enviar_correos(usuario_email, asunto, cuerpo):
                         html_message=cuerpo,
                     )
                 except:
-                    print("Correo electrónico enviado correctamente.")
+                    print("Correo electrónico no se pudo enviar por send_mail.")
                     raise e  # Lanza la excepción si se alcanza el número máximo de intentos
             else:
                 print(f"Intento {intento_actual}: Error al enviar el correo electrónico - {e}")
