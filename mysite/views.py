@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, HttpResponseServerError
+from django.http import HttpResponse, JsonResponse
 import redis
 from agroweb import settings
 from mysite.my_context_processor import total_carrito
@@ -10,26 +10,20 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import IntegrityError
 import json
 from .forms import ProductoForm, RegistroVendedorForm, RegistroClientesForm, EditProductForm, RegistroValidadorForm
 from decimal import Decimal
 from django.core.serializers.json import DjangoJSONEncoder
-from django.contrib.auth.models import Group
-from .forms import EditarPerfilForm
 from django.views.decorators.csrf import csrf_exempt
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 from django.utils.crypto import get_random_string
-from django.core.cache import cache
-from django.core.files import File
-from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.mail import send_mail
 from django.contrib import messages
 from django.urls import reverse
 import os
-import tempfile
 from django.core.files.base import ContentFile
 from datetime import datetime
 from django.db.models import Sum
@@ -73,22 +67,46 @@ def estado_pedidos(request):
     return render(request, 'estado_pedidos.html', {'pedidos': pedidos})
 
 def enviar_correos(usuario_email, asunto, cuerpo):
+    intentos_maximos = 3
+    intento_actual = 0
 
-    # Crear el objeto del mensaje
-    mensaje = MIMEMultipart()
-    mensaje['From'] = settings.CORREO
-    mensaje['To'] = usuario_email
-    mensaje['Subject'] = asunto
+    while intento_actual <= intentos_maximos:
+        try:
+            # Crear el objeto del mensaje
+            mensaje = MIMEMultipart()
+            mensaje['From'] = settings.CORREO
+            mensaje['To'] = usuario_email
+            mensaje['Subject'] = asunto
 
-    # Agregar el cuerpo del mensaje
-    mensaje.attach(MIMEText(cuerpo, 'html'))
+            # Agregar el cuerpo del mensaje
+            mensaje.attach(MIMEText(cuerpo, 'html'))
 
-    # Enviar el correo utilizando el servidor SMTP de Office 365
-    servidor_smtp = smtplib.SMTP('smtp.office365.com', 587)
-    servidor_smtp.starttls()
-    servidor_smtp.login(settings.CORREO, settings.CONTRASENA)
-    servidor_smtp.send_message(mensaje)
-    servidor_smtp.quit()
+            # Enviar el correo utilizando el servidor SMTP de Office 365
+            servidor_smtp = smtplib.SMTP('smtp.office365.com', 587)
+            servidor_smtp.starttls()
+            servidor_smtp.login(settings.CORREO, settings.CONTRASENA)
+            servidor_smtp.send_message(mensaje)
+            servidor_smtp.quit()
+
+            # Si el correo se envía correctamente, sal del bucle
+            break
+
+        except Exception as e:
+            intento_actual += 1
+            if intento_actual == intentos_maximos:
+                try:
+                    send_mail(
+                        asunto,
+                        cuerpo,
+                        settings.CORREO,
+                        [usuario_email],
+                        html_message=cuerpo,
+                    )
+                except:
+                    print("Correo electrónico enviado correctamente.")
+                    raise e  # Lanza la excepción si se alcanza el número máximo de intentos
+            else:
+                print(f"Intento {intento_actual}: Error al enviar el correo electrónico - {e}")
 
 def cambiar_estado_pedido(request, pedido_id):
     if request.method == "POST":
@@ -118,7 +136,6 @@ def cambiar_estado_pedido(request, pedido_id):
                 </body>
                 </html>
                 '''% nuevo_estado
-
                 enviar_correos(recipient, subject, message)
                 print("correo de cambio de estado enviado con exito")
             except:
@@ -470,22 +487,24 @@ def registroCliente(request):
             user = authenticate(
                 request, username=user.username, password=request.POST['password1'])
             login(request, user)
-
-            # Enviar correo
-            recipient = form.cleaned_data['correo']
-            subject = 'Registro de ' + form.cleaned_data['nombreCliente'] + ' como cliente Agroweb'
-            message = '''
-            <html>
-            <head></head>
-            <body>
-                <h2>¡Registro exitoso!</h2>
-                <p>Hola,</p>
-                <p>Tu registro como cliente Agroweb ha sido exitoso.</p>
-                <p>¡Gracias por unirte a nuestro sitio!</p>
-            </body>
-            </html>
-            '''
-            enviar_correos(recipient, subject, message)
+            try:
+                # Enviar correo
+                recipient = form.cleaned_data['correo']
+                subject = 'Registro de ' + form.cleaned_data['nombreCliente'] + ' como cliente Agroweb'
+                message = '''
+                <html>
+                <head></head>
+                <body>
+                    <h2>¡Registro exitoso!</h2>
+                    <p>Hola,</p>
+                    <p>Tu registro como cliente Agroweb ha sido exitoso.</p>
+                    <p>¡Gracias por unirte a nuestro sitio!</p>
+                </body>
+                </html>
+                '''
+                enviar_correos(recipient, subject, message)
+            except:
+                print("no se pudo enviar el correo de registro cliente")
 
             print('Usuario creado satisfactoriamente')
             return redirect('mapa')
@@ -602,17 +621,24 @@ def registroVendedor(request):
             # Guarda los datos en Redis con el token como clave
             r.hmset(token, datos_vendedor)
 
-            enviar_correos(request.POST['correo'], "Registro en agroweb", "<h2>Gracias por inscribirte a nuestra plataforma</h2><br><p>El siguiente paso es revisar tusa datos y se te enviará un correo cuando ya puedas ingresar en la plataforma</p>")
+            try:
+                enviar_correos(request.POST['correo'], "Registro en agroweb", "<h2>Gracias por inscribirte a nuestra plataforma</h2><br><p>El siguiente paso es revisar tus datos y se te enviará un correo cuando ya puedas ingresar en la plataforma</p>")
+            except:
+                print("no se puede enviar el correo de registro vendedor")
 
             return render(request, 'msjValidarCorreo.html', {'mensaje': 'Estamos verificando la información proporcionada, al terminar esta validación podrás acceder a todos nuestros servicios.'})
         else:
             # Captura los errores del formulario y los pasa a la plantilla
             errors_dict = form.errors.as_data()
             username_error = ""
+            cedula_error = ""
             telefono_error = ""
             correo_error = ""
             password_error = ""
             documento_error = ""
+            latitud_error = ""
+            longitude_error = ""
+            horario_error = ""
             qr_error = ""
             otro_error = "por favor verifica los datos ingresados "
 
@@ -620,6 +646,8 @@ def registroVendedor(request):
                 for error in error_list:
                     if 'username' in field:
                         username_error += error.message + ". "
+                    if 'cedula' in field:
+                        cedula_error += error.message + ". "
                     elif 'telefono' in field:
                         telefono_error += error.message + ". "
                     elif 'correo' in field:
@@ -628,12 +656,18 @@ def registroVendedor(request):
                         password_error += error.message + ". "
                     elif 'documentoMercantil' in field:
                         documento_error += error.message + ". "
+                    elif 'latitud' in field:
+                        latitud_error += error.message + ". "
+                    elif 'longitude' in field:
+                        longitude_error += error.message + ". "
+                    elif 'horario' in field:
+                        horario_error += error.message + ". "
                     elif 'imagen_qr' in field:
                         qr_error += error.message + ". "
                     else:
                         otro_error += error.message + ". "
 
-            return render(request, 'registroVendedor.html', {"register": form, "username_error": username_error, "telefono_error" : telefono_error ,"password_error": password_error, "documento_error": documento_error, "correo_error": correo_error, "qr_error": qr_error, "otro_error": otro_error})
+            return render(request, 'registroVendedor.html', {"register": form, "username_error": username_error, "cedula_error" : cedula_error ,"telefono_error" : telefono_error ,"password_error": password_error, "correo_error": correo_error, "documento_error": documento_error, "latitud_error": latitud_error, "longitude_error": longitude_error, "horario_error": horario_error, "qr_error": qr_error, "otro_error": otro_error})
 
 def descargar_archivo(request, url_archivo):
     
@@ -1176,5 +1210,8 @@ def registroValidador(request):
             return render(request, 'registroValidador.html', {"register": form, "email_error": email_error})
         
 def landingPago(request):
-    enviar_correos(request.user.email, "Pago en efectivo de tu compra", "<h2>Hola!<h2><br><p>Has escogido pagar por efectivo en tu compra agroweb, por favor dirigete hacia el vendedor de la tienda</p><br><p>Saludos,</p><br><h4>Equipo de Agroweb</h4>")
+    try:
+        enviar_correos(request.user.email, "Pago en efectivo de tu compra", "<h2>Hola!<h2><br><p>Has escogido pagar por efectivo en tu compra agroweb, por favor dirigete hacia el vendedor de la tienda</p><br><p>Saludos,</p><br><h4>Equipo de Agroweb</h4>")
+    except:
+        print("no se puede enviar el correo de pago en efectivo")
     return render(request, 'landing_pago.html')

@@ -37,6 +37,12 @@ class RegistroVendedorForm(forms.ModelForm):
             raise forms.ValidationError("El nombre de usuario ya está en uso.")
         return username
     
+    def clean_cedula(self):
+        cedula = self.cleaned_data['cedula']
+        if not cedula.isdigit():
+            raise forms.ValidationError('Ingresa solo numeros en el campo de cedula')
+        return cedula
+    
     def clean_correo(self):
         correo = self.cleaned_data['correo']
         if User.objects.filter(email=correo).exists():
@@ -59,6 +65,44 @@ class RegistroVendedorForm(forms.ModelForm):
                 raise forms.ValidationError('El archivo adjunto no es válido.')
         else:
             raise forms.ValidationError('Es obligatorio adjuntar el documento mercantil.')
+        
+    def clean_latitud(self):
+        latitud = self.cleaned_data.get('latitude')
+        try:
+            latitud_float = float(latitud)
+            if not (-90 <= latitud_float <= 90):
+                raise forms.ValidationError('La latitud debe estar en el rango de -90 a 90.')
+        except ValueError:
+            raise forms.ValidationError('La latitud debe ser un número válido.')
+        return latitud
+
+    def clean_longitud(self):
+        longitud = self.cleaned_data.get('longitude')
+        try:
+            longitud_float = float(longitud)
+            if not (-180 <= longitud_float <= 180):
+                raise forms.ValidationError('La longitud debe estar en el rango de -180 a 180.')
+        except ValueError:
+            raise forms.ValidationError('La longitud debe ser un número válido.')
+        return longitud
+    
+    def clean_horario(self):
+        horario = self.cleaned_data.get('horario')
+        try:
+            inicio, fin = horario.split('-')
+            hora_inicio, minuto_inicio = map(int, inicio.split(':'))
+            hora_fin, minuto_fin = map(int, fin.split(':'))
+
+            if not (0 <= hora_inicio <= 23 and 0 <= minuto_inicio <= 59):
+                raise forms.ValidationError('El formato de inicio de horario no es válido.')
+            if not (0 <= hora_fin <= 24 and 0 <= minuto_fin <= 59):
+                raise forms.ValidationError('El formato de fin de horario no es válido.')
+            if hora_inicio > hora_fin or (hora_inicio == hora_fin and minuto_inicio >= minuto_fin):
+                raise forms.ValidationError('El horario de inicio debe ser anterior al horario de fin.')
+        except (ValueError, AttributeError):
+            raise forms.ValidationError('El formato de horario no es válido. Debe ser en formato HH:MM-HH:MM.')
+
+        return horario
 
     def clean_imagen_qr(self):
         imagen_qr = self.cleaned_data.get('imagen_qr')
