@@ -608,7 +608,7 @@ def registroVendedor(request):
                 'password': request.POST['password1'],
                 'cedula': request.POST['cedula'],
                 'nombreTienda': request.POST['nombreTienda'],
-                'correo': request.POST['correo'],
+                'correo': str(request.POST['correo']),
                 'telefono': request.POST['telefono'],
                 'documentoMercantil': archivo_path,
                 'latitude': request.POST['latitude'],
@@ -697,14 +697,16 @@ def validarVendedor(request):
 
             for token in tokens:
                 datos = r.hgetall(token)
+                print(datos)
                 imagen_qr = datos.get(b'imagen_qr', b'') #el qr es opcional
+                correo = datos.get(b'correo', b'')
                 registros_pendientes.append({
                     'token': token.decode('utf-8'),
                     'username': datos[b'username'].decode('utf-8'),
                     'vendedor': datos[b'vendedor'].decode('utf-8'),
                     'cedula': datos[b'cedula'].decode('utf-8'),
                     'nombreTienda': datos[b'nombreTienda'].decode('utf-8'),
-                    'correo': datos[b'correo'].decode('utf-8'),
+                    'correo': correo.decode('utf-8'),
                     'telefono': datos[b'telefono'].decode('utf-8'),
                     'documentoMercantil': datos[b'documentoMercantil'].decode('utf-8'),
                     'latitude': datos[b'latitude'].decode('utf-8'),
