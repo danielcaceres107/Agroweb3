@@ -24,6 +24,8 @@ DB_USER = os.getenv('DB_USER')
 DB_PASSWORD = os.getenv('DB_PASSWORD')
 CORREO = os.getenv('CORREO')
 CONTRASENA = os.getenv('CONTRASENA')
+CORREO_B = os.getenv('CORREO_B')
+CONTRASENA_B = os.getenv('CONTRASENA_B')
 ACCOUNT_SID = os.getenv('ACCOUNT_SID')
 AUTH_TOKEN=os.getenv('AUTH_TOKEN')
 

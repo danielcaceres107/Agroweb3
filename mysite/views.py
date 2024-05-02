@@ -20,7 +20,6 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 from django.utils.crypto import get_random_string
-from django.core.mail import send_mail
 from django.contrib import messages
 from django.urls import reverse
 import os
@@ -67,10 +66,10 @@ def estado_pedidos(request):
     return render(request, 'estado_pedidos.html', {'pedidos': pedidos})
 
 def enviar_correos(usuario_email, asunto, cuerpo):
-    intentos_maximos = 3
+    intentos_maximos = 4
     intento_actual = 0
 
-    while intento_actual <= intentos_maximos:
+    while intento_actual < intentos_maximos:
         try:
             # Crear el objeto del mensaje
             mensaje = MIMEMultipart()
@@ -95,15 +94,28 @@ def enviar_correos(usuario_email, asunto, cuerpo):
             intento_actual += 1
             if intento_actual == intentos_maximos:
                 try:
-                    send_mail(
-                        asunto,
-                        cuerpo,
-                        settings.CORREO,
-                        [usuario_email],
-                        html_message=cuerpo,
-                    )
+                    # Configurar el servidor SMTP
+                    servidor_smtp = smtplib.SMTP('smtp.gmail.com', 587)
+                    servidor_smtp.starttls()
+                    
+                    # Autenticarse con las credenciales alternativas
+                    servidor_smtp.login(settings.CORREO_B, settings.CONTRASENA_B)
+                    
+                    # Crear el mensaje
+                    mensaje = MIMEMultipart()
+                    mensaje['From'] = settings.CORREO_B
+                    mensaje['To'] = usuario_email
+                    mensaje['Subject'] = asunto
+
+                    mensaje.attach(MIMEText(cuerpo, 'html'))
+
+                    # Enviar el correo
+                    servidor_smtp.send_message(mensaje)
+                    
+                    # Cerrar la conexión con el servidor SMTP
+                    servidor_smtp.quit()
                 except:
-                    print("Correo electrónico no se pudo enviar por send_mail.")
+                    print("Correo electrónico no se pudo enviar por gmail.")
                     raise e  # Lanza la excepción si se alcanza el número máximo de intentos
             else:
                 print(f"Intento {intento_actual}: Error al enviar el correo electrónico - {e}")
@@ -320,7 +332,7 @@ def enviar_carrito(request):
 
     carrito.limpiar()
 
-    return redirect('mapa')
+    return redirect('landingPago')
 
 def sms_carrito(telefono, account_sid, auth_token) :
     print("Enviando sms del SICC...")
@@ -697,7 +709,7 @@ def validarVendedor(request):
 
             for token in tokens:
                 datos = r.hgetall(token)
-                print(datos)
+
                 imagen_qr = datos.get(b'imagen_qr', b'') #el qr es opcional
                 correo = datos.get(b'correo', b'')
                 registros_pendientes.append({
@@ -871,8 +883,6 @@ def perfil(request):
             # Obtener los últimos 5 pedidos del usuario
             ultimos_pedidos = Pedidos.objects.filter(usuario_compra_id=request.user).order_by('-fecha')[:5]
 
-            print(ultimos_pedidos)
-
             datos_pedidos = []
             for pedido in ultimos_pedidos:
                 productos_pedido_conn = ProductosPedidosConexion.objects.filter(pedido_id=pedido.id)
@@ -893,41 +903,44 @@ def perfil(request):
             return render(request, 'perfil.html', {'cliente': cliente, 'ultimos_pedidos': datos_pedidos})
         except Clientes.DoesNotExist:
             try:
+                # Paso 1: Obtener el vendedor actual
                 vendedor = Vendedores.objects.get(usuarioVendedor=request.user)
 
-                # Obtener los últimos 5 pedidos del usuario vendedor
-                ultimas_ventas = Pedidos.objects.filter(vendedor_pedido_id=vendedor).order_by('-fecha')[:5]
+                # Paso 2: Encontrar los últimos 5 pedidos asociados con ese vendedor
+                vendedores_pedido_conn = VendedoresPedidosConexion.objects.filter(vendedor=vendedor).order_by('-pedido__fecha')[:5]
 
-                print(ultimas_ventas)
+                # Lista para almacenar los datos de los últimos pedidos
+                ultimos_pedidos = []
 
-                # Crear una lista para almacenar los productos relacionados con los pedidos del cliente
-                datos_pedidos = []
+                # Paso 3: Para cada pedido, identificar los productos vendidos por ese vendedor
+                for conn in vendedores_pedido_conn:
+                    pedido = conn.pedido
+                    productos_pedido = ProductosPedidosConexion.objects.filter(pedido=pedido, producto__in=vendedor.productos.all())
 
-                productos_vendidos_total = 0
+                    # Conjunto para almacenar los productos únicos de este pedido
+                    productos_set = set()
 
-                list_productos_vendidos_total = calcular_productos_vendidos(vendedor)
+                    for pp_conn in productos_pedido:
+                        cantidad = pp_conn.cantidad
+                        producto = pp_conn.producto
+                        total_producto = producto.precioProd * cantidad
+                        productos_set.add((producto.nombreProd, producto.precioProd, cantidad, total_producto))  # Almacenar tuplas (nombre, precio, cantidad)
 
-                for producto, cantidad in list_productos_vendidos_total.items():
-                    productos_vendidos_total += cantidad
+                    # Convertir el conjunto de productos a una lista
+                    productos = [{'nombre': nombre, 'precio': precio, 'cantidad': cantidad, 'total': total} for nombre, precio, cantidad, total in productos_set]
 
-                for pedido in ultimas_ventas:
-                    productos_pedido_conn = ProductosPedidosConexion.objects.filter(pedido_id=pedido.id)
-                    productos_en_pedido = []
-                    for pedidoprod in productos_pedido_conn:
-                        producto = Products.objects.get(id=pedidoprod.producto_id)
-                        productos_en_pedido.append({
-                            'nombre': producto.nombreProd,
-                            'cantidad': pedidoprod.cantidad,
-                            'precio': producto.precioProd
-                        })
-                    datos_pedidos.append({
-                        'id': pedido.id,
+                    total_compra = sum(producto['total'] for producto in productos)
+
+                    # Añadir este pedido a la lista de ventas
+                    ultimos_pedidos.append({
+                        'pedido_id': pedido.id,
                         'fecha': pedido.fecha,
-                        'total': pedido.total,
                         'estado': pedido.estado,
-                        'productos': productos_en_pedido
+                        'productos': productos,
+                        'total_compra': total_compra
                     })
-                return render(request, 'perfil.html', {'vendedor': vendedor, 'ultimas_ventas': datos_pedidos, 'productos_vendidos_total': productos_vendidos_total})
+
+                return render(request, 'perfil.html', {'vendedor': vendedor, 'ultimos_pedidos': ultimos_pedidos})
             except Vendedores.DoesNotExist:
                     return render(request, 'perfil.html', {})
     else:
