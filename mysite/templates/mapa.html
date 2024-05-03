@@ -32,7 +32,6 @@
             url: "{% url 'mydata' %}",
             method: 'GET',
             success: function (data) {
-                console.log(data);
                 initMap(data.vendedores);
             }
         });
@@ -60,14 +59,13 @@
 
             vendedor.productos.map(producto => {
 
-                panelProducts += '<div class="producto">' + // Agrega un contenedor para cada producto
+                panelProducts += '<div class="producto" id="producto-'+ producto.pk +'-vendedor-'+ vendedor.pk +'" data-producto="'+ producto.pk +'" data-vendedor="'+ vendedor.pk + '">' + // Agrega un contenedor para cada producto
                     '<h3>' + producto.fields.nombreProd + '</h3>' +
                     '<img src="' + producto.fields.imagenProdUrl + '" alt="' + producto.fields.nombreProd + '" width="120" height="160">' +
                     '<div class="precio"> $' + producto.fields.precio + ' COP </div>' +
                     '<p style="text-align: justify">' + producto.fields.descripcion + '</p>' +
                     '<button class="btn-agregar" data-producto="'+ producto.pk +'" data-vendedor="'+ vendedor.pk + '">Agregar al carrito</button>' +
                     '</div>';
-                console.log(producto.pk);
             });
 
             panelProducts += '</div></div>'; 
@@ -197,24 +195,6 @@
             });
         });
     }
-
-    $('#search-input').on('input', function() {
-        var searchText = $(this).val();
-        $.ajax({
-            url: '/buscar_productos/',
-            method: 'GET',
-            data: { search_text: searchText },
-            success: function(data) {
-                // Procesa los resultados y muestra los productos sobre el mapa
-                // Puedes llamar a una función existente para manejar esto
-                mostrarProductosEnMapa(data);
-            },
-            error: function() {
-                // Maneja los errores de la solicitud AJAX
-                alert('Error al buscar productos.');
-            }
-        });
-    });
 
     window.initMap = initMap;
 </script>

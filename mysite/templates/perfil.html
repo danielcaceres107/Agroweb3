@@ -156,28 +156,28 @@
     {% if user.username == vendedor.usuarioVendedor %}
         <div class="ventas-info">
             <h2>Últimas Ventas</h2>
-            {% if ultimas_ventas %}
+            {% if ultimos_pedidos %}
                 <ul>
-                    {% for pedido in ultimas_ventas %}
+                    {% for pedido in ultimos_pedidos %}
                         <li>
-                            <strong>ID del Pedido:</strong> {{ pedido.id }}<br>
+                            <strong>ID del Pedido:</strong> {{ pedido.pedido_id }}<br>
                             <strong>Fecha:</strong> {{ pedido.fecha }}<br>
                             <ul>
                                 {% for producto in pedido.productos %}
-                                    <li>
-                                        <strong>Producto:</strong> {{ producto.nombre }}<br>
-                                        <strong>Cantidad:</strong> {{ producto.cantidad }}<br>
-                                        <strong>Precio:</strong> {{ producto.precio }}<br>
-                                    </li>
+                                        <li>
+                                            <strong>Producto:</strong> {{ producto.nombre }}<br>
+                                            <strong>Cantidad:</strong> {{ producto.cantidad }}<br>
+                                            <strong>Precio:</strong> {{ producto.precio }}<br>
+                                        </li>
                                 {% endfor %}
                             </ul>
-                            <strong>Total: </strong>{{ pedido.total }}<br>
+                            <strong>Total:</strong> {{ pedido.total_compra }}<br>
                         </li>
                         <br>
                         <div class="img-container">
                             <img src="{% static 'media/img/' %}{% if pedido.estado == 'pendiente_de_pago' %}pendiente.png{% elif pedido.estado == 'pagado' %}pagado.png{% elif pedido.estado == 'entregado' %}entregado.png{% endif %}" alt="{{ pedido.estado }}">
                         </div>
-                        <form method="post" action="{% url 'cambiarEstadoPedido' pedido.id %}">
+                        <form method="post" action="{% url 'cambiarEstadoPedido' pedido.pedido_id %}">
                             {% csrf_token %}
                             <select name="nuevo_estado">
                                 <option value="pendiente_de_pago" {% if pedido.estado == "pendiente_de_pago" %}selected{% endif %}>Pendiente de pago</option>
@@ -189,7 +189,6 @@
                     {% endfor %}
                 </ul>
                 </hr>
-                <p><strong>Total Vendido:</strong> {{ productos_vendidos_total }}</p>
             {% else %}
             <p>No se han realizado ventas aún</p>
             {% endif %}
