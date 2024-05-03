@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block content %}
 <style>
     .elegir-registro {
@@ -73,13 +74,13 @@
 <div class="elegir-registro">
     <a href="/registroVendedor">
         <button>
-            <img src="../../static/media/img/vendedor.png" alt="Vendedor">
+            <img src="{% static 'media/img/vendedor.png' %}" alt="Vendedor">
             <span>Vendedor</span>
         </button>
     </a>
     <a href="/registroCliente">
         <button>
-            <img src="../../static/media/img/Comprador.png" alt="Comprador">
+            <img src="{% static 'media/img/comprador.png' %}" alt="Comprador">
             <span>Comprador</span>      
         </button>
     </a>
